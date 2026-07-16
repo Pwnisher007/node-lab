@@ -1,0 +1,2936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Houdini Tip Forge</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root{
+  --bg-void:#14151A;
+  --panel:#1B1C22;
+  --node-body:#1F2126;
+  --node-body-alt:#24262C;
+  --accent-orange:#FF7A1A;
+  --wire-cyan:#5EEAD4;
+  --text-primary:#F1F1F0;
+  --text-muted:#8A8D95;
+  --border:#2E313A;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px) 0 0/28px 28px,
+    var(--bg-void);
+  color:var(--text-primary);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:24px 16px 64px;
+}
+
+.topbar{
+  display:flex; align-items:center; gap:12px;
+  width:100%; max-width:1160px;
+  margin-bottom:28px;
+}
+.topbar-icon{
+  width:32px; height:32px; border-radius:8px;
+  background:var(--accent-orange); color:#1A1200;
+  font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:17px;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.topbar-title{
+  font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px;
+}
+.topbar-title span{color:var(--accent-orange);}
+.topbar-path{
+  margin-left:auto;
+  font-family:'JetBrains Mono',monospace; font-size:11px;
+  color:var(--text-muted); letter-spacing:0.5px;
+  white-space:nowrap;
+}
+
+.stage{
+  display:flex;
+  gap:32px;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:flex-start;
+  max-width:1160px;
+  width:100%;
+}
+
+.viewport{ position:relative; flex-shrink:0; }
+.viewport-label{
+  position:absolute; top:12px; left:16px; z-index:2; pointer-events:none;
+  font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1.5px;
+  color:rgba(255,255,255,0.4); text-transform:uppercase;
+}
+.canvas-wrap{
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 30px 60px -20px rgba(0,0,0,0.6), 0 0 0 1px var(--border);
+}
+canvas{
+  display:block;
+  max-height:72vh;
+  width:auto;
+  height:auto;
+}
+
+.node-chain{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  width:340px;
+}
+
+.node-box{
+  position:relative;
+  width:100%;
+  background:var(--panel);
+  border:1.5px solid var(--accent);
+  border-radius:12px;
+  box-shadow:0 0 0 1px rgba(0,0,0,0.35), 0 20px 40px -26px rgba(0,0,0,0.7), 0 0 24px -12px var(--accent);
+}
+.node-header{
+  display:flex; align-items:center; gap:8px;
+  padding:10px 14px;
+  background:var(--node-body-alt);
+  border-bottom:1px solid var(--border);
+  border-radius:10.5px 10.5px 0 0;
+  font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:2px;
+  text-transform:uppercase;
+}
+.node-icon{
+  width:17px; height:17px; border-radius:4px;
+  background:var(--accent); color:#14151A;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:10px;
+  flex-shrink:0;
+}
+.node-fields{
+  padding:16px;
+  display:flex; flex-direction:column; gap:14px;
+}
+.node-number{
+  margin-left:auto; color:var(--text-muted); font-size:10px;
+}
+
+.plug{
+  position:absolute; left:50%; transform:translateX(-50%);
+  width:11px; height:11px; border-radius:50%;
+  background:var(--bg-void);
+  border:2px solid var(--accent);
+  z-index:3;
+}
+.plug-in{top:-6px;}
+.plug-out{bottom:-6px;}
+
+.wire{
+  width:2px; height:26px;
+  background-image:linear-gradient(var(--c), var(--c));
+  background-size:2px 9px;
+  background-repeat:repeat-y;
+  opacity:0.55;
+  animation:flow 0.8s linear infinite;
+}
+@keyframes flow{ from{background-position-y:0;} to{background-position-y:18px;} }
+
+.field-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  margin-bottom:8px;
+  display:block;
+}
+
+.segmented{
+  display:flex;
+  border:1px solid var(--border);
+  border-radius:10px;
+  overflow:hidden;
+}
+.segmented button{
+  flex:1;
+  padding:10px 0;
+  background:var(--node-body);
+  color:var(--text-muted);
+  border:none;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  cursor:pointer;
+  transition:background .15s, color .15s;
+}
+.segmented button.active{
+  background:var(--accent-orange);
+  color:#1A1200;
+  font-weight:700;
+}
+
+input[type=text], input[type=password], input[type=number]{
+  width:100%;
+  background:var(--node-body);
+  border:1px solid var(--border);
+  border-radius:10px;
+  color:var(--text-primary);
+  padding:10px 12px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:13px;
+}
+input[type=text]:focus, input[type=password]:focus, input[type=number]:focus{outline:2px solid var(--accent-orange); outline-offset:1px;}
+
+button.action{
+  border:none;
+  border-radius:10px;
+  padding:13px 16px;
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:700;
+  font-size:14px;
+  cursor:pointer;
+  transition:transform .1s, filter .15s;
+}
+button.action:active{transform:scale(0.98);}
+button.action:focus-visible{outline:2px solid var(--wire-cyan); outline-offset:2px;}
+
+.btn-primary{background:var(--accent-orange); color:#1A1200;}
+.btn-primary:hover{filter:brightness(1.08);}
+.btn-secondary{background:var(--node-body-alt); color:var(--text-primary); border:1px solid var(--border);}
+.btn-secondary:hover{filter:brightness(1.15);}
+.btn-record{background:transparent; color:#FF5C5C; border:1px solid #7A2E2E;}
+.btn-record:hover{background:rgba(255,92,92,0.08);}
+.btn-record.recording{background:#3A1414; border-color:#FF5C5C;}
+
+.status{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  color:var(--text-muted);
+  min-height:16px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.dot{
+  width:8px;height:8px;border-radius:50%;
+  background:#FF5C5C;
+  animation:pulse 1s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+
+.mode-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  letter-spacing:1px;
+  padding:6px 10px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  color:var(--text-muted);
+  width:fit-content;
+}
+
+.caption-box{
+  width:100%;
+  min-height:150px;
+  background:var(--node-body);
+  border:1px solid var(--border);
+  border-radius:10px;
+  color:var(--text-primary);
+  padding:12px;
+  font-family:'Inter',sans-serif;
+  font-size:12.5px;
+  line-height:1.55;
+  resize:vertical;
+}
+
+.note{
+  font-size:11.5px;
+  color:var(--text-muted);
+  line-height:1.6;
+  max-width:340px;
+  width:100%;
+  margin-top:24px;
+  padding-top:16px;
+  border-top:1px solid var(--border);
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-icon">H</div>
+  <div class="topbar-title">Houdini <span>Tip Forge</span></div>
+  <div class="topbar-path">/obj/tip_forge/OUT</div>
+</div>
+
+<div class="stage">
+  <div class="viewport">
+    <div class="viewport-label">Scene View &middot; persp</div>
+    <div class="canvas-wrap">
+      <canvas id="cv"></canvas>
+    </div>
+  </div>
+
+  <div class="node-chain">
+
+    <div class="node-box" style="--accent:#5EEAD4;">
+      <div class="plug plug-in"></div>
+      <div class="node-header"><span class="node-icon">F</span>format_out<span class="node-number">1</span></div>
+      <div class="node-fields">
+        <div>
+          <span class="field-label">Format</span>
+          <div class="segmented">
+            <button id="fmtSquare" class="active">Square Post</button>
+            <button id="fmtStory">Reel / Story</button>
+          </div>
+        </div>
+        <div>
+          <span class="field-label">Node Style</span>
+          <div class="segmented">
+            <button id="styPoster" class="active">Poster</button>
+            <button id="styStudio">Studio</button>
+            <button id="styNetwork">Network</button>
+          </div>
+        </div>
+        <div>
+          <span class="field-label">Your Handle</span>
+          <input type="text" id="handle" value="@Earlymanfx" maxlength="24">
+        </div>
+      </div>
+      <div class="plug plug-out"></div>
+    </div>
+
+    <div class="wire" style="--c:#5EEAD4;"></div>
+
+    <div class="node-box" style="--accent:#FF7A1A;">
+      <div class="plug plug-in"></div>
+      <div class="node-header"><span class="node-icon">C</span>tip_select<span class="node-number">2</span></div>
+      <div class="node-fields">
+        <button class="action btn-primary" id="btnNew">New Tip &rarr;</button>
+        <div class="mode-badge" id="modeBadge">Mode: &mdash;</div>
+        <div class="mode-badge" id="sourceBadge" style="border-color:#5EEAD4;">Source: &mdash;</div>
+        <div class="status" id="cycleStatus"></div>
+        <div class="status" id="warnStatus" style="color:#FF9A5C;"></div>
+        <div>
+          <span class="field-label">Tip Number</span>
+          <div style="display:flex; gap:8px;">
+            <input type="number" id="tipNumberInput" min="1" value="1" style="flex:1;">
+            <button class="action btn-secondary" id="btnLoadNumber" style="padding:10px 14px;">Load</button>
+          </div>
+        </div>
+        <div>
+          <span class="field-label">Search by Name / Keyword</span>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="tipSearchInput" placeholder="e.g. Copy to Points, Karma, VEX..." style="flex:1;">
+            <button class="action btn-secondary" id="btnTipSearch" style="padding:10px 14px;">Search</button>
+          </div>
+          <div id="tipSearchResults" style="display:flex; flex-direction:column; gap:6px; margin-top:8px; max-height:240px; overflow-y:auto;"></div>
+        </div>
+        <button class="action btn-secondary" id="btnScanDupes">Scan History for Duplicates</button>
+        <textarea class="caption-box" id="dupeReport" style="min-height:80px; display:none;" readonly></textarea>
+        <div style="display:flex; gap:8px;">
+          <button class="action btn-secondary" id="btnExportHistory" style="flex:1;">Export History</button>
+          <button class="action btn-secondary" id="btnImportHistory" style="flex:1;">Import History</button>
+        </div>
+        <input type="file" id="importFileInput" accept="application/json" style="display:none;">
+      </div>
+      <div class="plug plug-out"></div>
+    </div>
+
+    <div class="wire" style="--c:#FF7A1A;"></div>
+
+    <div class="node-box" style="--accent:#F27CA7;">
+      <div class="plug plug-in"></div>
+      <div class="node-header"><span class="node-icon">K</span>ai_generator<span class="node-number">3</span></div>
+      <div class="node-fields">
+        <div>
+          <span class="field-label">Model Source</span>
+          <div class="segmented">
+            <button id="srcGemini" class="active">Gemini (cloud)</button>
+            <button id="srcLocal">Local (Ollama)</button>
+          </div>
+        </div>
+
+        <div id="geminiKeyBlock">
+          <div>
+            <span class="field-label">Google Gemini API Key <span style="opacity:.6;">(optional)</span></span>
+            <div style="display:flex; gap:8px;">
+              <input type="password" id="apiKeyInput" placeholder="AIza..." style="flex:1;">
+              <button class="action btn-secondary" id="btnSaveKey" style="padding:10px 14px;">Save</button>
+            </div>
+          </div>
+          <button class="action btn-secondary" id="btnTestKey">Test Key</button>
+          <div class="status" id="keyTestStatus"></div>
+          <div style="margin-top:10px;">
+            <span class="field-label">Preferred Model <span style="opacity:.6;">(only this exact model is ever called — no fallback)</span></span>
+            <select id="preferredGeminiModel" style="width:100%; padding:10px; background:var(--node-body); color:var(--text-primary); border:1px solid var(--border); border-radius:8px; font-family:'JetBrains Mono',monospace; font-size:12px;">
+              <option value="gemini-3-flash">gemini-3-flash</option>
+              <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+              <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+              <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite</option>
+              <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</option>
+              <option value="gemini-2.5-pro">gemini-2.5-pro</option>
+            </select>
+            <button class="action btn-secondary" id="btnTestAllModels" style="margin-top:8px;">Test All Models (real check, not just the catalog)</button>
+            <div id="modelTestResults" style="display:flex; flex-direction:column; gap:4px; margin-top:8px; font-family:'JetBrains Mono',monospace; font-size:11px;"></div>
+          </div>
+        </div>
+
+        <div id="ollamaBlock" style="display:none;">
+          <div>
+            <span class="field-label">Ollama Endpoint</span>
+            <input type="text" id="ollamaEndpoint" placeholder="http://localhost:11434" value="http://localhost:11434">
+          </div>
+          <div style="margin-top:8px;">
+            <span class="field-label">Model Name <span style="opacity:.6;">(must be already pulled in Ollama)</span></span>
+            <input type="text" id="ollamaModel" placeholder="llama3.1:8b" value="llama3.1:8b">
+          </div>
+          <button class="action btn-secondary" id="btnTestOllama" style="margin-top:8px;">Test Connection</button>
+          <div class="status" id="ollamaTestStatus"></div>
+        </div>
+
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-muted); line-height:1.5;">
+          Every "New Tip" asks whichever Model Source is selected above first. If that fails (no key, quota, network), it falls back to the backup bank (230 static tips, plus new ones added automatically every ~30 days once you have a model configured) — and only shows an error if both are unavailable.
+        </div>
+        <div style="border-top:1px solid var(--border); margin-top:4px; padding-top:14px;">
+          <span class="field-label">Generate a Tip on a Specific Topic <span style="opacity:.6;">(requires API key above)</span></span>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="topicInput" placeholder="e.g. Karma noise, VEX arrays, USD payloads..." style="flex:1;">
+            <button class="action btn-secondary" id="btnGenerateTopic" style="padding:10px 14px;">Generate</button>
+          </div>
+          <div class="status" id="topicGenStatus" style="min-height:16px;"></div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-muted); margin-top:6px; line-height:1.4;">
+            Uses the exact same pipeline as a normal generated tip — checked against your full history, given a number, randomly assigned Standard/Puzzle/Debate, and saved to your library. Every existing feature (search, export overrides, captions, etc.) works on it identically.
+          </div>
+        </div>
+      </div>
+      <div class="plug plug-out"></div>
+    </div>
+
+    <div class="wire" style="--c:#F27CA7;"></div>
+
+    <div class="node-box" style="--accent:#6FA8FF;">
+      <div class="plug plug-in"></div>
+      <div class="node-header"><span class="node-icon">E</span>export<span class="node-number">4</span></div>
+      <div class="node-fields">
+
+        <div>
+          <span class="field-label">Number on Export <span style="opacity:.6;">(image + video — real history untouched)</span></span>
+          <input type="number" id="exportNumberOverride" min="1" placeholder="leave blank to use real number">
+        </div>
+        <div>
+          <span class="field-label">Mode on Export <span style="opacity:.6;">(image + video — real mode/history untouched)</span></span>
+          <div class="segmented">
+            <button id="expModeAuto" class="active">Auto</button>
+            <button id="expModeStandard">Standard</button>
+            <button id="expModePuzzle">Puzzle</button>
+            <button id="expModeDebate">Debate</button>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid var(--border); margin-top:4px; padding-top:14px;">
+          <span class="field-label">Image</span>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <button class="action btn-secondary" id="btnPreviewImage">👁 Preview Image (not saved)</button>
+            <button class="action btn-secondary" id="btnPng">Download Image (PNG)</button>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid var(--border); margin-top:4px; padding-top:14px;">
+          <span class="field-label">Video</span>
+          <input type="number" id="videoDurationInput" min="1" max="60" step="0.5" value="4.5" style="margin-bottom:10px;" placeholder="Length in seconds">
+
+          <span class="field-label">Video Style Add-ons</span>
+          <div style="display:flex; flex-direction:column; gap:7px; margin-bottom:10px;">
+            <label style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--text-muted); cursor:pointer;">
+              <input type="checkbox" id="toggleHookIntro" checked style="width:16px;height:16px;accent-color:#6FA8FF;">
+              Punchy first-second hook
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--text-muted); cursor:pointer;">
+              <input type="checkbox" id="toggleRevealEnding" checked style="width:16px;height:16px;accent-color:#6FA8FF;">
+              Reveal answer at end (Puzzle mode only)
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--text-muted); cursor:pointer;">
+              <input type="checkbox" id="toggleMusic" checked style="width:16px;height:16px;accent-color:#6FA8FF;">
+              🎵 Subtle background music <span style="opacity:.6;">(synthesized, copyright-free)</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--text-muted); cursor:pointer;">
+              <input type="checkbox" id="toggleProgressBar" style="width:16px;height:16px;accent-color:#6FA8FF;">
+              Progress bar
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--text-muted); cursor:pointer;">
+              <input type="checkbox" id="toggleTextReveal" style="width:16px;height:16px;accent-color:#6FA8FF;">
+              Tip text reveal (word-by-word)
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--text-muted); cursor:pointer;">
+              <input type="checkbox" id="toggleSyncAudio" style="width:16px;height:16px;accent-color:#6FA8FF;">
+              Sync text reveal with audio <span style="opacity:.6;">(needs text reveal + music both on)</span>
+            </label>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <button class="action btn-secondary" id="btnPreviewVideo">👁 Preview Video (not saved)</button>
+            <button class="action btn-record" id="btnRec">Record Reel</button>
+          </div>
+        </div>
+
+        <div class="status" id="status"></div>
+      </div>
+      <div class="plug plug-out"></div>
+    </div>
+
+    <div class="wire" style="--c:#6FA8FF;"></div>
+
+    <div class="node-box" style="--accent:#FFD166;">
+      <div class="plug plug-in"></div>
+      <div class="node-header"><span class="node-icon">T</span>caption<span class="node-number">5</span></div>
+      <div class="node-fields">
+        <div class="segmented">
+          <button id="platX" class="active">X</button>
+          <button id="platInstagram">Instagram</button>
+          <button id="platReddit">Reddit</button>
+        </div>
+        <textarea class="caption-box" id="captionBox" readonly></textarea>
+        <button class="action btn-secondary" id="btnCopy">Copy Caption</button>
+        <div>
+          <span class="field-label">This Tip's Mode <span style="opacity:.6;">(info only, not posted)</span></span>
+          <input type="text" id="tipModeInfo" readonly>
+        </div>
+        <div>
+          <span class="field-label">Answer</span>
+          <input type="text" id="puzzleAnswer" readonly>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="note">
+  Video exports as <strong>MP4</strong> when your browser supports it, falling back to <strong>WebM</strong> otherwise (the status line tells you which you got). If you land on WebM and need MP4, convert with a free tool like CloudConvert or HandBrake. Puzzle-mode captions include an answer line marked for you only &mdash; trim it before posting.
+  <br><br>
+  Every "New Tip" asks your configured model (Gemini or local Ollama) first, checked against your <strong>entire saved history and the full backup bank</strong> — shown or not — and rejected/retried if too similar to anything that exists anywhere. Only if that fails does it fall back to an unused backup bank tip. The backup bank starts at 230 static tips and quietly grows by ~20 more every 30 days via the same model, so it never goes stale. Image/video export never touch the internet either way; only tip generation does.
+  <br><br>
+  A Google Gemini API key (optional, for once the bank runs out) goes above &mdash; get one free, no credit card needed, at <strong>aistudio.google.com</strong>. It's stored only in this browser's local storage and sent only to Google's servers &mdash; never anywhere else. Don't share this saved browser profile or a screen recording with the key field visible.
+  <br><br>
+  History is saved in this browser's local storage, tied to this device. <a href="#" id="btnReset" style="color:var(--wire-cyan);">Reset history</a>
+</div>
+
+<script>
+
+const QUESTIONS = {
+"VEX & Expressions": ["What's the messiest VEX one-liner that's saved your bacon?", "Wrangle or VOP network — which do you reach for first?"],
+"Modeling": ["What's a modeling SOP beginners sleep on?", "Booleans in Houdini: love them, or avoid them entirely?"],
+"Dynamics & FX": ["What's the sim setting you always forget to change?", "RBD or Vellum for this kind of setup — pick your fighter."],
+"Rendering": ["Karma or Mantra — where are you at right now?", "What's the render setting that's saved you the most time?"],
+"Workflow & Shortcuts": ["What's the hotkey you genuinely can't live without?", "What's a Houdini habit that took you way too long to learn?"],
+"Solaris & USD": ["Fully in Solaris yet, or still holding out?", "What's tripped you up most moving to USD?"],
+"PDG & TOPs": ["Farm, local wedge, or 'just render it overnight' — what's your reality?", "What's your best PDG horror story?"],
+"Copying & Instancing": ["Team always-pack, or only-when-needed?", "What's your instancing bottleneck once counts get big?"]
+};
+
+const GENERAL_CTA = ["What's your go-to move here?", "Drop your version below", "Tag someone who needs this one", "Save this for your next sim", "Agree, or fight me in the replies"];
+const PUZZLE_CTA = ["Guess the blank below", "First correct answer gets a 🔥"];
+const DEBATE_CTA = ["Pick a side in the replies", "Which camp are you in?"];
+
+const CATEGORY_COLORS = {
+"VEX & Expressions":"#7CFC7C",
+"Modeling":"#FF7A1A",
+"Dynamics & FX":"#FF5C5C",
+"Rendering":"#C792EA",
+"Workflow & Shortcuts":"#5EEAD4",
+"Solaris & USD":"#FFD166",
+"PDG & TOPs":"#6FA8FF",
+"Copying & Instancing":"#F27CA7"
+};
+
+// ---------- Offline tip bank (no API needed) ----------
+const BANK = [
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"TD LEVEL", text:"Use point() to pull an attribute value from another input by point number — handy for driving one geometry stream from another without merging them.", blank:"point()"},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"TD LEVEL", text:"neighbours() returns a point's connected neighbors on a mesh — great for smoothing, relaxation, or custom connectivity-based effects.", blank:"neighbours()"},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"PIPELINE", text:"Wrap repeated logic in a VEX function defined in a Snippet, then call it from multiple wrangles instead of copy-pasting the same code."},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"TD LEVEL", text:"xyzdist() finds the closest primitive on another piece of geometry and its distance — useful for proximity-based masking or collision checks.", blank:"xyzdist()"},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"TD LEVEL", text:"Use addpoint() and addprim() inside a Detail wrangle to build brand-new geometry procedurally from scratch, not just modify existing points."},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"BEGINNER", text:"chramp() samples a ramp parameter by name — pair it with a UI ramp control so artists can tweak falloff curves without touching VEX.", blank:"chramp()"},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"BEGINNER", text:"Cast between int and float explicitly rather than relying on implicit conversion — it avoids the classic 'why is my division always zero' bug.", debate:true},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"TD LEVEL", text:"relbbox() gives a point's position normalized within its geometry's bounding box — useful for gradient effects across an object regardless of its size."},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"BEGINNER", text:"Use local variables sparingly in long wrangles; sensible names beat @a, @b, @c when you revisit the network in six months."},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"TD LEVEL", text:"nearpoints() returns a list of nearby point numbers within a radius — a lightweight alternative to a full pcopen and pciterate search.", debate:true},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"PIPELINE", text:"Sourcing noise from curlnoise() instead of plain noise() keeps vector fields divergence-free, which reads as much more natural fluid-like motion.", blank:"curlnoise()"},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"BEGINNER", text:"Use s@ string attributes to tag geometry with metadata early, so downstream wrangles can filter with simple string comparisons."},
+
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"The PolyDoctor SOP flags problem geometry like non-manifold edges before it quietly breaks a simulation or UV layout downstream.", blank:"PolyDoctor"},
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"Use the Fuse SOP's Snap to Grid before or after boolean operations to eliminate tiny floating-point gaps that create sliver geometry."},
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"The LSystem SOP is still one of the fastest ways to art-direct branching structures like vines or root systems without hand-modeling them.", blank:"LSystem"},
+{cat:"Modeling", color:"#FF7A1A", diff:"BEGINNER", text:"Group polygons by normal direction with a Group SOP before extruding, so you don't accidentally extrude the wrong way on curved surfaces."},
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"The PolyFill SOP handles n-gon holes far more predictably than manually bridging edges one at a time."},
+{cat:"Modeling", color:"#FF7A1A", diff:"BEGINNER", text:"Use the Clip SOP with Keep Both Sides to quickly generate cross-section geometry for technical or medical-style visualizations."},
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"Convert to NURBS and back to polygons through a Convert SOP to get a genuinely even point distribution on an organic surface.", debate:true},
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"The Divide SOP's Maximum Edges setting quietly triangulates n-gons that would otherwise cause shading artifacts on curved surfaces."},
+{cat:"Modeling", color:"#FF7A1A", diff:"BEGINNER", text:"UV Layout's Island Padding matters more than people think — too tight and texture bleeding shows up once you add mip-mapping in render."},
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"The Boolean SOP's Shatter mode fractures geometry along cutting shapes directly, skipping a separate Voronoi setup for simple breaks.", debate:true},
+{cat:"Modeling", color:"#FF7A1A", diff:"BEGINNER", text:"Use a Blast SOP with Delete Non-Selected inverted from what you'd expect — it's a common gotcha that wastes ten minutes on a fresh install."},
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"The Skin SOP lofts a smooth surface across a stack of cross-section curves — invaluable for hero-prop and vehicle modeling.", blank:"Skin SOP"},
+
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"TD LEVEL", text:"Vellum's Pressure constraint on a closed surface turns a hollow mesh into a squishy inflated object with almost no extra setup.", blank:"Pressure"},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"BEGINNER", text:"Use a POP Wrangle's @life and @age attributes together to drive particle opacity fade-out precisely at end of life instead of a flat cutoff."},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"PIPELINE", text:"FLIP sims resolve faster and look better with a slightly coarser particle separation than you'd guess — oversampling wastes sim time for little gain."},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"TD LEVEL", text:"The Pyro Source SOP's Fuel Scale is usually the first dial to touch for bigger, more voluminous flames, before touching solver settings.", blank:"Fuel Scale"},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"PIPELINE", text:"Use RBD Activation constraints tied to a proxy collision object so debris only goes dynamic the instant it's actually disturbed."},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"TD LEVEL", text:"Vellum Grain solves cheap granular materials like sand or gravel far faster than an equivalent RBD pile of thousands of small pieces.", debate:true},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"TD LEVEL", text:"The Crowd solver's agent Look At behavior is a fast way to fake believable background character attention without full AI-driven logic."},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"TD LEVEL", text:"Wire solver constraints painted with an Attribute Paint SOP let you soften or stiffen a rope's bend resistance exactly where a scene needs it."},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"PIPELINE", text:"Use a DOP Import SOP rather than piping sim data straight into your output network — it keeps your display network cleanly re-cookable.", blank:"DOP Import"},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"BEGINNER", text:"Ocean Spectrum's Swell parameter is the fastest way to differentiate a calm harbor shot from a storm shot without hand-authoring wave layers."},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"TD LEVEL", text:"White-water POP simulations read as more convincing when foam particles inherit velocity from the underlying FLIP surface, not spawn statically."},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"PIPELINE", text:"Constraint-based destruction with Bullet or Vellum generally out-performs full RBD packed-primitive setups once fracture counts climb high.", debate:true},
+
+{cat:"Rendering", color:"#C792EA", diff:"BEGINNER", text:"Karma's Physical Sky is a fast way to get believable outdoor lighting without hand-placing a sun and fill lights from scratch.", blank:"Physical Sky"},
+{cat:"Rendering", color:"#C792EA", diff:"TD LEVEL", text:"Use a Material Override LOP for last-minute per-shot shading tweaks instead of duplicating and editing the whole shader network."},
+{cat:"Rendering", color:"#C792EA", diff:"PIPELINE", text:"Deep camera map exports let compositors handle occlusion and depth-of-field correctly without needing a full re-render.", blank:"Deep"},
+{cat:"Rendering", color:"#C792EA", diff:"TD LEVEL", text:"Subsurface scattering reads correctly only when your object's real-world scale is set accurately — skin on a 1-unit figure will look waxy."},
+{cat:"Rendering", color:"#C792EA", diff:"TD LEVEL", text:"Karma's Path Guiding setting can meaningfully cut noise in complex indirect-lighting scenes without just brute-forcing more samples.", blank:"Path Guiding"},
+{cat:"Rendering", color:"#C792EA", diff:"BEGINNER", text:"Render an ID or Object Index AOV even when you don't think you'll need it in comp — it's much cheaper upfront than a re-render later."},
+{cat:"Rendering", color:"#C792EA", diff:"BEGINNER", text:"Use light temperature in Kelvin rather than raw RGB tweaking to match practical sources — it reads more naturally and art-directs easier."},
+{cat:"Rendering", color:"#C792EA", diff:"PIPELINE", text:"Karma XPU and CPU can render slightly differently on edge cases like volumes — spot-check a frame on both before a full farm run.", debate:true},
+{cat:"Rendering", color:"#C792EA", diff:"BEGINNER", text:"Bump and normal map strength should usually be dialed back from the 'looks cool in isolation' value once seen next to the rest of a lit shot."},
+{cat:"Rendering", color:"#C792EA", diff:"PIPELINE", text:"Use render-time geometry LOD on background objects — full-res geo the camera barely sees is pure wasted render time."},
+{cat:"Rendering", color:"#C792EA", diff:"TD LEVEL", text:"A simple two-light key-plus-bounce setup often reads more believably than an elaborate six-light rig, especially for product-style renders.", debate:true},
+{cat:"Rendering", color:"#C792EA", diff:"TD LEVEL", text:"Motion blur samples should scale with how fast objects actually move in-shot — a fixed global count either wastes time or under-samples action."},
+
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"BEGINNER", text:"The Node Info window shows exactly why a node is red without digging through error text piecemeal — check it first on any failure."},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"BEGINNER", text:"Color-code node categories with the C hotkey once a network passes about a dozen nodes — future-you will thank present-you."},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"BEGINNER", text:"The Find and Select dialog can filter a huge network by node type or name instantly, faster than scrolling and hunting manually."},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"BEGINNER", text:"Middle-mouse-drag on a parameter field lets you scrub its value directly in the viewport without opening the parameter pane."},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"TD LEVEL", text:"Use Take mode to store and compare multiple parameter states, like different look-dev passes, without duplicating nodes.", blank:"Take"},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"TD LEVEL", text:"The Performance Monitor is the fastest way to see which single node is actually the slow point in a network, rather than guessing.", blank:"Performance Monitor"},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"BEGINNER", text:"Alt-click a node's render or display flag to solo it temporarily in the viewport without disturbing anything downstream."},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"PIPELINE", text:"HDA version stamping in Type Properties is worth setting up early on any tool you plan to reuse across more than one project."},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"BEGINNER", text:"Use the Radial menu by holding Space to jump between common view and selection tools without leaving the viewport to hunt in menus."},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"PIPELINE", text:"Group your shelf tools into a custom shelf tab per project — a small setup cost that pays off within the first busy production week.", debate:true},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"TD LEVEL", text:"The Reload from Disk shortcut on an HDA saves you from constantly reopening tabs while iterating on a tool's internal network."},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"BEGINNER", text:"Pin the parameter pane open on a specific node so it stays visible even while you click through the rest of the network for reference."},
+
+{cat:"Solaris & USD", color:"#FFD166", diff:"PIPELINE", text:"USD's over vs def distinction matters — an over only edits an existing prim, so referencing order on your stage genuinely changes results.", blank:"over"},
+{cat:"Solaris & USD", color:"#FFD166", diff:"TD LEVEL", text:"Use a Configure Layer LOP to keep save paths and layer names organized automatically instead of hand-typing them on every export."},
+{cat:"Solaris & USD", color:"#FFD166", diff:"PIPELINE", text:"The Edit Context Options LOP lets you drive variant selections or overrides from outside a locked-down asset without touching its internals."},
+{cat:"Solaris & USD", color:"#FFD166", diff:"TD LEVEL", text:"USD variants are the cleanest way to art-direct multiple looks on one asset without duplicating the whole hierarchy.", blank:"variants"},
+{cat:"Solaris & USD", color:"#FFD166", diff:"BEGINNER", text:"Isolate a single prim's render in the viewport with a quick Render Geometry Settings override rather than hiding half your stage manually."},
+{cat:"Solaris & USD", color:"#FFD166", diff:"TD LEVEL", text:"The Graft LOP attaches a SOP-built piece of geometry directly onto a point in your existing USD hierarchy — handy for scattered set-dressing."},
+{cat:"Solaris & USD", color:"#FFD166", diff:"PIPELINE", text:"USD Instanceable prims meaningfully reduce stage memory for repeated assets, but break per-instance overrides — know the tradeoff first.", debate:true},
+{cat:"Solaris & USD", color:"#FFD166", diff:"TD LEVEL", text:"Use the LOP network's Scene Graph Tree isolate-selected to work on one branch of a huge stage without the rest cluttering the view."},
+{cat:"Solaris & USD", color:"#FFD166", diff:"PIPELINE", text:"Reference a USD payload instead of a direct reference when an asset is heavy — payloads can be unloaded to keep a stage light while blocking.", blank:"payload", debate:true},
+{cat:"Solaris & USD", color:"#FFD166", diff:"TD LEVEL", text:"The Material Library LOP centralizes shader assignments in one place, much easier to hand off to a lighting TD than scattered overrides."},
+{cat:"Solaris & USD", color:"#FFD166", diff:"TD LEVEL", text:"Use Set Variant LOP nodes stacked in sequence to build a clear, readable variant-selection pipeline instead of one giant expression."},
+{cat:"Solaris & USD", color:"#FFD166", diff:"PIPELINE", text:"Karma's render settings can live on a dedicated LOP layer, separated from geometry and lighting, so render tweaks don't touch anything else."},
+
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"PIPELINE", text:"A ROP Fetch TOP wraps an existing ROP network for farm distribution without rebuilding your render setup as native TOP nodes.", blank:"ROP Fetch"},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"PIPELINE", text:"Use the Cook Nodes to Generate vs Cook Nodes to Cook distinction carefully — mixing them up is a common source of confusing empty runs.", debate:true},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"TD LEVEL", text:"The File Pattern TOP is often the cleanest way to bring an existing folder of frames or caches into a PDG graph for further processing."},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"PIPELINE", text:"Set explicit dependencies with a Wait For All TOP when a downstream step genuinely needs every upstream item finished, not just some."},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"PIPELINE", text:"PDG's Local Scheduler cook settings for max processes should generally sit a little below your machine's core count to leave headroom."},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"PIPELINE", text:"Use a Python Script TOP to inject custom validation logic between pipeline stages before expensive work continues."},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"TD LEVEL", text:"The Attribute Create TOP lets you tag work items with custom metadata that later stages can branch on, without touching underlying files."},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"PIPELINE", text:"PDG work item labels, not just index numbers, make a farm log dramatically easier to read when something goes wrong at 2am."},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"PIPELINE", text:"Static vs dynamic work item generation matters for iteration speed — static graphs cook faster when you're just tweaking downstream logic.", debate:true},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"TD LEVEL", text:"Use a Shuffle TOP to randomize work item order before a render — useful for getting a representative spread of frames back early."},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"TD LEVEL", text:"The Generic Generator TOP is the simplest way to spin up parameter sweeps, like testing twenty shader variations, without custom Python."},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"PIPELINE", text:"PDG's built-in retry-on-failure setting can quietly save a farm run from one flaky machine, rather than failing the whole job."},
+
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"BEGINNER", text:"The Point Replicate SOP is a lightweight alternative to Copy to Points for simple, uniform duplication without extra attribute overhead.", blank:"Point Replicate"},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"TD LEVEL", text:"Use @instance and a Material Style Sheet together to vary shading per-instance without creating separate shader networks for each variant."},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"TD LEVEL", text:"Attribute-driven instance selection by @variant reads as far more natural than pure geometric repetition."},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"PIPELINE", text:"The Copy to Points SOP's Target Attributes list controls exactly which point attributes drive instance transforms — trim it for performance."},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"PIPELINE", text:"Packed Disk Primitives stream instance geometry from disk instead of holding it all in memory — essential past millions of instances.", blank:"Packed Disk Primitives"},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"TD LEVEL", text:"Use @pivot to offset an instance's rotation center away from its bounding-box center, useful for props like doors or hinged mechanisms."},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"PIPELINE", text:"Cluster instances into a handful of Copy to Points nodes by asset type rather than one giant node — it keeps debugging far more manageable.", debate:true},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"TD LEVEL", text:"The For-Each Connected Piece loop is a clean way to instance a unique variant onto each disconnected chunk after a fracture."},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"PIPELINE", text:"Randomizing @instance selection with a low-discrepancy sequence rather than pure rand() avoids visible clustering artifacts at scale."},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"TD LEVEL", text:"Use bounding-box-aware jitter on instance position so scattered rocks or foliage don't visibly interpenetrate the ground plane."},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"TD LEVEL", text:"Copy Stamp's modern equivalent — a For-Each loop with an Object Merge — is worth learning even if you rarely need per-copy unique geometry.", debate:true},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"PIPELINE", text:"Scene-level Instance nodes, not SOP-level Copy to Points, are the right tool when instances need individual USD-level overrides in Solaris."},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"TD LEVEL", text:"primintrinsic() reads built-in primitive properties like area or perimeter without you having to compute them manually in VEX.", blank:"primintrinsic()"},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"TD LEVEL", text:"volumesample() lets you read a volume's field value at any position, useful for driving particle behavior from a density or velocity field.", blank:"volumesample()"},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"TD LEVEL", text:"setpointattrib() writes to a specific point's attribute from anywhere in a wrangle, not just the point currently being processed."},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"BEGINNER", text:"fit() and fit01() look similar but differ in default range — knowing which one you need avoids a lot of trial-and-error remapping.", debate:true},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"BEGINNER", text:"lerp() is a simple building block for blending between two values or vectors, and it shows up constantly once you write custom VEX logic.", blank:"lerp()"},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"TD LEVEL", text:"rand() accepts more than one seed argument — combining @ptnum with a second seed avoids visible repeating patterns a single seed can produce."},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"PIPELINE", text:"distance2(), the squared distance, is meaningfully cheaper than distance() when you only need to compare distances, not their exact values.", blank:"distance2()", debate:true},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"TD LEVEL", text:"primuv() samples an attribute at any UV coordinate on a primitive, useful for placing detail precisely relative to a surface's parameterization."},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"PIPELINE", text:"volumegradient() returns a volume's gradient direction at a point, handy for advecting particles along a density or temperature field."},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"BEGINNER", text:"Choosing the right Wrangle Run Over mode — Points, Primitives, Detail, or Numbers — has a real performance impact, not just a logical one.", debate:true},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"TD LEVEL", text:"The in group(\"name\") syntax lets you check group membership directly inside VEX, without needing a separate Group node upstream."},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"BEGINNER", text:"printf() inside a wrangle is often faster for debugging one specific value than reopening the geometry spreadsheet every time.", blank:"printf()"},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"BEGINNER", text:"@ptnum, @primnum, and @numpt cover different things — mixing them up is a surprisingly common source of off-by-one bugs in custom loops."},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"TD LEVEL", text:"removepoint() and removeprim() let you delete geometry directly inside a wrangle, useful for conditional cleanup without a separate Blast SOP."},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"TD LEVEL", text:"Explicit vector construction with set() avoids ambiguous casting bugs that can creep in when building a vector from mixed scalar types."},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"TD LEVEL", text:"haspointattrib() lets you check whether an attribute actually exists before reading it, avoiding wrangle errors on inconsistent input geometry.", blank:"haspointattrib()"},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"BEGINNER", text:"Chained ternary expressions in VEX can replace a short if/else, but past two conditions they usually hurt readability more than they save space.", debate:true},
+{cat:"VEX & Expressions", color:"#7CFC7C", diff:"PIPELINE", text:"@Time and @Frame aren't interchangeable — behavior tied to real-world seconds versus frame count diverges the moment your frame rate changes."},
+
+{cat:"Modeling", color:"#FF7A1A", diff:"BEGINNER", text:"Bevel SOP's rounded-corner mode fillets hard edges in one operation instead of hand-modeling chamfers point by point.", blank:"Bevel"},
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"Extrude SOP's Output Back option keeps original geometry as a reference cap, useful for building panel-and-frame details without extra bookkeeping."},
+{cat:"Modeling", color:"#FF7A1A", diff:"BEGINNER", text:"Curve SOP's order parameter controls spline smoothness — cubic curves need at least four points, and missing that is a common 'my curve is a straight line' confusion."},
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"Resample SOP's Maximum Segment Length is often more reliable than a fixed point count for curves of varying length.", blank:"Maximum Segment Length"},
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"VDB From Polygons converts geometry into a signed distance field, opening it up to volume-only operations like smoothing or boolean-via-volumes.", debate:true},
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"Remesh SOP retopologizes dense scan or sculpt geometry into an evenly triangulated mesh suitable for simulation.", blank:"Remesh"},
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"PolyReduce's Preserve Boundaries option stops silhouette-defining edges from collapsing during aggressive decimation."},
+{cat:"Modeling", color:"#FF7A1A", diff:"BEGINNER", text:"Normal SOP's cusp angle controls where hard-edge faceted shading kicks in versus smooth shading — the default rarely matches a hard-surface asset."},
+{cat:"Modeling", color:"#FF7A1A", diff:"BEGINNER", text:"Mirror SOP followed by a Fuse at the seam avoids the classic double-point seam artifact on symmetric models."},
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"Attribute Promote moves attributes between point, primitive, vertex, and detail class — misunderstanding class scope is a common 'attribute disappeared' bug.", blank:"Attribute Promote"},
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"Sweep SOP lofts a cross-section curve along a spine curve, much faster than hand-modeling pipes, railings, or cables one segment at a time."},
+{cat:"Modeling", color:"#FF7A1A", diff:"BEGINNER", text:"Group SOP's bounding-region options let you select geometry purely by spatial area, handy for large environment kitbashing."},
+{cat:"Modeling", color:"#FF7A1A", diff:"BEGINNER", text:"Smooth SOP restricted to a specific group lets you relax just a problem area without softening the whole mesh's detail."},
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"Building organic surfaces by fitting repeated Smooth passes over a low-poly blockout is often faster than hand-adding surface detail.", debate:true},
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"Capture and Deform SOPs remain a lightweight way to bind simple props to a skeleton without a full character rigging setup."},
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"Facet SOP's Unique Points setting is the fix when hard-edge shading looks wrong after another SOP merges points that should have stayed separate.", blank:"Unique Points"},
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"The Carve SOP still gives finer control over exactly where extra detail accumulates along a curve than automatic resampling does.", debate:true},
+{cat:"Modeling", color:"#FF7A1A", diff:"PIPELINE", text:"Point Deform's topology-independent mode transfers deformation even when source and target point counts differ, a genuine lifesaver mid-pipeline."},
+{cat:"Modeling", color:"#FF7A1A", diff:"TD LEVEL", text:"PolyBridge's divisions setting is worth tuning by hand on hero geometry — the automatic default doesn't always preserve intended edge flow."},
+
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"TD LEVEL", text:"Vellum's Stretch and Bend constraint stiffness sliders are usually the first two dials worth separating for cloth that behaves like a specific fabric."},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"PIPELINE", text:"FLIP's Reseeding settings prevent particle voids from opening up in fast-moving splashes over a long simulation.", blank:"Reseeding"},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"TD LEVEL", text:"Pyro's Dissipation field controls how quickly smoke thins out over time — often the missing piece when a sim never quite fades away.", blank:"Dissipation"},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"PIPELINE", text:"RBD constraint networks benefit from a glue-strength gradient rather than one uniform value, so breaks propagate naturally from an impact point."},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"TD LEVEL", text:"The POP Replicate node adds sub-particles like sparks or debris driven by an existing sim, without re-simulating everything from scratch.", blank:"POP Replicate"},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"PIPELINE", text:"Vellum self-collision has a real performance cost — restrict it to a group covering just the folding-prone areas of a garment.", debate:true},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"TD LEVEL", text:"Pyro's Temperature field, separate from Density, is what actually drives a fire's color ramp — tweaking density alone won't fix flame color."},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"BEGINNER", text:"A Null-based abort switch on expensive Vellum or Pyro nodes lets you quickly A/B whether a change is worth the added sim cost."},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"PIPELINE", text:"Rigid body sleeping thresholds can be tuned per-object to stop background debris from consuming solver time unnecessarily."},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"TD LEVEL", text:"FLIP viscosity settings let you push a fluid sim from a thin water look toward honey or lava without changing your base setup.", blank:"viscosity"},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"TD LEVEL", text:"Vellum hair and fur sims often need fewer substeps than cloth to look right — pushing hair to cloth-level substeps mostly just wastes time.", debate:true},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"PIPELINE", text:"The Pyro Shredding toggle adds turbulence specifically at a volume's shear boundaries, a common trick for smoke that reads as less clean and CG."},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"TD LEVEL", text:"A Cache SOP right after your DOP Import means scrubbing the timeline for lookdev doesn't force a costly re-simulation on every frame change."},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"TD LEVEL", text:"RBD Anchor constraints, pinning to animated geometry, are the standard way to attach destruction directly to a hero character's motion.", blank:"Anchor"},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"BEGINNER", text:"Ocean sims benefit from mixing at least two wave layers at different scales — a single spectrum tends to read as too uniform and repetitive."},
+{cat:"Dynamics & FX", color:"#FF5C5C", diff:"TD LEVEL", text:"Vellum's Blend Constraint mixes simulated motion back toward the original animated pose, useful for keeping secondary motion subtle rather than fully physical.", blank:"Blend Constraint"},
+
+{cat:"Rendering", color:"#C792EA", diff:"TD LEVEL", text:"Karma's Noise Threshold convergence setting stops rendering a region once it's clean enough, rather than always running every pixel to a fixed count.", blank:"Noise Threshold"},
+{cat:"Rendering", color:"#C792EA", diff:"PIPELINE", text:"Volumetric shadows from fog or smoke usually need far fewer light samples than surface shading to resolve cleanly — sharing one count wastes time."},
+{cat:"Rendering", color:"#C792EA", diff:"BEGINNER", text:"An HDRI dome light's rotation alone can meaningfully change a shot's mood — worth treating as a first-pass lighting decision, not an afterthought."},
+{cat:"Rendering", color:"#C792EA", diff:"TD LEVEL", text:"Cryptomatte-driven per-object color correction in comp is usually faster to iterate than re-rendering a shader tweak from scratch."},
+{cat:"Rendering", color:"#C792EA", diff:"BEGINNER", text:"Displacement height scale should be checked against an object's real-world size — a value copied from a different-scaled asset can silently do nothing."},
+{cat:"Rendering", color:"#C792EA", diff:"TD LEVEL", text:"Karma's Render Vars panel lets you preview a single AOV in isolation in the viewport before committing to a full multi-pass render.", blank:"Render Vars"},
+{cat:"Rendering", color:"#C792EA", diff:"BEGINNER", text:"Physically-based materials read as more believable when roughness variation comes from a texture map rather than one flat slider across a surface.", debate:true},
+{cat:"Rendering", color:"#C792EA", diff:"PIPELINE", text:"Light-group intensity mixing in comp only works well if lights were split into sensible passes at render time — decide groups before rendering, not after."},
+{cat:"Rendering", color:"#C792EA", diff:"PIPELINE", text:"A render checkpoint or partial-frame resume setting is worth enabling on long farm frames so a crash doesn't mean starting from zero."},
+{cat:"Rendering", color:"#C792EA", diff:"TD LEVEL", text:"Fresnel-driven reflection falloff on a material usually looks more correct than a flat reflectivity value, especially at grazing camera angles.", blank:"Fresnel"},
+{cat:"Rendering", color:"#C792EA", diff:"PIPELINE", text:"Karma's adaptive sampling can waste effort on already-converged flat backgrounds unless firefly and variance thresholds are tuned per shot."},
+{cat:"Rendering", color:"#C792EA", diff:"TD LEVEL", text:"Motion vectors as a dedicated AOV let compositors add or adjust motion blur after the fact without touching the 3D render at all."},
+{cat:"Rendering", color:"#C792EA", diff:"TD LEVEL", text:"Camera-space normals as an AOV give compositors a fast way to fake relighting adjustments without a full re-render.", debate:true},
+{cat:"Rendering", color:"#C792EA", diff:"BEGINNER", text:"Volumetric fog density should be checked at actual camera distance in-shot — a value that looks right in a lookdev turntable can read very differently in production."},
+{cat:"Rendering", color:"#C792EA", diff:"PIPELINE", text:"Render at a slightly higher resolution than final delivery when heavy comp work like rack focus or extreme crops is planned."},
+{cat:"Rendering", color:"#C792EA", diff:"TD LEVEL", text:"Karma's light sampling quality and pixel sampling quality are separate dials — bumping pixel samples alone won't fix noisy under-sampled soft shadows."},
+
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"BEGINNER", text:"Use Bookmarks, not just node names, to save specific views or node selections you return to often across a big network."},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"BEGINNER", text:"The Network Box tool groups related nodes visually with a label and color, which reads far better in review than an unlabeled cluster of wires.", blank:"Network Box"},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"TD LEVEL", text:"Copy and paste between two open Houdini sessions can move whole node networks, not just single nodes — handy for borrowing a solved setup."},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"BEGINNER", text:"Save As Default on a frequently-tweaked parameter makes new nodes of that type start with your preferred setting instead of the factory default.", blank:"Save As Default"},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"TD LEVEL", text:"The Channel Editor's snap options make hand-keying camera or prop animation far more precise than dragging keys freehand in the viewport."},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"PIPELINE", text:"Desk-testing a new HDA on a tiny scrap scene before dropping it into a heavy production file catches broken defaults before they cost real time."},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"BEGINNER", text:"Use expressions sparingly on parameters that don't need them — a hardcoded value is easier for a collaborator to understand at a glance.", debate:true},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"TD LEVEL", text:"The viewport's Ghost display mode compares a modified version of geometry against its original silhouette without duplicating any nodes.", blank:"Ghost"},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"TD LEVEL", text:"Houdini's Python Shell is often faster for a one-off scene query than writing a full Python Script node for a throwaway question."},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"PIPELINE", text:"Set a consistent naming convention for null OUT nodes across a project early — searching a big file later for 'the actual output' is painful without one."},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"BEGINNER", text:"Trigger Home to recenter the viewport sparingly on huge sets — it can lose your careful framing if hit by accident mid-review."},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"PIPELINE", text:"Tracking which HDA versions are used where saves real time once a pipeline has more than a couple of custom tools in circulation.", debate:true},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"BEGINNER", text:"Marking a heavy node Bypass during iteration is often faster than deleting and reconnecting it later once you need it back."},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"TD LEVEL", text:"MPlay's comparison mode lets you flip between two render versions at the same frame without opening a separate application.", blank:"MPlay"},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"BEGINNER", text:"Keep a personal snippets file of VEX one-liners you reuse often — faster than reconstructing the same expression from memory every time."},
+{cat:"Workflow & Shortcuts", color:"#5EEAD4", diff:"PIPELINE", text:"HDAs support a help card you can write yourself — worth the ten minutes on any tool a teammate will open without you nearby to explain it."},
+
+{cat:"Solaris & USD", color:"#FFD166", diff:"TD LEVEL", text:"The Layout LOP is purpose-built for scattering set-dressing assets across a USD stage without dropping into SOPs for simple placement tasks.", blank:"Layout"},
+{cat:"Solaris & USD", color:"#FFD166", diff:"PIPELINE", text:"USD attribute time-samples let you art-direct an animated value directly on the stage without a full simulation or cache."},
+{cat:"Solaris & USD", color:"#FFD166", diff:"TD LEVEL", text:"Prune LOP versus Deactivate LOP is a meaningful distinction — deactivating keeps a prim's data intact but invisible, which is often safer.", debate:true},
+{cat:"Solaris & USD", color:"#FFD166", diff:"PIPELINE", text:"Collections in LOPs let you define a reusable group of prims by pattern once, then reference it across lighting, rendering, and simulation."},
+{cat:"Solaris & USD", color:"#FFD166", diff:"PIPELINE", text:"The Component Output LOP enforces a consistent structure when publishing assets, which pays off enormously once more than one artist shares a library.", blank:"Component Output"},
+{cat:"Solaris & USD", color:"#FFD166", diff:"TD LEVEL", text:"USD's kind metadata, like component or assembly, helps downstream tools understand a stage's hierarchy without reading raw prim paths."},
+{cat:"Solaris & USD", color:"#FFD166", diff:"TD LEVEL", text:"The Layer Break LOP explicitly stops upstream layer opinions from leaking further downstream when you want a clean slate partway through.", blank:"Layer Break"},
+{cat:"Solaris & USD", color:"#FFD166", diff:"PIPELINE", text:"Sublayering render settings from a separate, reusable USD file keeps studio-wide defaults consistent across many shots without copy-pasting."},
+{cat:"Solaris & USD", color:"#FFD166", diff:"TD LEVEL", text:"The Light Linker LOP gives a visual matrix for light-to-geometry linking, often faster to reason about than toggling include and exclude lists.", debate:true},
+{cat:"Solaris & USD", color:"#FFD166", diff:"TD LEVEL", text:"USD's purpose attribute — render, proxy, or guide — keeps a lightweight stand-in visible in viewport while the heavy render mesh stays hidden until render time."},
+{cat:"Solaris & USD", color:"#FFD166", diff:"TD LEVEL", text:"The Restructure LOP renames or reparents prims across a stage in bulk, avoiding a tedious one-by-one rename pass after an import.", blank:"Restructure"},
+{cat:"Solaris & USD", color:"#FFD166", diff:"PIPELINE", text:"Cache LOPs on expensive upstream operations keep interactive stage navigation responsive while you work on downstream layers."},
+{cat:"Solaris & USD", color:"#FFD166", diff:"BEGINNER", text:"A well-organized USD stage separates geometry, lighting, and camera concerns into their own sublayers from the start of a shot, not retrofitted later."},
+{cat:"Solaris & USD", color:"#FFD166", diff:"PIPELINE", text:"The Python LOP node lets you script custom stage edits directly, useful for logic a stock LOP node simply doesn't expose a parameter for."},
+{cat:"Solaris & USD", color:"#FFD166", diff:"TD LEVEL", text:"USD Render Settings prims can be swapped per-variant, letting one stage support both a fast preview render and a full final-quality configuration."},
+{cat:"Solaris & USD", color:"#FFD166", diff:"TD LEVEL", text:"The Merge LOP's handling of prim name collisions is worth understanding early — silently overwritten prims are a common 'where did my asset go' bug.", blank:"Merge"},
+
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"TD LEVEL", text:"The Partition TOP groups work items by a shared attribute value, useful for batching per-shot or per-asset processing instead of one item at a time.", blank:"Partition"},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"PIPELINE", text:"PDG's dependency graph view is worth checking visually before a big farm submission — a mis-wired dependency is far cheaper to catch there."},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"PIPELINE", text:"The Invalidate TOP forces specific downstream work to re-cook even when PDG thinks cached results are valid — useful after a manual file change."},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"PIPELINE", text:"Environment TOPs inject per-item environment variables into farm jobs, handy for pointing different work items at different config files."},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"TD LEVEL", text:"The Wedge TOP's attribute-driven mode is more maintainable than hardcoding a wedge count when the variant list changes often.", debate:true},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"PIPELINE", text:"Splitting a farm job into smaller PDG graphs that each write their own log file makes postmortem debugging on a failed overnight run far less painful."},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"PIPELINE", text:"The top-level Cook Output Node setting determines exactly what PDG considers done — easy to misconfigure into a graph that finishes instantly with no work happening."},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"TD LEVEL", text:"Use a Filter TOP to drop work items that fail a validation check early, rather than letting broken items flow through expensive stages first.", blank:"Filter"},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"PIPELINE", text:"Mixing local and farm scheduling in one graph lets lightweight tasks run locally while only genuinely heavy tasks go to the farm.", debate:true},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"PIPELINE", text:"Redirect PDG's Report output to a persistent log location, not just the in-session view, for jobs that need auditing after the fact."},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"PIPELINE", text:"Work item priority settings matter on a shared farm — tagging genuinely urgent deliveries higher keeps them from queuing behind routine cooks."},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"TD LEVEL", text:"The Wrangle TOP lets you write quick logic directly on work item attributes without a full custom Python Script TOP for simple cases.", blank:"Wrangle TOP"},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"PIPELINE", text:"Chaining a Cache TOP after an expensive upstream cook prevents redundant recooking while you iterate purely on downstream logic."},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"PIPELINE", text:"PDG graphs benefit from small, testable subgraphs rather than one enormous flat graph that's hard to reason about at a glance."},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"TD LEVEL", text:"Explicitly setting expected output file counts on a TOP helps PDG flag a partial or silently-failed cook instead of reporting false success."},
+{cat:"PDG & TOPs", color:"#6FA8FF", diff:"PIPELINE", text:"Clean farm-side temp directories deliberately as part of a PDG graph's end stage, rather than letting them accumulate across hundreds of runs."},
+
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"BEGINNER", text:"Scatter SOP's relax pass evens out point distribution after random placement, avoiding the visibly clumpy look of pure uniform-random scattering.", blank:"relax"},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"TD LEVEL", text:"Use @scale alongside @pscale when instances need non-uniform stretching, since @pscale alone only ever scales uniformly."},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"TD LEVEL", text:"Copy to Points reads an optional @orient quaternion attribute directly — building it once upstream is cleaner than recomputing rotation per copy."},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"PIPELINE", text:"Instancing onto a volume-based scatter, from a VDB's interior, is a fast way to fill a complex enclosed shape with instances like debris in a container."},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"TD LEVEL", text:"Weighted random source selection by attribute lets you art-direct that, say, 80% of scattered rocks use a common variant and 20% use rarer ones.", debate:true},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"BEGINNER", text:"Attribute Randomize SOP is a fast way to add per-instance jittered color or scale directly, without hand-writing rand() expressions in a wrangle.", blank:"Attribute Randomize"},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"PIPELINE", text:"Instance counts in the tens of millions generally need packed primitives well before you hit that ceiling, not after performance already suffers."},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"TD LEVEL", text:"A single Copy to Points node with many source variants merged into its second input is often cleaner than daisy-chaining several separate copy nodes.", debate:true},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"TD LEVEL", text:"The For-Each Numeric loop is useful when you need a fixed count of variations rather than one instance per existing point."},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"PIPELINE", text:"Point-cloud-driven instancing lets later points influence earlier placement decisions, useful for avoiding overlap during scattering."},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"PIPELINE", text:"Instance visibility culling by camera frustum, done at the point level before copying, saves real render time on scattered environments far off-camera."},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"TD LEVEL", text:"Assemble SOP groups picked pieces, like fractured chunks, into a hierarchy that's easier for downstream instancing or sim setup to reference.", blank:"Assemble"},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"BEGINNER", text:"Variant weighting driven by a texture map, rather than a flat random attribute, lets ground-cover density visibly follow a painted mask."},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"BEGINNER", text:"Copying geometry with an intentionally-varied @pscale range is often the single fastest fix for scattered instances reading as obviously copy-pasted."},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"TD LEVEL", text:"Attribute Transfer SOP can pull color or ID information from a reference surface onto scattered instance points, tying variation to a material map.", blank:"Attribute Transfer"},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"BEGINNER", text:"Pack geometry before a Copy to Points SOP — instancing packed primitives is dramatically lighter on memory.", blank:"packed"},
+{cat:"Copying & Instancing", color:"#F27CA7", diff:"PIPELINE", text:"Nested instancing — instances that themselves contain instanced sub-geometry — needs careful memory budgeting since costs compound multiplicatively."}
+];
+
+// ---- Supplemental bank: grows monthly via API, serves as backup content alongside the static BANK above ----
+let supplementalBank = [];
+try{ supplementalBank = JSON.parse(localStorage.getItem('hdt_supplemental_bank') || '[]'); }catch(e){ supplementalBank = []; }
+
+function saveSupplementalBank(){
+  try{ localStorage.setItem('hdt_supplemental_bank', JSON.stringify(supplementalBank)); }catch(e){}
+}
+
+function getEffectiveBank(){
+  return BANK.concat(supplementalBank);
+}
+
+const NODE_PREFIX = {
+"VEX & Expressions":"attribwrangle",
+"Modeling":"poly",
+"Dynamics & FX":"dopnet",
+"Rendering":"karma",
+"Workflow & Shortcuts":"null",
+"Solaris & USD":"lopnet",
+"PDG & TOPs":"topnet",
+"Copying & Instancing":"copytopoints"
+};
+function internalNodeName(tip, num){
+  const prefix = NODE_PREFIX[tip.cat] || 'subnet';
+  return prefix + String(num).padStart(3,'0');
+}
+
+// ---------- State ----------
+let format = "square";
+let nodeStyle = (function(){ try{ return localStorage.getItem('hdt_node_style') || 'network'; }catch(e){ return 'network'; } })();
+let tipLog = [];          // every tip ever shown, in order — entry 0 is tip #1
+let activeEntry = null;   // the tip currently on screen
+let currentNumber = 1;
+let currentCaptions = {x:'', instagram:'', reddit:''};
+let activePlatform = 'x';
+let currentMode = "normal";
+let currentCTA = "";
+let introStart = performance.now();
+let recording = false;
+let recorder, chunks;
+let storageAvailable = (function(){ try{ localStorage.setItem('__t','1'); localStorage.removeItem('__t'); return true; }catch(e){ return false; } })();
+const bgCache = {};
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const handleInput = document.getElementById('handle');
+try{
+  const savedHandle = localStorage.getItem('hdt_handle');
+  if(savedHandle) handleInput.value = savedHandle;
+}catch(e){}
+handleInput.addEventListener('input', ()=>{
+  try{ localStorage.setItem('hdt_handle', handleInput.value); }catch(e){}
+});
+const statusEl = document.getElementById('status');
+const modeBadge = document.getElementById('modeBadge');
+const captionBox = document.getElementById('captionBox');
+const btnNew = document.getElementById('btnNew');
+const btnLoadNumber = document.getElementById('btnLoadNumber');
+const tipNumberInput = document.getElementById('tipNumberInput');
+const apiKeyInput = document.getElementById('apiKeyInput');
+try{ apiKeyInput.value = localStorage.getItem('hdt_gemini_api_key') || ''; }catch(e){}
+
+document.getElementById('btnSaveKey').onclick = ()=>{
+  try{
+    localStorage.setItem('hdt_gemini_api_key', apiKeyInput.value.trim());
+    statusEl.textContent = apiKeyInput.value.trim() ? 'API key saved ✓' : 'API key cleared';
+  }catch(e){
+    statusEl.textContent = 'Could not save key — check browser storage settings';
+  }
+  setTimeout(()=>{ statusEl.textContent=''; }, 2500);
+};
+
+document.getElementById('btnTestKey').onclick = async ()=>{
+  const testEl = document.getElementById('keyTestStatus');
+  const key = apiKeyInput.value.trim();
+  if(!key){
+    testEl.style.color = '#FF9A5C';
+    testEl.textContent = 'Paste a key above first';
+    return;
+  }
+  testEl.style.color = 'var(--text-muted)';
+  testEl.innerHTML = '<span class="dot" style="background:#5EEAD4;"></span> Testing…';
+
+  try{
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`);
+    if(res.ok){
+      const data = await res.json();
+      const allModels = data.models || [];
+      console.log('Full model list for this key:', allModels);
+
+      // keep only models that actually support generateContent (text generation) — not embeddings, TTS, image, etc.
+      const usable = allModels
+        .filter(m => (m.supportedGenerationMethods||[]).includes('generateContent'))
+        .map(m => (m.name||'').replace(/^models\//, ''))
+        .filter(Boolean);
+
+      if(usable.length){
+        const select = document.getElementById('preferredGeminiModel');
+        const prevChoice = select.value;
+        select.innerHTML = '';
+        usable.forEach(name=>{
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          select.appendChild(opt);
+        });
+        // keep the previous selection if it's still valid, otherwise fall back to the first real option
+        select.value = usable.includes(prevChoice) ? prevChoice : usable[0];
+        try{ localStorage.setItem('hdt_preferred_gemini_model', select.value); }catch(e){}
+      }
+
+      testEl.style.color = '#5EEAD4';
+      testEl.textContent = usable.length
+        ? `✓ Key works — dropdown updated with ${usable.length} real usable model(s) for your account`
+        : `✓ Key works — ${allModels.length} models found, but none support generateContent (see console)`;
+    } else {
+      const body = await res.text().catch(()=>'');
+      let reason = `HTTP ${res.status}`;
+      if(res.status===400) reason = 'Malformed request — check the key was copied fully';
+      else if(res.status===403 || res.status===401) reason = 'Invalid or unauthorized key';
+      else if(res.status===429) reason = 'Rate limited — key is likely valid, just wait a moment';
+      testEl.style.color = '#FF5C5C';
+      testEl.textContent = `✗ ${reason}`;
+      console.error('Gemini key test failed:', res.status, body);
+    }
+  }catch(e){
+    testEl.style.color = '#FF5C5C';
+    testEl.textContent = '✗ Network error — could not reach Gemini';
+  }
+};
+
+document.getElementById('btnTestAllModels').onclick = async ()=>{
+  const key = apiKeyInput.value.trim();
+  const resultsEl = document.getElementById('modelTestResults');
+  resultsEl.innerHTML = '';
+  if(!key){
+    resultsEl.innerHTML = '<div style="color:#FF9A5C;">Paste and save a key above first</div>';
+    return;
+  }
+  const btn = document.getElementById('btnTestAllModels');
+  btn.disabled = true;
+  btn.textContent = 'Testing each model…';
+
+  const candidates = Array.from(document.getElementById('preferredGeminiModel').options).map(o=>o.value);
+  const workingModels = [];
+
+  for(const model of candidates){
+    const row = document.createElement('div');
+    row.textContent = `${model} — testing…`;
+    row.style.color = 'var(--text-muted)';
+    resultsEl.appendChild(row);
+
+    try{
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: 'Reply with only the word OK.' }] }],
+          generationConfig: { maxOutputTokens: 20, thinkingConfig: { thinkingBudget: 0 } }
+        })
+      });
+      if(res.ok){
+        row.textContent = `✓ ${model} — works`;
+        row.style.color = '#5EEAD4';
+        workingModels.push(model);
+      } else {
+        const body = await res.text().catch(()=>'');
+        let shortReason = `HTTP ${res.status}`;
+        if(body.includes('no longer available to new users')) shortReason = 'not available to your account';
+        else if(res.status===429) shortReason = 'quota exhausted right now';
+        else if(res.status===404) shortReason = 'model not found';
+        row.textContent = `✗ ${model} — ${shortReason}`;
+        row.style.color = '#FF5C5C';
+        console.warn(`${model} test failed:`, res.status, body);
+      }
+    }catch(e){
+      row.textContent = `✗ ${model} — network error`;
+      row.style.color = '#FF5C5C';
+    }
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Test All Models (real check, not just the catalog)';
+
+  if(workingModels.length){
+    const select = document.getElementById('preferredGeminiModel');
+    select.value = workingModels[0];
+    try{ localStorage.setItem('hdt_preferred_gemini_model', select.value); }catch(e){}
+    const summary = document.createElement('div');
+    summary.style.cssText = 'margin-top:6px; color:#5EEAD4; font-weight:600;';
+    summary.textContent = `→ Preferred Model set to ${workingModels[0]} (first confirmed-working one)`;
+    resultsEl.appendChild(summary);
+  } else {
+    const summary = document.createElement('div');
+    summary.style.cssText = 'margin-top:6px; color:#FF5C5C; font-weight:600;';
+    summary.textContent = `None of these worked right now — likely a full quota exhaustion for today, or none are enabled for this account/key.`;
+    resultsEl.appendChild(summary);
+  }
+};
+
+document.getElementById('btnGenerateTopic').onclick = async ()=>{
+  const topicInput = document.getElementById('topicInput');
+  const topicStatus = document.getElementById('topicGenStatus');
+  const topic = topicInput.value.trim();
+  if(!topic){
+    topicStatus.style.color = '#FF9A5C';
+    topicStatus.textContent = 'Type a topic first';
+    setTimeout(()=>{ topicStatus.textContent=''; }, 2000);
+    return;
+  }
+  const btn = document.getElementById('btnGenerateTopic');
+  btn.disabled = true;
+  btn.textContent = 'Generating…';
+  topicStatus.style.color = 'var(--text-muted)';
+  topicStatus.innerHTML = `<span class="dot" style="background:#5EEAD4;"></span> Asking ${modelSource==='local' ? 'your local model' : 'Gemini'} for a tip about "${topic}"…`;
+
+  try{
+    const ai = await generateUniqueAiTip(topic);
+    const entry = {source:'ai', model:ai.modelUsed, cat:ai.category, color:CATEGORY_COLORS[ai.category], diff:ai.diff, text:ai.text, blank:ai.blank||null, debate:!!ai.debate};
+    entry.number = tipLog.length+1;
+    entry.mode = pickMode(entry);
+    entry.cta = entry.mode==='puzzle' ? pick(PUZZLE_CTA) : entry.mode==='debate' ? pick(DEBATE_CTA) : pick(GENERAL_CTA);
+    tipLog.push(entry);
+    await saveLog();
+    applyEntry(entry);
+    topicStatus.style.color = '#5EEAD4';
+    topicStatus.textContent = `✓ Generated as tip #${entry.number} — scroll up to see it`;
+  }catch(e){
+    console.error('Topic tip generation failed:', e);
+    topicStatus.style.color = '#FF5C5C';
+    topicStatus.textContent = (e.message==='NO_KEY')
+      ? '⚠ No API key saved — paste your Google Gemini key above and click Save'
+      : (e.message==='DUPLICATE_RISK')
+        ? `⚠ Could not find a unique tip about "${topic}" after 2 tries — try rephrasing it`
+        : `⚠ ${modelSource==='local' ? 'Local model' : 'Gemini'} error: ${e.message} (check browser console for details)`;
+  }
+  btn.disabled = false;
+  btn.textContent = 'Generate';
+  setTimeout(()=>{ topicStatus.textContent=''; topicStatus.style.color=''; }, 6000);
+};
+
+
+
+function setFormat(f){
+  format = f;
+  document.getElementById('fmtSquare').classList.toggle('active', f==='square');
+  document.getElementById('fmtStory').classList.toggle('active', f==='story');
+  resizeCanvas();
+}
+document.getElementById('fmtSquare').onclick = ()=>setFormat('square');
+document.getElementById('fmtStory').onclick = ()=>setFormat('story');
+
+function setNodeStyle(s){
+  nodeStyle = s;
+  document.getElementById('styPoster').classList.toggle('active', s==='poster');
+  document.getElementById('styStudio').classList.toggle('active', s==='studio');
+  document.getElementById('styNetwork').classList.toggle('active', s==='network');
+  try{ localStorage.setItem('hdt_node_style', s); }catch(e){}
+}
+setNodeStyle(nodeStyle);
+document.getElementById('styPoster').onclick = ()=>setNodeStyle('poster');
+document.getElementById('styStudio').onclick = ()=>setNodeStyle('studio');
+document.getElementById('styNetwork').onclick = ()=>setNodeStyle('network');
+
+function resizeCanvas(){
+  if(format==='square'){ cv.width=1080; cv.height=1080; }
+  else { cv.width=1080; cv.height=1920; }
+}
+resizeCanvas();
+
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function pickCTAFor(m){ return m==='puzzle' ? pick(PUZZLE_CTA) : m==='debate' ? pick(DEBATE_CTA) : pick(GENERAL_CTA); }
+
+// ---------- Export-only mode override (never touches real mode/history) ----------
+let modeOverrideForExport = null; // null | 'normal' | 'puzzle' | 'debate'
+let ctaOverrideForExport = null;
+
+function updateExportModeButtonsUI(){
+  const bAuto = document.getElementById('expModeAuto');
+  const bStd = document.getElementById('expModeStandard');
+  const bPuz = document.getElementById('expModePuzzle');
+  const bDeb = document.getElementById('expModeDebate');
+
+  [bAuto,bStd,bPuz,bDeb].forEach(b=>b.classList.remove('active'));
+  if(modeOverrideForExport===null) bAuto.classList.add('active');
+  else if(modeOverrideForExport==='normal') bStd.classList.add('active');
+  else if(modeOverrideForExport==='puzzle') bPuz.classList.add('active');
+  else if(modeOverrideForExport==='debate') bDeb.classList.add('active');
+
+  const puzzleEligible = !!(activeEntry && activeEntry.blank);
+  const debateEligible = !!(activeEntry && activeEntry.debate);
+  bPuz.disabled = !puzzleEligible;
+  bDeb.disabled = !debateEligible;
+  bPuz.style.opacity = puzzleEligible ? '1' : '0.35';
+  bDeb.style.opacity = debateEligible ? '1' : '0.35';
+  bPuz.style.cursor = puzzleEligible ? 'pointer' : 'not-allowed';
+  bDeb.style.cursor = debateEligible ? 'pointer' : 'not-allowed';
+}
+
+function refreshCaptionForOverride(){
+  if(!activeEntry) return;
+  if(modeOverrideForExport){
+    currentCaptions = generateCaption(activeEntry, modeOverrideForExport, ctaOverrideForExport, currentNumber);
+  } else {
+    currentCaptions = generateCaption(activeEntry, currentMode, currentCTA, currentNumber);
+  }
+  renderActiveCaption();
+}
+
+function setExportModeOverride(val){
+  if(val==='puzzle' && !(activeEntry && activeEntry.blank)){
+    statusEl.textContent = "This tip has no blankable term — Puzzle not available as an export override for it";
+    setTimeout(()=>{ statusEl.textContent=''; }, 3000);
+    return;
+  }
+  if(val==='debate' && !(activeEntry && activeEntry.debate)){
+    statusEl.textContent = "This tip isn't tagged as debate-worthy — not available as an export override for it";
+    setTimeout(()=>{ statusEl.textContent=''; }, 3000);
+    return;
+  }
+  modeOverrideForExport = val;
+  ctaOverrideForExport = val ? pickCTAFor(val) : null;
+  updateExportModeButtonsUI();
+  refreshCaptionForOverride();
+}
+
+document.getElementById('expModeAuto').onclick = ()=>setExportModeOverride(null);
+document.getElementById('expModeStandard').onclick = ()=>setExportModeOverride('normal');
+document.getElementById('expModePuzzle').onclick = ()=>setExportModeOverride('puzzle');
+document.getElementById('expModeDebate').onclick = ()=>setExportModeOverride('debate');
+
+function pickMode(entry){
+  const options = ['normal'];
+  if(entry.blank) options.push('puzzle');
+  if(entry.debate) options.push('debate');
+  return pick(options);
+}
+
+function getDisplayText(entry, mode){
+  if(mode==='puzzle' && entry.blank){
+    return entry.text.replace(entry.blank, '▁'.repeat(Math.max(Math.ceil(entry.blank.length*1.4), 12)));
+  }
+  return entry.text;
+}
+
+function badgeForMode(entry, mode){
+  if(mode==='puzzle') return {label:'FILL THE BLANK', color:'#5EEAD4'};
+  if(mode==='debate') return {label:'PICK A SIDE', color:'#FF5C5C'};
+  return {label:entry.cat.toUpperCase(), color:entry.color};
+}
+
+function trimToLimit(str, max){
+  if(str.length <= max) return str;
+  return str.slice(0, max-1).trim() + '…';
+}
+
+function buildXCaption(entry, mode, cta, num, q){
+  const hashtags = '#Houdini #VFX #SideFX';
+  let body;
+  let answerNote = '';
+  if(mode==='puzzle'){
+    body = `Fill the blank (Tip #${String(num).padStart(3,'0')}):\n\n${getDisplayText(entry,mode)}\n\nGuess below 👇`;
+    answerNote = `\n\n[Reference only — trim before posting — answer: ${entry.blank}]`;
+  } else if(mode==='debate'){
+    body = `${entry.text}\n\n${q}`;
+  } else {
+    body = `${entry.text}\n\n${q}`;
+  }
+  let full = `${body}${answerNote}\n\n${hashtags}`;
+  if(full.length > 280){
+    const reserved = hashtags.length + answerNote.length + 2;
+    const budget = 280 - reserved;
+    body = trimToLimit(body, budget);
+    full = `${body}${answerNote}\n\n${hashtags}`;
+  }
+  return full;
+}
+
+function buildInstagramCaption(entry, mode, cta, num, q){
+  const num3 = String(num).padStart(3,'0');
+  let hook;
+  if(mode==='puzzle') hook = `🧩 Fill the blank — Houdini Tip #${num3}`;
+  else if(mode==='debate') hook = `⚔️ Which camp are you in? Houdini Tip #${num3}`;
+  else hook = `Houdini Tip #${num3} 💡`;
+
+  const bodyText = mode==='puzzle' ? getDisplayText(entry,mode) : entry.text;
+  let tail;
+  let answerNote = '';
+  if(mode==='puzzle'){
+    tail = `Guess it in the replies — I'll confirm once a few come in 👇`;
+    answerNote = `\n\n[Reference only — trim before posting — answer: ${entry.blank}]`;
+  }
+  else if(mode==='debate') tail = `${q}\n\nDrop your side below 👇`;
+  else tail = `${q}`;
+
+  return `${hook}\n\n${bodyText}\n\n${tail}${answerNote}\n\n#Houdini #SideFX #VFX #3DArt #ProceduralArt #TechArt #CGI #VFXArtist`;
+}
+
+function buildRedditCaption(entry, mode, cta, num, q){
+  const num3 = String(num).padStart(3,'0');
+  let title;
+  if(mode==='puzzle') title = `Houdini tip #${num3} — can you guess the missing term?`;
+  else if(mode==='debate') title = `Houdini tip #${num3} — which do you actually use?`;
+  else title = `Houdini tip #${num3}: ${entry.cat}`;
+
+  const bodyText = mode==='puzzle' ? getDisplayText(entry,mode) : entry.text;
+  let closing;
+  let answerNote = '';
+  if(mode==='puzzle'){
+    closing = `Curious if others land on the same answer before I confirm it in the comments.`;
+    answerNote = `\n\n[Reference only — trim before posting — answer: ${entry.blank}]`;
+  }
+  else if(mode==='debate') closing = `${q} Genuinely curious what people actually reach for here.`;
+  else closing = `${q}`;
+
+  return `Title: ${title}\n\n${bodyText}\n\n${closing}${answerNote}\n\n(Part of an ongoing Houdini tip series — no hashtags needed here, just sharing.)`;
+}
+
+function generateCaption(entry, mode, cta, num){
+  const q = pick(QUESTIONS[entry.cat] || QUESTIONS["Workflow & Shortcuts"]);
+  return {
+    x: buildXCaption(entry, mode, cta, num, q),
+    instagram: buildInstagramCaption(entry, mode, cta, num, q),
+    reddit: buildRedditCaption(entry, mode, cta, num, q)
+  };
+}
+
+// ---- Persistence ----
+async function loadLog(){
+  if(!storageAvailable) return;
+  try{
+    const raw = localStorage.getItem('houdini_tip_log');
+    if(raw) tipLog = JSON.parse(raw);
+  }catch(e){ /* nothing saved yet */ }
+}
+
+async function saveLog(){
+  if(!storageAvailable) return;
+  try{
+    localStorage.setItem('houdini_tip_log', JSON.stringify(tipLog));
+  }catch(e){ console.error('Could not save tip history', e); }
+}
+
+// ---- AI generation ----
+function getApiKey(){
+  try{ return localStorage.getItem('hdt_gemini_api_key') || ''; }catch(e){ return ''; }
+}
+
+// ---- Model source: Gemini (cloud) vs Ollama (local GPU) ----
+let modelSource = 'gemini';
+try{ modelSource = localStorage.getItem('hdt_model_source') || 'gemini'; }catch(e){}
+
+function setModelSource(src){
+  modelSource = src;
+  try{ localStorage.setItem('hdt_model_source', src); }catch(e){}
+  document.getElementById('srcGemini').classList.toggle('active', src==='gemini');
+  document.getElementById('srcLocal').classList.toggle('active', src==='local');
+  document.getElementById('geminiKeyBlock').style.display = src==='gemini' ? '' : 'none';
+  document.getElementById('ollamaBlock').style.display = src==='local' ? '' : 'none';
+}
+document.getElementById('srcGemini').onclick = ()=>setModelSource('gemini');
+document.getElementById('srcLocal').onclick = ()=>setModelSource('local');
+setModelSource(modelSource);
+
+async function callOllamaForTip(prompt){
+  const endpointRaw = document.getElementById('ollamaEndpoint').value.trim() || 'http://localhost:11434';
+  const endpoint = endpointRaw.replace(/\/$/, '');
+  const model = document.getElementById('ollamaModel').value.trim() || 'llama3.1:8b';
+
+  let response;
+  try{
+    response = await fetch(endpoint + '/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model, prompt, stream:false, format:'json' })
+    });
+  }catch(networkErr){
+    const err = new Error("OLLAMA_ERROR: could not reach Ollama at " + endpoint + " — is it running? (also check OLLAMA_ORIGINS is set so your browser is allowed)");
+    throw err;
+  }
+  if(!response.ok){
+    const errBody = await response.text().catch(()=>'');
+    const err = new Error('OLLAMA_ERROR: ' + response.status + ' ' + errBody.slice(0,200));
+    err.status = response.status;
+    throw err;
+  }
+  const data = await response.json();
+  console.log('Ollama raw response:', data);
+  const text = (data.response || '').trim();
+  if(!text) throw new Error('OLLAMA_ERROR: empty response from local model — see console for the raw payload');
+  const clean = text.replace(/```json|```/g,'').trim();
+  let parsed;
+  try{
+    parsed = JSON.parse(clean);
+  }catch(parseErr){
+    console.error('Ollama returned non-JSON text:', clean);
+    throw new Error("OLLAMA_ERROR: could not parse the local model's reply as JSON — see console for what it actually said");
+  }
+  if(!CATEGORY_COLORS[parsed.category]) parsed.category = pick(Object.keys(CATEGORY_COLORS));
+  if(!['BEGINNER','TD LEVEL','PIPELINE'].includes(parsed.diff)) parsed.diff = 'TD LEVEL';
+  parsed.modelUsed = model + ' (local)';
+  return parsed;
+}
+
+document.getElementById('btnTestOllama').onclick = async ()=>{
+  const testEl = document.getElementById('ollamaTestStatus');
+  const endpointRaw = document.getElementById('ollamaEndpoint').value.trim() || 'http://localhost:11434';
+  const endpoint = endpointRaw.replace(/\/$/, '');
+  testEl.style.color = 'var(--text-muted)';
+  testEl.innerHTML = '<span class="dot" style="background:#5EEAD4;"></span> Testing…';
+  try{
+    const res = await fetch(endpoint + '/api/tags');
+    if(res.ok){
+      const data = await res.json();
+      const count = (data.models||[]).length;
+      testEl.style.color = '#5EEAD4';
+      testEl.textContent = `✓ Connected — ${count} model(s) available locally`;
+    } else {
+      testEl.style.color = '#FF5C5C';
+      testEl.textContent = `✗ HTTP ${res.status} — Ollama responded but something's off`;
+    }
+  }catch(e){
+    testEl.style.color = '#FF5C5C';
+    testEl.textContent = "✗ Could not reach Ollama — is it running? Check the endpoint and OLLAMA_ORIGINS";
+  }
+};
+
+// ---- Duplicate detection ----
+function normalizeWords(s){
+  return s.toLowerCase().replace(/[^a-z0-9\s]/g,'').split(/\s+/).filter(w=>w.length>3);
+}
+function textSimilarity(a, b){
+  const wa = new Set(normalizeWords(a));
+  const wb = new Set(normalizeWords(b));
+  if(wa.size===0 || wb.size===0) return 0;
+  let inter = 0;
+  wa.forEach(w=>{ if(wb.has(w)) inter++; });
+  const union = new Set([...wa, ...wb]).size;
+  return union===0 ? 0 : inter/union;
+}
+const DUPLICATE_THRESHOLD = 0.5;
+
+async function generateUniqueAiTip(topicHint){
+  const historyTexts = tipLog.map(e=>e.text);
+  const recent = historyTexts.slice(-120); // what we tell the model to avoid — keeps the prompt focused on actually-shown tips
+  const fullCorpus = historyTexts.concat(getEffectiveBank().map(t=>t.text)); // what we actually check the result against — everything that exists anywhere, shown or not
+  let rejectedText = null;
+  for(let attempt=0; attempt<2; attempt++){
+    const ai = await callClaudeForTip(recent, rejectedText, topicHint);
+    let worstSim = 0;
+    for(const existing of fullCorpus){
+      const sim = textSimilarity(existing, ai.text);
+      if(sim > worstSim) worstSim = sim;
+      if(worstSim >= DUPLICATE_THRESHOLD) break;
+    }
+    if(worstSim < DUPLICATE_THRESHOLD) return ai;
+    rejectedText = ai.text;
+  }
+  throw new Error('DUPLICATE_RISK');
+}
+
+const MODEL_FALLBACK_CHAIN = [
+  'gemini-3-flash',
+  'gemini-2.0-flash',
+  'gemini-2.5-flash',
+  'gemini-2.0-flash-lite',
+  'gemini-2.5-flash-lite',
+  'gemini-2.5-pro'
+];
+
+function getPreferredGeminiModel(){
+  try{
+    return localStorage.getItem('hdt_preferred_gemini_model') || MODEL_FALLBACK_CHAIN[0];
+  }catch(e){
+    return MODEL_FALLBACK_CHAIN[0];
+  }
+}
+(function initPreferredModelDropdown(){
+  const select = document.getElementById('preferredGeminiModel');
+  select.value = getPreferredGeminiModel();
+  select.onchange = ()=>{
+    try{ localStorage.setItem('hdt_preferred_gemini_model', select.value); }catch(e){}
+  };
+})();
+
+async function callOneGeminiModel(model, key, prompt){
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { maxOutputTokens: 1024, temperature: 1.0, thinkingConfig: { thinkingBudget: 0 } }
+    })
+  });
+  if(!response.ok){
+    const errBody = await response.text().catch(()=> '');
+    const err = new Error(model + ': API_ERROR ' + response.status + ' ' + errBody.slice(0,200));
+    err.status = response.status;
+    throw err;
+  }
+  const data = await response.json();
+  console.log(`Gemini raw response (${model}):`, data);
+  if(data.usageMetadata){
+    console.log('Token usage — thinking:', data.usageMetadata.thoughtsTokenCount||0, ' output:', data.usageMetadata.candidatesTokenCount||0, ' total:', data.usageMetadata.totalTokenCount||0);
+  }
+
+  if(data.promptFeedback && data.promptFeedback.blockReason){
+    throw new Error('API_ERROR: prompt blocked — ' + data.promptFeedback.blockReason);
+  }
+  const candidate = (data.candidates||[])[0];
+  if(candidate && candidate.finishReason && candidate.finishReason!=='STOP'){
+    const reason = candidate.finishReason==='MAX_TOKENS'
+      ? 'MAX_TOKENS (ran out of output tokens — try again, or this may need a larger budget)'
+      : candidate.finishReason;
+    throw new Error('API_ERROR: generation stopped — ' + reason);
+  }
+  const textBlocks = (candidate?.content?.parts||[]).map(p=>p.text||'').join('\n');
+  if(!textBlocks) throw new Error('API_ERROR: empty response from Gemini — see console for the raw payload');
+  const clean = textBlocks.replace(/```json|```/g,'').trim();
+  let parsed;
+  try{
+    parsed = JSON.parse(clean);
+  }catch(parseErr){
+    console.error('Gemini returned non-JSON text:', clean);
+    throw new Error('API_ERROR: could not parse Gemini\'s reply as JSON — see console for what it actually said');
+  }
+  if(!CATEGORY_COLORS[parsed.category]) parsed.category = pick(Object.keys(CATEGORY_COLORS));
+  if(!['BEGINNER','TD LEVEL','PIPELINE'].includes(parsed.diff)) parsed.diff = 'TD LEVEL';
+  parsed.modelUsed = model;
+  return parsed;
+}
+
+async function callClaudeForTip(recentTexts, rejectedText, topicHint){
+  const categories = Object.keys(CATEGORY_COLORS).join(' | ');
+  const usedList = recentTexts.map((t,i)=>(i+1)+'. '+t.slice(0,140)).join('\n');
+  let prompt = 'Generate one original, technically accurate tip about SideFX Houdini (procedural 3D VFX software) for an ongoing social-media tip series.\n'
+  + 'Respond with ONLY raw JSON, no markdown fences, no commentary, in exactly this shape:\n'
+  + '{"category":"one of: ' + categories + '","diff":"one of: BEGINNER | TD LEVEL | PIPELINE","text":"the tip itself, one to two sentences, under 220 characters, specific and accurate","blank":"OPTIONAL - a short exact phrase copied verbatim from text, suitable to blank out as a guess-the-term puzzle. Omit this field entirely if nothing fits well.","debate":"OPTIONAL - true only if the tip naturally invites a which-do-you-use comparison, otherwise omit"}\n\n'
+  + 'These tips have already been used in the series — the new tip must cover a genuinely different node, technique, or concept, not just reworded phrasing of any of these:\n' + usedList;
+  if(topicHint){
+    prompt += '\n\nThe new tip MUST be specifically about this topic: "' + topicHint + '". Stay tightly focused on that exact topic — pick the category from the list above that best fits it, but the tip itself has to genuinely be about "' + topicHint + '", not something generic.';
+  }
+  if(rejectedText){
+    prompt += '\n\nYour previous suggestion was rejected as too similar to an existing tip: "' + rejectedText + '"\nPick a completely different Houdini feature area this time.';
+  }
+
+  if(modelSource === 'local'){
+    return await callOllamaForTip(prompt);
+  }
+
+  const key = getApiKey();
+  if(!key){
+    throw new Error('NO_KEY');
+  }
+  const preferred = getPreferredGeminiModel();
+  try{
+    return await callOneGeminiModel(preferred, key, prompt);
+  }catch(e){
+    console.error(`${preferred} failed with status ${e.status}:`, e.message);
+    throw e; // no fallback — the selected model is the only one tried, error reported as-is
+  }
+}
+
+function usedBankIndices(){
+  return new Set(tipLog.filter(e=>e.source==='bank').map(e=>e.bankIndex));
+}
+
+async function buildNextEntry(){
+  statusEl.style.color = '';
+  statusEl.textContent = `Asking ${modelSource==='local' ? 'your local model' : 'Gemini'} for a fresh tip…`;
+  try{
+    const ai = await generateUniqueAiTip();
+    statusEl.style.color = '';
+    statusEl.textContent = '';
+    return {source:'ai', model:ai.modelUsed, cat:ai.category, color:CATEGORY_COLORS[ai.category], diff:ai.diff, text:ai.text, blank:ai.blank||null, debate:!!ai.debate};
+  }catch(e){
+    console.error('API generation failed, falling back to backup bank:', e);
+    const effectiveBank = getEffectiveBank();
+    const used = usedBankIndices();
+    const availableBank = effectiveBank.map((t,i)=>i).filter(i=>!used.has(i));
+
+    if(availableBank.length>0){
+      const idx = pick(availableBank);
+      const t = effectiveBank[idx];
+      statusEl.style.color = '#FF9A5C';
+      statusEl.textContent = (e.message==='NO_KEY')
+        ? 'No API key/model configured — using a backup bank tip instead'
+        : (e.message==='DUPLICATE_RISK')
+          ? 'Could not find a unique AI tip after 2 tries — using a backup bank tip instead'
+          : `${modelSource==='local' ? 'Local model' : 'Gemini'} error: ${e.message} — using a backup bank tip instead`;
+      setTimeout(()=>{ statusEl.textContent=''; statusEl.style.color=''; }, 5000);
+      return {source:'bank', bankIndex:idx, cat:t.cat, color:t.color, diff:t.diff, text:t.text, blank:t.blank||null, debate:!!t.debate};
+    }
+
+    statusEl.style.color = '#FF5C5C';
+    statusEl.textContent = (e.message==='NO_KEY')
+      ? `⚠ No API key/model configured, and all ${effectiveBank.length} backup bank tips are already used`
+      : (e.message==='DUPLICATE_RISK')
+        ? `⚠ Could not find a unique tip after 2 tries, and all ${effectiveBank.length} backup bank tips are already used`
+        : `⚠ ${modelSource==='local' ? 'Local model' : 'Gemini'} error: ${e.message} — and all ${effectiveBank.length} backup bank tips are already used`;
+    throw e;
+  }
+}
+
+function applyEntry(entry){
+  activeEntry = entry;
+  currentNumber = entry.number;
+  if(!entry.mode){
+    // back-fill entries saved before mode/CTA were made permanent
+    entry.mode = pickMode(entry);
+    entry.cta = entry.mode==='puzzle' ? pick(PUZZLE_CTA) : entry.mode==='debate' ? pick(DEBATE_CTA) : pick(GENERAL_CTA);
+    saveLog();
+  }
+  currentMode = entry.mode;
+  currentCTA = entry.cta;
+  introStart = performance.now();
+
+  const modeLabel = currentMode==='puzzle' ? '🧩 Puzzle' : currentMode==='debate' ? '⚔️ Debate' : '📌 Standard';
+  const sourceTag = entry.source==='ai' ? ' · AI-generated' : '';
+  modeBadge.textContent = 'Mode: ' + modeLabel + '  ·  ' + entry.diff + sourceTag;
+  document.getElementById('sourceBadge').textContent = entry.source==='bank'
+    ? `Source: Backup bank (#${entry.bankIndex+1} of ${getEffectiveBank().length})`
+    : `Source: ${entry.model || 'Gemini'}`;
+  currentCaptions = generateCaption(entry, currentMode, currentCTA, currentNumber);
+  renderActiveCaption();
+  document.getElementById('tipModeInfo').value = modeLabel + ' — ' + (currentMode==='puzzle' ? 'card shows a blanked term for guessing' : currentMode==='debate' ? 'card frames this as a which-do-you-use pick' : 'plain tip, no gimmick');
+  document.getElementById('puzzleAnswer').value = (currentMode==='puzzle' && entry.blank) ? entry.blank : '';
+  tipNumberInput.value = currentNumber;
+  refreshStatusLines();
+  modeOverrideForExport = null;
+  ctaOverrideForExport = null;
+  updateExportModeButtonsUI();
+}
+function refreshStatusLines(){
+  const effectiveBankSize = getEffectiveBank().length;
+  const bankUsed = usedBankIndices().size;
+  const aiCount = tipLog.filter(e=>e.source==='ai').length;
+  document.getElementById('cycleStatus').textContent = storageAvailable
+    ? `Backup bank: ${bankUsed}/${effectiveBankSize} used  ·  ${aiCount} AI-generated  ·  ${tipLog.length} total`
+    : `Backup bank: ${bankUsed}/${effectiveBankSize} used this session (history won't persist — see note below)`;
+
+  const warnEl = document.getElementById('warnStatus');
+  if(activeEntry && activeEntry.posted){
+    const d = new Date(activeEntry.lastPosted);
+    warnEl.textContent = `⚠️ Already downloaded ${activeEntry.postedCount}× (last: ${d.toLocaleDateString()})`;
+  } else {
+    warnEl.textContent = '';
+  }
+}
+
+async function markPosted(){
+  if(!activeEntry) return;
+  activeEntry.posted = true;
+  activeEntry.postedCount = (activeEntry.postedCount||0)+1;
+  activeEntry.lastPosted = new Date().toISOString();
+  await saveLog();
+  refreshStatusLines();
+}
+
+document.getElementById('btnReset').addEventListener('click', async (e)=>{
+  e.preventDefault();
+  if(confirm('Clear all tip history on this device? This cannot be undone.')){
+    tipLog = [];
+    await saveLog();
+    await nextTip();
+  }
+});
+
+async function nextTip(){
+  console.log('New Tip clicked — starting generation…');
+  btnNew.disabled = true;
+  btnNew.textContent = 'Generating…';
+  try{
+    const entry = await buildNextEntry();
+    entry.number = tipLog.length+1;
+    entry.mode = pickMode(entry);
+    entry.cta = entry.mode==='puzzle' ? pick(PUZZLE_CTA) : entry.mode==='debate' ? pick(DEBATE_CTA) : pick(GENERAL_CTA);
+    tipLog.push(entry);
+    await saveLog();
+    applyEntry(entry);
+  }catch(e){
+    // buildNextEntry already surfaced the error via statusEl; nothing further to do here
+  }
+  btnNew.disabled = false;
+  btnNew.textContent = 'New Tip →';
+}
+
+function jumpToTip(num){
+  if(num<1 || num>tipLog.length){
+    statusEl.textContent = tipLog.length===0 ? 'No tips generated yet' : `Only tips 1–${tipLog.length} exist so far`;
+    setTimeout(()=>{ statusEl.textContent=''; }, 2500);
+    return;
+  }
+  applyEntry(tipLog[num-1]);
+}
+
+async function maybeRefreshSupplementalBank(){
+  let lastRefresh = 0;
+  try{ lastRefresh = parseInt(localStorage.getItem('hdt_bank_refresh_date') || '0', 10); }catch(e){}
+  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+  if(Date.now() - lastRefresh < THIRTY_DAYS_MS){
+    return; // not due yet
+  }
+
+  const hasGeminiKey = !!getApiKey();
+  const hasLocalSelected = modelSource === 'local';
+  if(!hasGeminiKey && !hasLocalSelected){
+    return; // nothing configured to refresh with — skip silently, try again next launch
+  }
+
+  console.log('Monthly backup-bank refresh is due — generating new tips in the background...');
+  const BATCH_SIZE = 20;
+  let added = 0;
+  for(let i = 0; i < BATCH_SIZE; i++){
+    try{
+      const ai = await generateUniqueAiTip();
+      supplementalBank.push({
+        cat: ai.category,
+        color: CATEGORY_COLORS[ai.category],
+        diff: ai.diff,
+        text: ai.text,
+        blank: ai.blank || null,
+        debate: !!ai.debate
+      });
+      added++;
+    }catch(e){
+      console.warn(`Monthly backup-bank refresh stopped early (got ${added}/${BATCH_SIZE}):`, e.message);
+      break;
+    }
+  }
+
+  if(added > 0){
+    saveSupplementalBank();
+    try{ localStorage.setItem('hdt_bank_refresh_date', String(Date.now())); }catch(e){}
+    console.log(`Monthly backup-bank refresh complete — added ${added} new tips. Backup bank is now ${getEffectiveBank().length} tips total.`);
+    refreshStatusLines();
+  } else {
+    console.warn('Monthly backup-bank refresh: could not add any new tips this time (API unavailable) — will retry next launch.');
+  }
+}
+
+async function init(){
+  await loadLog();
+  if(tipLog.length>0){
+    applyEntry(tipLog[tipLog.length-1]);
+  } else {
+    await nextTip();
+  }
+  maybeRefreshSupplementalBank(); // fire-and-forget, runs quietly in the background — never blocks the UI
+}
+init();
+
+// ---------- Drawing helpers ----------
+function roundRectPath(c,x,y,w,h,r){
+  c.beginPath();
+  c.moveTo(x+r,y);
+  c.arcTo(x+w,y,x+w,y+h,r);
+  c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r);
+  c.arcTo(x,y,x+w,y,r);
+  c.closePath();
+}
+
+function wrapLines(c,text,maxWidth){
+  const words = text.split(' ');
+  const lines = [];
+  let line = '';
+  for(const w of words){
+    const test = line ? line+' '+w : w;
+    if(c.measureText(test).width > maxWidth && line){
+      lines.push(line);
+      line = w;
+    } else {
+      line = test;
+    }
+  }
+  if(line) lines.push(line);
+  return lines;
+}
+
+function getBackground(w,h,color){
+  const key = w+'x'+h+'_'+color;
+  if(bgCache[key]) return bgCache[key];
+  const off = document.createElement('canvas');
+  off.width=w; off.height=h;
+  const c = off.getContext('2d');
+
+  c.fillStyle = '#14151A';
+  c.fillRect(0,0,w,h);
+
+  const grad = c.createRadialGradient(w/2,h*0.42,h*0.15,w/2,h*0.42,h*0.75);
+  grad.addColorStop(0,'rgba(0,0,0,0)');
+  grad.addColorStop(1,'rgba(0,0,0,0.55)');
+  c.fillStyle = grad;
+  c.fillRect(0,0,w,h);
+
+  c.fillStyle = 'rgba(255,255,255,0.045)';
+  const step = w*0.045;
+  for(let x=step/2; x<w; x+=step){
+    for(let y=step/2; y<h; y+=step){
+      c.beginPath();
+      c.arc(x,y,1.6,0,Math.PI*2);
+      c.fill();
+    }
+  }
+
+  c.strokeStyle = color;
+  c.globalAlpha = 0.10;
+  c.lineWidth = 3;
+  for(let i=0;i<3;i++){
+    c.beginPath();
+    const y0 = h*(0.15+i*0.25);
+    c.moveTo(-40, y0);
+    c.bezierCurveTo(w*0.3, y0 - h*0.08, w*0.6, y0 + h*0.1, w+40, y0 - h*0.05);
+    c.stroke();
+  }
+  c.globalAlpha = 1;
+
+  bgCache[key] = off;
+  return off;
+}
+
+// ---------- Minimal category vector icons (drawn centered at origin, caller translates) ----------
+const ICONS = {
+"VEX & Expressions": (c,s)=>{
+  c.beginPath();
+  c.moveTo(-s*0.55,-s);
+  c.quadraticCurveTo(-s*1.05,-s*0.55,-s*0.55,-s*0.1);
+  c.quadraticCurveTo(-s*0.3,0,-s*0.55,s*0.1);
+  c.quadraticCurveTo(-s*1.05,s*0.55,-s*0.55,s);
+  c.moveTo(s*0.55,-s);
+  c.quadraticCurveTo(s*1.05,-s*0.55,s*0.55,-s*0.1);
+  c.quadraticCurveTo(s*0.3,0,s*0.55,s*0.1);
+  c.quadraticCurveTo(s*1.05,s*0.55,s*0.55,s);
+  c.stroke();
+  c.beginPath();
+  c.arc(0,s*0.02,s*0.06,0,Math.PI*2);
+  c.fill();
+},
+"Modeling": (c,s)=>{
+  const top=[0,-s], right=[s*0.87,-s*0.5], bottom=[0,0], left=[-s*0.87,-s*0.5];
+  const right2=[s*0.87,s*0.5], bottom2=[0,s], left2=[-s*0.87,s*0.5];
+  c.beginPath();
+  c.moveTo(top[0],top[1]); c.lineTo(right[0],right[1]); c.lineTo(bottom[0],bottom[1]); c.lineTo(left[0],left[1]); c.closePath();
+  c.moveTo(right[0],right[1]); c.lineTo(right2[0],right2[1]); c.lineTo(bottom2[0],bottom2[1]); c.lineTo(bottom[0],bottom[1]);
+  c.moveTo(left[0],left[1]); c.lineTo(left2[0],left2[1]); c.lineTo(bottom2[0],bottom2[1]);
+  c.stroke();
+},
+"Dynamics & FX": (c,s)=>{
+  for(let i=0;i<8;i++){
+    const a = i/8*Math.PI*2;
+    const x1=Math.cos(a)*s*0.3, y1=Math.sin(a)*s*0.3;
+    const x2=Math.cos(a)*s*0.85, y2=Math.sin(a)*s*0.85;
+    c.beginPath(); c.moveTo(x1,y1); c.lineTo(x2,y2); c.stroke();
+    c.beginPath(); c.arc(x2,y2,s*0.05,0,Math.PI*2); c.fill();
+  }
+},
+"Rendering": (c,s)=>{
+  c.beginPath(); c.arc(0,0,s,0,Math.PI*2); c.stroke();
+  for(let i=0;i<6;i++){
+    const a = i/6*Math.PI*2;
+    const x1=Math.cos(a)*s*0.25, y1=Math.sin(a)*s*0.25;
+    const a2=a+Math.PI/6;
+    const x2=Math.cos(a2)*s*0.7, y2=Math.sin(a2)*s*0.7;
+    c.beginPath(); c.moveTo(x1,y1); c.lineTo(x2,y2); c.stroke();
+  }
+},
+"Workflow & Shortcuts": (c,s)=>{
+  roundRectPath(c,-s*0.75,-s*0.55,s*1.5,s*1.1,s*0.18); c.stroke();
+  c.beginPath(); c.moveTo(-s*0.35,0); c.lineTo(s*0.35,0); c.stroke();
+},
+"Solaris & USD": (c,s)=>{
+  for(let i=0;i<3;i++){
+    c.save();
+    c.translate(-s*0.3+i*s*0.3, s*0.3-i*s*0.3);
+    roundRectPath(c,-s*0.7,-s*0.42,s*1.4,s*0.84,s*0.1);
+    c.stroke();
+    c.restore();
+  }
+},
+"PDG & TOPs": (c,s)=>{
+  const pts = [[-s*0.8,-s*0.6],[s*0.75,-s*0.75],[0,0],[-s*0.6,s*0.7],[s*0.8,s*0.55]];
+  const edges = [[0,2],[1,2],[2,3],[2,4]];
+  c.beginPath();
+  edges.forEach(([a,b])=>{ c.moveTo(pts[a][0],pts[a][1]); c.lineTo(pts[b][0],pts[b][1]); });
+  c.stroke();
+  pts.forEach(p=>{ c.beginPath(); c.arc(p[0],p[1],s*0.09,0,Math.PI*2); c.fill(); });
+},
+"Copying & Instancing": (c,s)=>{
+  for(let i=-1;i<=1;i++){
+    for(let j=-1;j<=1;j++){
+      roundRectPath(c, i*s*0.05-s*0.01, j*s*0.05-s*0.01, s*0.02, s*0.02, s*0.0045);
+      c.stroke();
+    }
+  }
+}
+};
+
+function drawCategoryIcon(ctx, w, h, entry, t, motion){
+  const fn = ICONS[entry.cat] || ICONS['Workflow & Shortcuts'];
+  const s = Math.min(w,h)*0.11;
+  const driftX = motion ? Math.sin(t*0.0006)*w*0.012 : 0;
+  const driftY = motion ? Math.cos(t*0.0005)*h*0.010 : 0;
+  const rot = motion ? Math.sin(t*0.0004)*0.05 : 0;
+
+  ctx.save();
+  ctx.translate(w*0.84+driftX, h*0.115+driftY);
+  ctx.rotate(-0.18+rot);
+  ctx.globalAlpha = 0.16;
+  ctx.strokeStyle = entry.color;
+  ctx.fillStyle = entry.color;
+  ctx.lineWidth = Math.max(2, s*0.05);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  fn(ctx, s);
+  ctx.restore();
+
+  ctx.save();
+  ctx.translate(w*0.15-driftX, h*0.9-driftY);
+  ctx.rotate(0.22-rot);
+  ctx.scale(0.6,0.6);
+  ctx.globalAlpha = 0.08;
+  ctx.strokeStyle = entry.color;
+  ctx.fillStyle = entry.color;
+  ctx.lineWidth = Math.max(2.5, s*0.08);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  fn(ctx, s);
+  ctx.restore();
+}
+
+function drawNetworkCard(ctx, w, h, tip, mode, badge, displayText, alpha, scale, motion, t, numberOverride, ctaTextToUse, isRevealed, revealFadeProgress){
+  const displayNum = numberOverride!=null ? numberOverride : currentNumber;
+  const ctaText = ctaTextToUse!=null ? ctaTextToUse : currentCTA;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(w/2, h/2);
+  ctx.scale(scale, scale);
+  ctx.translate(-w/2, -h/2);
+
+  const margin = w*0.08;
+
+  // ---- hero pill node ----
+  const pillW = w*0.30;
+  const pillH = pillW*0.30;
+  const formatShift = format==='story' ? h*0.06 : 0;
+  const pillY = h*0.125 - formatShift;
+  const pr = pillH/2;
+  const labelGap = w*0.04;
+
+  const pillX = w/2 - pillW/2;
+  const pillCX = w/2;
+  const labelX = pillX + pillW + labelGap;
+
+  // incoming wire trailing off the top, suggesting the network continues above
+  ctx.beginPath();
+  ctx.moveTo(pillCX, pillY - h*0.055);
+  ctx.quadraticCurveTo(pillCX - w*0.035, pillY - h*0.02, pillCX, pillY);
+  ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(pillCX, pillY, pillH*0.09, 0, Math.PI*2);
+  ctx.fillStyle = '#8A8D95';
+  ctx.fill();
+
+  // pill body — light chrome-like gradient, matching real Houdini node chrome
+  const grad = ctx.createLinearGradient(0, pillY, 0, pillY+pillH);
+  grad.addColorStop(0, '#DADCE0');
+  grad.addColorStop(0.5, '#B7BAC1');
+  grad.addColorStop(1, '#95989F');
+  ctx.shadowColor = 'rgba(0,0,0,0.45)';
+  ctx.shadowBlur = 26;
+  ctx.fillStyle = grad;
+  roundRectPath(ctx, pillX, pillY, pillW, pillH, pr);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+  roundRectPath(ctx, pillX, pillY, pillW, pillH, pr);
+  ctx.stroke();
+
+  // diagonal tick marks, left and right thirds
+  ctx.strokeStyle = 'rgba(58,60,64,0.55)';
+  ctx.lineWidth = pillH*0.045;
+  ctx.lineCap = 'round';
+  const drawTicks = (cx)=>{
+    for(let i=-1;i<=1;i++){
+      const tx = cx + i*pillH*0.24;
+      ctx.beginPath();
+      ctx.moveTo(tx - pillH*0.14, pillY + pillH*0.82);
+      ctx.lineTo(tx + pillH*0.14, pillY + pillH*0.18);
+      ctx.stroke();
+    }
+  };
+  drawTicks(pillX + pillW*0.20);
+  drawTicks(pillX + pillW*0.80);
+
+  // center icon, dark strokes against the light pill
+  ctx.save();
+  ctx.translate(pillCX, pillY + pillH/2);
+  ctx.strokeStyle = '#3A3C40';
+  ctx.fillStyle = '#3A3C40';
+  ctx.lineWidth = pillH*0.05;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  const iconFn = ICONS[tip.cat] || ICONS['Workflow & Shortcuts'];
+  iconFn(ctx, pillH*0.16);
+  ctx.restore();
+
+  // bottom plug — connected, colored
+  ctx.beginPath();
+  ctx.arc(pillCX, pillY+pillH, pillH*0.09, 0, Math.PI*2);
+  ctx.fillStyle = badge.color;
+  ctx.fill();
+
+  // label beside the pill (whole pill+label group is centered in the frame)
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.font = (w*0.017) + 'px "JetBrains Mono", monospace';
+  ctx.fillText(badge.label, labelX, pillY + pillH*0.42);
+
+  const nodeNameStr = internalNodeName(tip, displayNum);
+  let nameFontSize = w*0.027;
+  const nameMaxW = (w*0.94) - labelX;
+  ctx.font = '700 ' + nameFontSize + 'px "Space Grotesk", sans-serif';
+  while(ctx.measureText(nodeNameStr).width > nameMaxW && nameFontSize > w*0.012){
+    nameFontSize -= 1;
+    ctx.font = '700 ' + nameFontSize + 'px "Space Grotesk", sans-serif';
+  }
+  ctx.fillStyle = '#F1F1F0';
+  ctx.fillText(nodeNameStr, labelX, pillY + pillH*0.42 + h*0.035);
+
+  // ---- output wire down into the content panel ----
+  const panelY = pillY + pillH + h*0.075;
+  const wireLandX = pillCX;
+  const flow = motion ? (t*0.05) % 16 : 0;
+  ctx.beginPath();
+  ctx.moveTo(pillCX, pillY+pillH);
+  ctx.bezierCurveTo(pillCX, pillY+pillH+h*0.05, wireLandX, panelY-h*0.03, wireLandX, panelY);
+  ctx.strokeStyle = badge.color;
+  ctx.lineWidth = 2.5;
+  ctx.setLineDash([6,6]);
+  ctx.lineDashOffset = -flow;
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // ---- content panel ----
+  const panelX = margin;
+  const panelW = w - margin*2;
+  const panelH = h - panelY - h*0.07 - formatShift;
+  const pr2 = panelW*0.03;
+
+  ctx.shadowColor = 'rgba(0,0,0,0.5)';
+  ctx.shadowBlur = 34;
+  ctx.fillStyle = '#1F2126';
+  roundRectPath(ctx, panelX, panelY, panelW, panelH, pr2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  roundRectPath(ctx, panelX, panelY, panelW, panelH, pr2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(wireLandX, panelY, panelW*0.008, 0, Math.PI*2);
+  ctx.fillStyle = badge.color;
+  ctx.fill();
+
+  // difficulty pill (category already shown up by the node label)
+  const pillPadY = panelH*0.06;
+  const diffPillY = panelY + pillPadY;
+  const diffPillH = panelH*0.055;
+  ctx.font = (panelH*0.03) + 'px "JetBrains Mono", monospace';
+  const diffW = ctx.measureText(tip.diff).width;
+  const diffPadX = panelW*0.02;
+  const diffPillW = diffW + diffPadX*2;
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  roundRectPath(ctx, panelX+panelW*0.045, diffPillY, diffPillW, diffPillH, diffPillH/2);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+  ctx.lineWidth = 1.2;
+  roundRectPath(ctx, panelX+panelW*0.045, diffPillY, diffPillW, diffPillH, diffPillH/2);
+  ctx.stroke();
+  ctx.fillStyle = '#C7C9CF';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(tip.diff, panelX+panelW*0.045+diffPadX, diffPillY+diffPillH/2+1);
+
+  // tip text
+  const ctaH = panelH*0.09;
+  const footerH = panelH*0.18;
+  const textTop = diffPillY + diffPillH + panelH*0.06;
+  const textBottom = panelY + panelH - footerH - ctaH - panelH*0.03;
+  const textAreaH = textBottom - textTop;
+  const textX = panelX + panelW*0.045;
+  const textMaxW = panelW*0.91;
+
+  let fontSize = displayText.length > 150 ? panelH*0.075 : panelH*0.09;
+  ctx.font = '500 ' + fontSize + 'px "Inter", sans-serif';
+  let lines = wrapLines(ctx, displayText, textMaxW);
+  let lineHeight = fontSize*1.32;
+  while(lines.length*lineHeight > textAreaH && fontSize > panelH*0.04){
+    fontSize -= 2;
+    ctx.font = '500 ' + fontSize + 'px "Inter", sans-serif';
+    lines = wrapLines(ctx, displayText, textMaxW);
+    lineHeight = fontSize*1.32;
+  }
+  const blockH = lines.length*lineHeight;
+  let ly = textTop + (textAreaH-blockH)/2 + lineHeight/2;
+  const priorAlphaNet = ctx.globalAlpha;
+  ctx.fillStyle = isRevealed ? badge.color : (mode==='puzzle' ? '#5EEAD4' : '#F1F1F0');
+  if(isRevealed){
+    ctx.globalAlpha = priorAlphaNet * revealFadeProgress;
+    ctx.shadowColor = badge.color;
+    ctx.shadowBlur = (1-revealFadeProgress) * 18;
+  }
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  for(const line of lines){
+    ctx.fillText(line, textX, ly);
+    ly += lineHeight;
+  }
+  if(isRevealed){
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = priorAlphaNet;
+  }
+
+  // CTA row
+  const ctaY = textBottom + panelH*0.025;
+  ctx.font = 'italic 600 ' + (ctaH*0.4) + 'px "Inter", sans-serif';
+  ctx.fillStyle = badge.color;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  const ctaSymbol = mode==='puzzle' ? '\u{1F9E9} ' : mode==='debate' ? '\u2694\uFE0F ' : '\u{1F4AC} ';
+  ctx.fillText(ctaSymbol + ctaText, panelX+panelW*0.045, ctaY + ctaH/2);
+
+  // footer
+  const footerY = panelY + panelH - footerH;
+  ctx.beginPath();
+  ctx.moveTo(panelX+panelW*0.045, footerY);
+  ctx.lineTo(panelX+panelW*0.955, footerY);
+  ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+
+  ctx.fillStyle = '#8A8D95';
+  ctx.font = (footerH*0.26) + 'px "JetBrains Mono", monospace';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(handleInput.value || '@Earlymanfx', panelX+panelW*0.045, footerY+footerH/2+2);
+
+  const lgR = footerH*0.2;
+  const lgX = panelX+panelW*0.955-lgR;
+  const lgY = footerY+footerH/2;
+  ctx.beginPath();
+  ctx.arc(lgX,lgY,lgR,0,Math.PI*2);
+  ctx.strokeStyle = badge.color;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = badge.color;
+  ctx.font = '700 '+(lgR*1.15)+'px "Space Grotesk", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('H', lgX, lgY+1);
+
+  ctx.restore();
+}
+
+function drawProgressBar(ctx, w, h, color, fraction){
+  if(fraction==null) return;
+  const margin = Math.min(w,h)*0.08;
+  const barH = Math.max(3, h*0.006);
+  const y = h - margin*0.45;
+  const barW = w - margin*2;
+  ctx.fillStyle = 'rgba(255,255,255,0.14)';
+  ctx.fillRect(margin, y, barW, barH);
+  ctx.fillStyle = color;
+  ctx.fillRect(margin, y, barW*fraction, barH);
+}
+
+function draw(ctx, w, h, t, introProgress, motion, numberOverride, modeOverride, ctaOverride){
+  if(!activeEntry) return;
+  const tip = activeEntry;
+  const mode = modeOverride || currentMode;
+  const badge = badgeForMode(tip, mode);
+  let displayText = getDisplayText(tip, mode);
+  const displayNum = numberOverride!=null ? numberOverride : currentNumber;
+  const ctaTextToUse = ctaOverride || currentCTA;
+
+  const hookEnabled = document.getElementById('toggleHookIntro').checked;
+  const revealEnabled = document.getElementById('toggleRevealEnding').checked;
+
+  let isRevealed = false;
+  let revealFadeProgress = 1;
+  if(mode==='puzzle' && motion && recording && revealEnabled && tip.blank){
+    const elapsed = t - recordingStartTime;
+    const revealPoint = Math.max(activeRecordingDurationMs - 1300, activeRecordingDurationMs*0.6);
+    if(elapsed > revealPoint){
+      displayText = tip.text;
+      isRevealed = true;
+      const fadeDurationMs = 450;
+      revealFadeProgress = Math.min((elapsed - revealPoint) / fadeDurationMs, 1);
+    }
+  }
+
+  // ---- New, independent add-ons below: word-by-word text reveal + audio-synced chimes ----
+  const textRevealEnabled = document.getElementById('toggleTextReveal').checked;
+  const syncAudioEnabled = document.getElementById('toggleSyncAudio').checked;
+  let currentWordCount = null;
+  if(textRevealEnabled && motion && recording){
+    const elapsed = t - recordingStartTime;
+    const revealFraction = Math.min(elapsed / (activeRecordingDurationMs * 0.65), 1);
+    const words = displayText.split(' ');
+    currentWordCount = Math.max(1, Math.ceil(words.length * revealFraction));
+    displayText = words.slice(0, currentWordCount).join(' ');
+
+    if(syncAudioEnabled && activeMusicInstance && currentWordCount > lastRevealedWordCount){
+      activeMusicInstance.playChime(CHIME_NOTES[(currentWordCount-1) % CHIME_NOTES.length]);
+      lastRevealedWordCount = currentWordCount;
+    }
+  }
+
+  const progressBarEnabled = document.getElementById('toggleProgressBar').checked;
+  let progressFraction = null;
+  if(progressBarEnabled && motion && recording){
+    progressFraction = Math.min((t - recordingStartTime) / activeRecordingDurationMs, 1);
+  }
+
+  ctx.clearRect(0,0,w,h);
+  ctx.drawImage(getBackground(w,h,tip.color),0,0);
+  drawCategoryIcon(ctx, w, h, tip, t, motion);
+
+  const ease = introProgress<1 ? 1-Math.pow(1-introProgress,3) : 1;
+  const alpha = ease;
+  const punchyActive = hookEnabled && motion;
+  const scale = punchyActive
+    ? (introProgress<1 ? 0.7 + 0.3*backOutEase(introProgress) : 1)
+    : 0.94 + 0.06*ease;
+
+  if(nodeStyle === 'network'){
+    drawNetworkCard(ctx, w, h, tip, mode, badge, displayText, alpha, scale, motion, t, numberOverride, ctaTextToUse, isRevealed, revealFadeProgress);
+    drawProgressBar(ctx, w, h, badge.color, progressFraction);
+    return;
+  }
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(w/2, h/2);
+  ctx.scale(scale, scale);
+  ctx.translate(-w/2, -h/2);
+
+  const margin = Math.min(w,h)*0.09;
+  const nodeX = margin;
+  const nodeW = w - margin*2;
+  const nodeH = h*0.58;
+  const nodeY = h/2 - nodeH/2 - (format==='story' ? h*0.06 : 0);
+  const r = nodeW*0.035;
+
+  const studio = (nodeStyle === 'studio');
+  let headerH;
+
+  if(studio){
+    const bodyGrad = ctx.createLinearGradient(0, nodeY, 0, nodeY+nodeH);
+    bodyGrad.addColorStop(0, '#5A5D66');
+    bodyGrad.addColorStop(1, '#404349');
+    ctx.shadowColor = 'rgba(0,0,0,0.55)';
+    ctx.shadowBlur = 40;
+    ctx.fillStyle = bodyGrad;
+    roundRectPath(ctx, nodeX, nodeY, nodeW, nodeH, r);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    const stripH = nodeH*0.022;
+    ctx.save();
+    roundRectPath(ctx, nodeX, nodeY, nodeW, stripH*2, r);
+    ctx.clip();
+    ctx.fillStyle = badge.color;
+    ctx.fillRect(nodeX, nodeY, nodeW, stripH);
+    ctx.restore();
+
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    roundRectPath(ctx, nodeX, nodeY, nodeW, nodeH, r);
+    ctx.stroke();
+
+    // selection-glow outline, like a selected node in the network editor
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(94,234,212,0.9)';
+    roundRectPath(ctx, nodeX-3, nodeY-3, nodeW+6, nodeH+6, r+3);
+    ctx.stroke();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(94,234,212,0.32)';
+    roundRectPath(ctx, nodeX-7, nodeY-7, nodeW+14, nodeH+14, r+7);
+    ctx.stroke();
+
+    const titleY = nodeY + stripH*2 + nodeH*0.055;
+    const iconSize = nodeH*0.05;
+    ctx.fillStyle = badge.color;
+    roundRectPath(ctx, nodeX+nodeW*0.045, titleY-iconSize/2, iconSize, iconSize, iconSize*0.25);
+    ctx.fill();
+
+    ctx.fillStyle = '#F5F5F4';
+    ctx.font = '700 ' + (nodeH*0.042) + 'px "Space Grotesk", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('HOUDINI TIP', nodeX+nodeW*0.045+iconSize*1.4, titleY);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.font = (nodeH*0.026) + 'px "JetBrains Mono", monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText('#'+String(displayNum).padStart(3,'0'), nodeX+nodeW*0.955, titleY);
+
+    const subtitleY = titleY + nodeH*0.04;
+    ctx.fillStyle = 'rgba(255,255,255,0.38)';
+    ctx.font = (nodeH*0.022) + 'px "JetBrains Mono", monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(internalNodeName(tip, displayNum), nodeX+nodeW*0.045, subtitleY);
+
+    headerH = (subtitleY - nodeY) + nodeH*0.035;
+  } else {
+    ctx.shadowColor = tip.color;
+    ctx.shadowBlur = 50;
+    ctx.fillStyle = '#1F2126';
+    roundRectPath(ctx, nodeX, nodeY, nodeW, nodeH, r);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = badge.color;
+    roundRectPath(ctx, nodeX, nodeY, nodeW, nodeH, r);
+    ctx.stroke();
+
+    headerH = nodeH*0.135;
+    ctx.save();
+    roundRectPath(ctx, nodeX, nodeY, nodeW, headerH, r);
+    ctx.clip();
+    ctx.fillStyle = '#24262C';
+    ctx.fillRect(nodeX, nodeY, nodeW, headerH);
+    ctx.restore();
+    ctx.beginPath();
+    ctx.moveTo(nodeX, nodeY+headerH);
+    ctx.lineTo(nodeX+nodeW, nodeY+headerH);
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    const iconSize = headerH*0.42;
+    const iconY = nodeY + headerH/2 - iconSize/2;
+    ctx.fillStyle = badge.color;
+    roundRectPath(ctx, nodeX+nodeW*0.045, iconY, iconSize, iconSize, iconSize*0.25);
+    ctx.fill();
+
+    ctx.fillStyle = '#F1F1F0';
+    ctx.font = '700 ' + (headerH*0.32) + 'px "Space Grotesk", sans-serif';
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'left';
+    try{ ctx.letterSpacing = (headerH*0.05)+'px'; }catch(e){}
+    ctx.fillText('HOUDINI TIP', nodeX+nodeW*0.045+iconSize*1.35, nodeY+headerH/2);
+    try{ ctx.letterSpacing = '0px'; }catch(e){}
+
+    ctx.fillStyle = '#8A8D95';
+    ctx.font = (headerH*0.26) + 'px "JetBrains Mono", monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText('#'+String(displayNum).padStart(3,'0'), nodeX+nodeW*0.955, nodeY+headerH/2);
+  }
+
+  // mode/category pill + difficulty pill
+  const pillY = nodeY + headerH + nodeH*0.045;
+  const pillH = nodeH*0.055;
+  ctx.font = (nodeH*0.03) + 'px "JetBrains Mono", monospace';
+
+  const label1 = badge.label;
+  const w1 = ctx.measureText(label1).width;
+  const padX = nodeW*0.02;
+  const pill1W = w1 + padX*2;
+  ctx.fillStyle = badge.color + '26';
+  roundRectPath(ctx, nodeX+nodeW*0.045, pillY, pill1W, pillH, pillH/2);
+  ctx.fill();
+  ctx.strokeStyle = badge.color + '80';
+  ctx.lineWidth = 1.2;
+  roundRectPath(ctx, nodeX+nodeW*0.045, pillY, pill1W, pillH, pillH/2);
+  ctx.stroke();
+  ctx.fillStyle = badge.color;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label1, nodeX+nodeW*0.045+padX, pillY+pillH/2+1);
+
+  const label2 = tip.diff;
+  const w2 = ctx.measureText(label2).width;
+  const pill2W = w2 + padX*2;
+  const pill2X = nodeX+nodeW*0.045+pill1W+nodeW*0.02;
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  roundRectPath(ctx, pill2X, pillY, pill2W, pillH, pillH/2);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+  roundRectPath(ctx, pill2X, pillY, pill2W, pillH, pillH/2);
+  ctx.stroke();
+  ctx.fillStyle = '#C7C9CF';
+  ctx.fillText(label2, pill2X+padX, pillY+pillH/2+1);
+
+  // body text
+  const ctaH = nodeH*0.06;
+  const footerH = nodeH*0.13;
+  const textTop = pillY + pillH + nodeH*0.045;
+  const textBottom = nodeY + nodeH - footerH - ctaH - nodeH*0.025;
+  const textAreaH = textBottom - textTop;
+  const textX = nodeX + nodeW*0.045;
+  const textMaxW = nodeW*0.91;
+
+  let fontSize = displayText.length > 150 ? nodeH*0.05 : nodeH*0.06;
+  ctx.font = '500 ' + fontSize + 'px "Inter", sans-serif';
+  let lines = wrapLines(ctx, displayText, textMaxW);
+  let lineHeight = fontSize*1.32;
+  while(lines.length*lineHeight > textAreaH && fontSize > nodeH*0.03){
+    fontSize -= 2;
+    ctx.font = '500 ' + fontSize + 'px "Inter", sans-serif';
+    lines = wrapLines(ctx, displayText, textMaxW);
+    lineHeight = fontSize*1.32;
+  }
+  const blockH = lines.length*lineHeight;
+  let ly = textTop + (textAreaH-blockH)/2 + lineHeight/2;
+  const priorAlphaPS = ctx.globalAlpha;
+  ctx.fillStyle = isRevealed ? badge.color : (mode==='puzzle' ? '#5EEAD4' : '#F1F1F0');
+  if(isRevealed){
+    ctx.globalAlpha = priorAlphaPS * revealFadeProgress;
+    ctx.shadowColor = badge.color;
+    ctx.shadowBlur = (1-revealFadeProgress) * 18;
+  }
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  for(const line of lines){
+    ctx.fillText(line, textX, ly);
+    ly += lineHeight;
+  }
+  if(isRevealed){
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = priorAlphaPS;
+  }
+
+  // CTA row
+  const ctaY = textBottom + nodeH*0.02;
+  ctx.font = 'italic 600 ' + (ctaH*0.42) + 'px "Inter", sans-serif';
+  ctx.fillStyle = badge.color;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  const ctaSymbol = mode==='puzzle' ? '\u{1F9E9} ' : mode==='debate' ? '\u2694\uFE0F ' : '\u{1F4AC} ';
+  ctx.fillText(ctaSymbol + ctaTextToUse, textX, ctaY + ctaH/2);
+
+  // footer
+  const footerY = nodeY+nodeH-footerH;
+  ctx.beginPath();
+  ctx.moveTo(nodeX+nodeW*0.045, footerY);
+  ctx.lineTo(nodeX+nodeW*0.955, footerY);
+  ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+
+  ctx.fillStyle = '#8A8D95';
+  ctx.font = (footerH*0.32) + 'px "JetBrains Mono", monospace';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(handleInput.value || '@Earlymanfx', nodeX+nodeW*0.045, footerY+footerH/2+2);
+
+  const lgR = footerH*0.24;
+  const lgX = nodeX+nodeW*0.955-lgR;
+  const lgY = footerY+footerH/2;
+  ctx.beginPath();
+  ctx.arc(lgX,lgY,lgR,0,Math.PI*2);
+  ctx.strokeStyle = badge.color;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = badge.color;
+  ctx.font = '700 '+(lgR*1.15)+'px "Space Grotesk", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('H', lgX, lgY+1);
+
+  // studio-only flag row (display/template/bypass), just above the footer divider
+  if(studio){
+    const flagY = footerY - nodeH*0.028;
+    const flagS = nodeH*0.018;
+    const flagGap = flagS*1.8;
+    const flagX0 = nodeX + nodeW*0.045;
+    // display flag (filled, always "on")
+    ctx.fillStyle = badge.color;
+    ctx.beginPath();
+    ctx.arc(flagX0, flagY, flagS*0.5, 0, Math.PI*2);
+    ctx.fill();
+    // template flag (diamond outline)
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 1.3;
+    ctx.beginPath();
+    ctx.moveTo(flagX0+flagGap, flagY-flagS*0.55);
+    ctx.lineTo(flagX0+flagGap+flagS*0.55, flagY);
+    ctx.lineTo(flagX0+flagGap, flagY+flagS*0.55);
+    ctx.lineTo(flagX0+flagGap-flagS*0.55, flagY);
+    ctx.closePath();
+    ctx.stroke();
+    // bypass flag (slashed circle)
+    ctx.beginPath();
+    ctx.arc(flagX0+flagGap*2, flagY, flagS*0.5, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(flagX0+flagGap*2-flagS*0.4, flagY-flagS*0.4);
+    ctx.lineTo(flagX0+flagGap*2+flagS*0.4, flagY+flagS*0.4);
+    ctx.stroke();
+  }
+
+  // plugs + wires
+  const plugR = nodeW*0.012;
+  const flow = motion ? (t*0.045) % 20 : 0;
+  [nodeY, nodeY+nodeH].forEach((py, idx)=>{
+    const dir = idx===0 ? -1 : 1;
+    ctx.beginPath();
+    ctx.moveTo(nodeX+nodeW/2, py);
+    ctx.lineTo(nodeX+nodeW/2, py + dir*nodeH*0.06);
+    ctx.strokeStyle = badge.color;
+    ctx.globalAlpha = 0.55;
+    ctx.lineWidth = 3;
+    ctx.setLineDash([6,6]);
+    ctx.lineDashOffset = -flow*dir;
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+
+    if(studio){
+      const triS = plugR*1.6;
+      ctx.beginPath();
+      ctx.moveTo(nodeX+nodeW/2-triS, py-triS*0.6);
+      ctx.lineTo(nodeX+nodeW/2+triS, py-triS*0.6);
+      ctx.lineTo(nodeX+nodeW/2, py+triS*0.6);
+      ctx.closePath();
+      ctx.fillStyle = badge.color;
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.arc(nodeX+nodeW/2, py, plugR, 0, Math.PI*2);
+      ctx.fillStyle = '#14151A';
+      ctx.fill();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = badge.color;
+      ctx.stroke();
+    }
+  });
+
+  ctx.restore();
+  drawProgressBar(ctx, w, h, badge.color, progressFraction);
+}
+
+// ---------- Animation loop ----------
+let activeVideoNumberOverride = null;
+let recordingStartTime = 0;
+let activeRecordingDurationMs = 4500;
+
+function backOutEase(t){
+  const c1 = 1.70158, c3 = c1 + 1;
+  return 1 + c3*Math.pow(t-1,3) + c1*Math.pow(t-1,2);
+}
+
+// ---------- Subtle background music: fully synthesized, copyright-free ----------
+function createSubtleMusic(durationSec){
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  const audioCtx = new AudioCtx();
+  const dest = audioCtx.createMediaStreamDestination();
+
+  // gentle lowpass to round off any edge — keeps everything warm rather than clinical
+  const warmthFilter = audioCtx.createBiquadFilter();
+  warmthFilter.type = 'lowpass';
+  warmthFilter.frequency.value = 1400;
+  warmthFilter.Q.value = 0.6;
+
+  const masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0;
+  masterGain.connect(warmthFilter);
+  warmthFilter.connect(dest);
+  warmthFilter.connect(audioCtx.destination); // also audible locally while recording/previewing
+
+  // warm, soothing chord (Cmaj9-ish: C3-E3-G3, soft airy D5 on top) —
+  // each note gets two slightly detuned voices for a gentle chorus-like warmth, not a flat single tone
+  const notes = [
+    {freq:130.81, gain:0.5},
+    {freq:164.81, gain:0.38},
+    {freq:196.00, gain:0.42},
+    {freq:587.33, gain:0.07}
+  ];
+  const oscillators = [];
+  notes.forEach(n=>{
+    [-3, 3].forEach(detuneCents=>{
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = n.freq;
+      osc.detune.value = detuneCents;
+      const voiceGain = audioCtx.createGain();
+      voiceGain.gain.value = n.gain * 0.5;
+      osc.connect(voiceGain);
+      voiceGain.connect(masterGain);
+      osc.start();
+      oscillators.push(osc);
+    });
+  });
+
+  // slow "breathing" swell so the pad feels alive rather than static
+  const lfo = audioCtx.createOscillator();
+  lfo.type = 'sine';
+  lfo.frequency.value = 0.12; // roughly an 8-second breathing cycle
+  const lfoDepth = audioCtx.createGain();
+  lfoDepth.gain.value = 0.012;
+  lfo.connect(lfoDepth);
+  lfoDepth.connect(masterGain.gain);
+  lfo.start();
+  oscillators.push(lfo);
+
+  const now = audioCtx.currentTime;
+  const peak = 0.045; // deliberately very quiet — subtle, not a soundtrack
+  masterGain.gain.setValueAtTime(0, now);
+  masterGain.gain.linearRampToValueAtTime(peak, now + 1.0); // slower, gentler entrance
+  masterGain.gain.setValueAtTime(peak, now + Math.max(durationSec - 1.0, 1.0));
+  masterGain.gain.linearRampToValueAtTime(0, now + durationSec);
+
+  return {
+    stream: dest.stream,
+    playChime(freq){
+      const t0 = audioCtx.currentTime;
+      const chimeOsc = audioCtx.createOscillator();
+      chimeOsc.type = 'sine';
+      chimeOsc.frequency.value = freq || 523.25; // soft C5 pluck by default
+      const chimeGain = audioCtx.createGain();
+      chimeGain.gain.setValueAtTime(0, t0);
+      chimeGain.gain.linearRampToValueAtTime(0.03, t0 + 0.03);
+      chimeGain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.5);
+      chimeOsc.connect(chimeGain);
+      chimeGain.connect(masterGain); // routed through the same warmth filter as the pad
+      chimeOsc.start(t0);
+      chimeOsc.stop(t0 + 0.55);
+    },
+    stop(){
+      try{
+        oscillators.forEach(o=>o.stop());
+      }catch(e){}
+      setTimeout(()=>{ audioCtx.close(); }, 300);
+    }
+  };
+}
+let activeVideoModeOverride = null;
+let activeVideoCtaOverride = null;
+let activeMusicInstance = null;
+let lastRevealedWordCount = 0;
+const CHIME_NOTES = [523.25, 587.33, 659.25, 698.46, 783.99]; // C5 D5 E5 F5 G5
+
+let previewingStaticImage = false;
+
+function loop(now){
+  const introProgress = Math.min((now-introStart)/700, 1);
+  if(previewingStaticImage){
+    requestAnimationFrame(loop);
+    return;
+  }
+  if(recording){
+    draw(ctx, cv.width, cv.height, now, introProgress, true, activeVideoNumberOverride, activeVideoModeOverride, activeVideoCtaOverride);
+  } else {
+    draw(ctx, cv.width, cv.height, now, introProgress, true);
+  }
+  requestAnimationFrame(loop);
+}
+document.fonts.ready.then(()=>requestAnimationFrame(loop));
+
+// ---------- Controls ----------
+document.getElementById('btnNew').onclick = ()=>{ nextTip(); };
+
+document.getElementById('btnLoadNumber').onclick = ()=>{
+  const val = parseInt(document.getElementById('tipNumberInput').value, 10);
+  if(isNaN(val)){
+    statusEl.textContent = 'Enter a valid tip number';
+    setTimeout(()=>{ statusEl.textContent=''; }, 2500);
+    return;
+  }
+  jumpToTip(val);
+};
+
+async function loadBankMatch(bankIdx){
+  const existing = tipLog.find(e => e.source==='bank' && e.bankIndex===bankIdx);
+  if(existing){
+    applyEntry(existing);
+    statusEl.textContent = `Loaded — this was already generated as tip #${existing.number}`;
+    setTimeout(()=>{ statusEl.textContent=''; }, 3000);
+    return;
+  }
+  const t = getEffectiveBank()[bankIdx];
+  const entry = {source:'bank', bankIndex:bankIdx, cat:t.cat, color:t.color, diff:t.diff, text:t.text, blank:t.blank||null, debate:!!t.debate};
+  entry.number = tipLog.length+1;
+  entry.mode = pickMode(entry);
+  entry.cta = entry.mode==='puzzle' ? pick(PUZZLE_CTA) : entry.mode==='debate' ? pick(DEBATE_CTA) : pick(GENERAL_CTA);
+  tipLog.push(entry);
+  await saveLog();
+  applyEntry(entry);
+  statusEl.textContent = `Generated as tip #${entry.number}`;
+  setTimeout(()=>{ statusEl.textContent=''; }, 3000);
+}
+
+function runTipSearch(){
+  const raw = document.getElementById('tipSearchInput').value.trim();
+  const resultsEl = document.getElementById('tipSearchResults');
+  resultsEl.innerHTML = '';
+  if(!raw) return;
+
+  // pure number typed here -> treat as a direct tip-number lookup too
+  if(/^\d+$/.test(raw)){
+    jumpToTip(parseInt(raw,10));
+    return;
+  }
+
+  const q = raw.toLowerCase();
+  const effectiveBank = getEffectiveBank();
+  const matches = [];
+  effectiveBank.forEach((t,i)=>{
+    if(t.text.toLowerCase().includes(q) || t.cat.toLowerCase().includes(q)){
+      matches.push(i);
+    }
+  });
+
+  if(matches.length===0){
+    resultsEl.innerHTML = '<div class="status">No matches found</div>';
+    return;
+  }
+
+  matches.slice(0,10).forEach(idx=>{
+    const t = effectiveBank[idx];
+    const existing = tipLog.find(e => e.source==='bank' && e.bankIndex===idx);
+    const row = document.createElement('div');
+    row.style.cssText = 'padding:9px 11px; background:var(--node-body); border:1px solid var(--border); border-radius:8px; cursor:pointer;';
+    row.innerHTML = `<div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:${t.color};">${t.cat}${existing ? ' · already tip #'+existing.number : ' · not yet generated'}</div>`
+      + `<div style="font-size:12px; color:var(--text-primary); margin-top:3px; line-height:1.4;">${t.text}</div>`;
+    row.onmouseenter = ()=>{ row.style.borderColor = t.color; };
+    row.onmouseleave = ()=>{ row.style.borderColor = 'var(--border)'; };
+    row.onclick = ()=>{ loadBankMatch(idx); };
+    resultsEl.appendChild(row);
+  });
+
+  if(matches.length>10){
+    const more = document.createElement('div');
+    more.className = 'status';
+    more.textContent = `+${matches.length-10} more matches — narrow your search to see them`;
+    resultsEl.appendChild(more);
+  }
+}
+
+document.getElementById('btnTipSearch').onclick = runTipSearch;
+document.getElementById('tipSearchInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') runTipSearch();
+});
+
+document.getElementById('btnScanDupes').onclick = ()=>{
+  const report = document.getElementById('dupeReport');
+  report.style.display = 'block';
+  if(tipLog.length===0){
+    report.value = 'No tips generated yet in this history.';
+    return;
+  }
+  const pairs = [];
+  for(let i=0; i<tipLog.length; i++){
+    for(let j=i+1; j<tipLog.length; j++){
+      const sim = textSimilarity(tipLog[i].text, tipLog[j].text);
+      if(sim >= DUPLICATE_THRESHOLD){
+        pairs.push({a:i+1, b:j+1, sim, textA:tipLog[i].text, textB:tipLog[j].text});
+      }
+    }
+  }
+  if(pairs.length===0){
+    report.value = `Scanned ${tipLog.length} tips in history — no duplicates or near-duplicates found (threshold ${Math.round(DUPLICATE_THRESHOLD*100)}% word overlap).`;
+  } else {
+    pairs.sort((a,b)=>b.sim-a.sim);
+    const lines = pairs.map(p=>`#${p.a} ~ #${p.b}  (${Math.round(p.sim*100)}% overlap)\n  #${p.a}: ${p.textA}\n  #${p.b}: ${p.textB}`);
+    report.value = `Scanned ${tipLog.length} tips — found ${pairs.length} likely duplicate pair(s):\n\n` + lines.join('\n\n');
+  }
+};
+
+document.getElementById('btnExportHistory').onclick = ()=>{
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    tool: 'Houdini Tip Forge',
+    tipLog: tipLog
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const stamp = new Date().toISOString().slice(0,10);
+  triggerDownload(url, `houdini-tip-history-${stamp}.json`, true);
+  statusEl.textContent = `Exported ${tipLog.length} tips ✓`;
+  setTimeout(()=>{ statusEl.textContent=''; }, 3000);
+};
+
+document.getElementById('btnImportHistory').onclick = ()=>{
+  document.getElementById('importFileInput').click();
+};
+
+document.getElementById('importFileInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async (evt)=>{
+    try{
+      const data = JSON.parse(evt.target.result);
+      const incoming = Array.isArray(data.tipLog) ? data.tipLog : (Array.isArray(data) ? data : null);
+      if(!incoming) throw new Error('Not a recognized history file');
+
+      const existingKeys = new Set(tipLog.map(t=>t.number+'|'+t.text));
+      let added = 0;
+      for(const entry of incoming){
+        const key = entry.number+'|'+entry.text;
+        if(!existingKeys.has(key)){
+          tipLog.push(entry);
+          existingKeys.add(key);
+          added++;
+        }
+      }
+      tipLog.sort((a,b)=>(a.number||0)-(b.number||0));
+      await saveLog();
+      statusEl.textContent = `Imported ✓ (${added} new, ${incoming.length-added} already had)`;
+      setTimeout(()=>{ statusEl.textContent=''; }, 4000);
+    }catch(err){
+      statusEl.textContent = 'Could not read that file — is it a Tip Forge export?';
+      setTimeout(()=>{ statusEl.textContent=''; }, 4000);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+function triggerDownload(href, filename, revokeAfter){
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = href;
+  link.rel = 'noopener';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  if(revokeAfter){
+    setTimeout(()=>URL.revokeObjectURL(href), 4000);
+  }
+}
+
+document.getElementById('btnPreviewImage').onclick = ()=>{
+  if(recording){
+    statusEl.textContent = 'Already recording/previewing — wait for it to finish';
+    setTimeout(()=>{ statusEl.textContent=''; }, 2000);
+    return;
+  }
+  const overrideRaw = document.getElementById('exportNumberOverride').value.trim();
+  const overrideNum = overrideRaw !== '' && !isNaN(parseInt(overrideRaw,10)) ? parseInt(overrideRaw,10) : null;
+  const modeOverrideVal = modeOverrideForExport;
+  const ctaOverrideVal = ctaOverrideForExport;
+
+  previewingStaticImage = true;
+  draw(ctx, cv.width, cv.height, 0, 1, false, overrideNum, modeOverrideVal, ctaOverrideVal);
+  statusEl.textContent = '👁 Previewing (nothing saved) — clears automatically in 4s';
+
+  setTimeout(()=>{
+    previewingStaticImage = false;
+    introStart = performance.now();
+    statusEl.textContent = '';
+  }, 4000);
+};
+
+document.getElementById('btnPreviewVideo').onclick = ()=>{
+  if(recording){
+    statusEl.textContent = 'Already recording/previewing — wait for it to finish';
+    setTimeout(()=>{ statusEl.textContent=''; }, 2000);
+    return;
+  }
+  const durationRaw = parseFloat(document.getElementById('videoDurationInput').value);
+  const durationSec = (!isNaN(durationRaw) && durationRaw > 0) ? Math.min(Math.max(durationRaw, 1), 60) : 4.5;
+  const durationMs = durationSec * 1000;
+
+  const overrideRaw = document.getElementById('exportNumberOverride').value.trim();
+  const overrideNum = overrideRaw !== '' && !isNaN(parseInt(overrideRaw,10)) ? parseInt(overrideRaw,10) : null;
+  activeVideoNumberOverride = overrideNum;
+  activeVideoModeOverride = modeOverrideForExport;
+  activeVideoCtaOverride = ctaOverrideForExport;
+
+  recording = true; // reuses the exact same hook/reveal timing logic as a real recording
+  introStart = performance.now();
+  recordingStartTime = performance.now();
+  activeRecordingDurationMs = durationMs;
+  lastRevealedWordCount = 0;
+
+  const musicEnabled = document.getElementById('toggleMusic').checked;
+  const previewMusic = musicEnabled ? createSubtleMusic(durationSec) : null;
+  activeMusicInstance = previewMusic;
+
+  const btn = document.getElementById('btnPreviewVideo');
+  btn.disabled = true;
+  btn.textContent = 'Previewing…';
+  statusEl.innerHTML = `<span class="dot"></span> playing ${durationSec}s preview (nothing saved)`;
+
+  setTimeout(()=>{
+    if(previewMusic) previewMusic.stop();
+    activeMusicInstance = null;
+    recording = false;
+    activeVideoNumberOverride = null;
+    activeVideoModeOverride = null;
+    activeVideoCtaOverride = null;
+    introStart = performance.now();
+    btn.disabled = false;
+    btn.textContent = '👁 Preview Video (not saved)';
+    statusEl.textContent = 'Preview finished — nothing was saved';
+    setTimeout(()=>{ statusEl.textContent=''; }, 2500);
+  }, durationMs);
+};
+
+document.getElementById('btnPng').onclick = ()=>{
+  const overrideRaw = document.getElementById('exportNumberOverride').value.trim();
+  const overrideNum = overrideRaw !== '' && !isNaN(parseInt(overrideRaw,10)) ? parseInt(overrideRaw,10) : null;
+  const displayNumForFile = overrideNum!=null ? overrideNum : currentNumber;
+  const modeOverrideVal = modeOverrideForExport; // null | 'normal' | 'puzzle' | 'debate'
+  const ctaOverrideVal = ctaOverrideForExport;
+  const filename = 'houdini-tip-'+String(displayNumForFile).padStart(3,'0')+'.png';
+  const tmp = document.createElement('canvas');
+  tmp.width = cv.width; tmp.height = cv.height;
+  const tctx = tmp.getContext('2d');
+  draw(tctx, tmp.width, tmp.height, 0, 1, false, overrideNum, modeOverrideVal, ctaOverrideVal);
+  if(tmp.toBlob){
+    tmp.toBlob((blob)=>{
+      if(!blob){
+        statusEl.textContent = 'Export failed — try again';
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      triggerDownload(url, filename, true);
+      markPosted();
+      const parts = [];
+      if(overrideNum!=null) parts.push(`#${displayNumForFile}`);
+      if(modeOverrideVal) parts.push(modeOverrideVal==='puzzle'?'Puzzle mode':modeOverrideVal==='debate'?'Debate mode':'Standard mode');
+      statusEl.textContent = parts.length ? `Image saved as ${parts.join(', ')} ✓ (real history unchanged)` : 'Image saved ✓';
+      setTimeout(()=>{ statusEl.textContent=''; }, 2500);
+    }, 'image/png');
+  } else {
+    triggerDownload(tmp.toDataURL('image/png'), filename, false);
+  }
+};
+
+function renderActiveCaption(){
+  captionBox.value = currentCaptions[activePlatform] || '';
+}
+function setPlatform(p){
+  activePlatform = p;
+  document.getElementById('platX').classList.toggle('active', p==='x');
+  document.getElementById('platInstagram').classList.toggle('active', p==='instagram');
+  document.getElementById('platReddit').classList.toggle('active', p==='reddit');
+  renderActiveCaption();
+}
+document.getElementById('platX').onclick = ()=>setPlatform('x');
+document.getElementById('platInstagram').onclick = ()=>setPlatform('instagram');
+document.getElementById('platReddit').onclick = ()=>setPlatform('reddit');
+
+document.getElementById('btnCopy').onclick = ()=>{
+  navigator.clipboard.writeText(captionBox.value).then(()=>{
+    statusEl.textContent = 'Caption copied ✓';
+    setTimeout(()=>{ statusEl.textContent=''; }, 2500);
+  });
+};
+
+document.getElementById('btnRec').onclick = ()=>{
+  if(recording) return;
+
+  const durationRaw = parseFloat(document.getElementById('videoDurationInput').value);
+  const durationSec = (!isNaN(durationRaw) && durationRaw > 0) ? Math.min(Math.max(durationRaw, 1), 60) : 4.5;
+  const durationMs = durationSec * 1000;
+
+  const overrideRaw = document.getElementById('exportNumberOverride').value.trim();
+  const overrideNum = overrideRaw !== '' && !isNaN(parseInt(overrideRaw,10)) ? parseInt(overrideRaw,10) : null;
+  const modeOverrideVal = modeOverrideForExport;
+  const ctaOverrideVal = ctaOverrideForExport;
+  activeVideoNumberOverride = overrideNum;
+  activeVideoModeOverride = modeOverrideVal;
+  activeVideoCtaOverride = ctaOverrideVal;
+  const displayNumForFile = overrideNum!=null ? overrideNum : currentNumber;
+
+  recording = true;
+  introStart = performance.now();
+  recordingStartTime = performance.now();
+  activeRecordingDurationMs = durationMs;
+  lastRevealedWordCount = 0;
+  const btn = document.getElementById('btnRec');
+  btn.classList.add('recording');
+  btn.textContent = 'Recording…';
+  statusEl.innerHTML = `<span class="dot"></span> capturing ${durationSec}s clip`;
+
+  const musicEnabled = document.getElementById('toggleMusic').checked;
+  const music = musicEnabled ? createSubtleMusic(durationSec) : null;
+  activeMusicInstance = music;
+
+  const videoStream = cv.captureStream(30);
+  const stream = music
+    ? new MediaStream([...videoStream.getVideoTracks(), ...music.stream.getAudioTracks()])
+    : videoStream;
+  const candidates = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1.42E01E', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+  const mime = candidates.find(m => MediaRecorder.isTypeSupported(m)) || 'video/webm';
+  const ext = mime.startsWith('video/mp4') ? 'mp4' : 'webm';
+  recorder = new MediaRecorder(stream, {mimeType:mime, videoBitsPerSecond:8000000});
+  chunks = [];
+  recorder.ondataavailable = e=>{ if(e.data.size>0) chunks.push(e.data); };
+  recorder.onstop = ()=>{
+    if(music) music.stop();
+    activeMusicInstance = null;
+    const blob = new Blob(chunks, {type:mime.split(';')[0]});
+    const url = URL.createObjectURL(blob);
+    triggerDownload(url, 'houdini-tip-'+String(displayNumForFile).padStart(3,'0')+'.'+ext, true);
+    markPosted();
+    recording = false;
+    activeVideoNumberOverride = null;
+    activeVideoModeOverride = null;
+    activeVideoCtaOverride = null;
+    btn.classList.remove('recording');
+    btn.textContent = 'Record Reel';
+    const parts = [];
+    if(overrideNum!=null) parts.push(`#${displayNumForFile}`);
+    if(modeOverrideVal) parts.push(modeOverrideVal==='puzzle'?'Puzzle mode':modeOverrideVal==='debate'?'Debate mode':'Standard mode');
+    const savedAs = ext==='mp4' ? 'Saved as MP4' : 'Saved as WebM';
+    statusEl.textContent = parts.length ? `${savedAs} (${durationSec}s, ${parts.join(', ')}) ✓ (real history unchanged)` : `${savedAs} (${durationSec}s) ✓`;
+    setTimeout(()=>{ statusEl.textContent=''; }, 3000);
+  };
+  recorder.start();
+  setTimeout(()=>{ if(recorder.state!=='inactive') recorder.stop(); }, durationMs);
+};
+</script>
+</body>
+</html>
