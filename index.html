@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <meta charset="UTF-8">
 <title>Houdini Tip Forge</title>
 <style>
@@ -343,6 +344,12 @@ button.action:focus-visible{outline:2px solid var(--wire-cyan); outline-offset:2
           <button class="action btn-secondary" id="btnImportHistory" style="flex:1;">Import History</button>
         </div>
         <input type="file" id="importFileInput" accept="application/json" style="display:none;">
+
+        <div style="border-top:1px solid var(--border); margin-top:4px; padding-top:14px;">
+          <span class="field-label">Google Drive Sync <span style="opacity:.6;">(auto-saves your history, no more manual export)</span></span>
+          <button class="action btn-secondary" id="btnConnectDrive">Connect Google Drive</button>
+          <div class="status" id="driveStatus" style="min-height:16px;"></div>
+        </div>
       </div>
       <div class="plug plug-out"></div>
     </div>
@@ -1243,7 +1250,148 @@ async function saveLog(){
   try{
     localStorage.setItem('houdini_tip_log', JSON.stringify(tipLog));
   }catch(e){ console.error('Could not save tip history', e); }
+  saveToDriveIfConnected(); // fire-and-forget — never blocks normal saving
 }
+
+// ---------- Google Drive sync ----------
+const DRIVE_CLIENT_ID = '12437416921-shs5c959s3odjnpccm02k8rr6iocajoh.apps.googleusercontent.com';
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+const DRIVE_FILENAME = 'houdini-tip-history.json';
+let driveAccessToken = null;
+let driveFileId = null;
+let driveTokenClient = null;
+let driveSaveInProgress = false;
+
+function setDriveStatus(text, color){
+  const el = document.getElementById('driveStatus');
+  el.style.color = color || 'var(--text-muted)';
+  el.textContent = text;
+}
+
+let driveExplicitConnectPending = false;
+
+function initDriveTokenClient(){
+  if(typeof google === 'undefined' || !google.accounts){
+    setTimeout(initDriveTokenClient, 300); // GIS script may not be loaded yet — retry briefly
+    return;
+  }
+  driveTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: DRIVE_CLIENT_ID,
+    scope: DRIVE_SCOPE,
+    callback: async (resp)=>{
+      if(resp.error){
+        if(driveExplicitConnectPending) setDriveStatus('Connection cancelled or failed', '#FF9A5C');
+        driveExplicitConnectPending = false;
+        return; // silent auto-attempt failing quietly is expected for anyone who hasn't connected yet
+      }
+      driveExplicitConnectPending = false;
+      driveAccessToken = resp.access_token;
+      document.getElementById('btnConnectDrive').textContent = 'Reconnect Google Drive';
+      setDriveStatus('Connected — syncing…', '#5EEAD4');
+      await mergeFromDriveOnConnect();
+    }
+  });
+  // try a silent (no popup) reconnect in case this browser already has a Google session + prior consent
+  driveTokenClient.requestAccessToken({ prompt: '' });
+}
+
+document.getElementById('btnConnectDrive').onclick = ()=>{
+  if(!driveTokenClient){
+    setDriveStatus('Still loading Google Sign-In — try again in a second', '#FF9A5C');
+    return;
+  }
+  driveExplicitConnectPending = true;
+  driveTokenClient.requestAccessToken({ prompt: 'consent' });
+};
+
+async function findDriveFileId(){
+  const q = encodeURIComponent(`name='${DRIVE_FILENAME}' and trashed=false`);
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&fields=files(id,name)`, {
+    headers: { 'Authorization': 'Bearer ' + driveAccessToken }
+  });
+  if(!res.ok) throw new Error('Drive list failed: ' + res.status);
+  const data = await res.json();
+  return (data.files && data.files[0]) ? data.files[0].id : null;
+}
+
+async function mergeFromDriveOnConnect(){
+  try{
+    driveFileId = await findDriveFileId();
+    if(!driveFileId){
+      setDriveStatus('Connected — no existing Drive history found, will create one on next save', '#5EEAD4');
+      return;
+    }
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`, {
+      headers: { 'Authorization': 'Bearer ' + driveAccessToken }
+    });
+    if(!res.ok) throw new Error('Drive download failed: ' + res.status);
+    const data = await res.json();
+    const incoming = Array.isArray(data.tipLog) ? data.tipLog : (Array.isArray(data) ? data : []);
+
+    const existingKeys = new Set(tipLog.map(t=>t.number+'|'+t.text));
+    let added = 0;
+    for(const entry of incoming){
+      const key = entry.number+'|'+entry.text;
+      if(!existingKeys.has(key)){
+        tipLog.push(entry);
+        existingKeys.add(key);
+        added++;
+      }
+    }
+    tipLog.sort((a,b)=>(a.number||0)-(b.number||0));
+    if(added>0){
+      localStorage.setItem('houdini_tip_log', JSON.stringify(tipLog));
+      refreshStatusLines();
+    }
+    setDriveStatus(`Connected — synced ✓ (${added} tip(s) merged in from Drive)`, '#5EEAD4');
+  }catch(e){
+    console.error('Drive merge-on-connect failed:', e);
+    setDriveStatus('Connected, but could not read existing Drive history (see console)', '#FF9A5C');
+  }
+}
+
+async function saveToDriveIfConnected(){
+  if(!driveAccessToken || driveSaveInProgress) return;
+  driveSaveInProgress = true;
+  try{
+    const payload = JSON.stringify({ savedAt: new Date().toISOString(), tool: 'Houdini Tip Forge', tipLog: tipLog }, null, 2);
+    const blob = new Blob([payload], {type:'application/json'});
+
+    if(!driveFileId){
+      try{ driveFileId = await findDriveFileId(); }catch(e){ /* will create fresh below if this fails */ }
+    }
+
+    if(driveFileId){
+      const res = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`, {
+        method: 'PATCH',
+        headers: { 'Authorization': 'Bearer ' + driveAccessToken, 'Content-Type': 'application/json' },
+        body: blob
+      });
+      if(!res.ok) throw new Error('Drive update failed: ' + res.status);
+    } else {
+      const metadata = { name: DRIVE_FILENAME, mimeType: 'application/json' };
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(metadata)], {type:'application/json'}));
+      form.append('file', blob);
+      const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + driveAccessToken },
+        body: form
+      });
+      if(!res.ok) throw new Error('Drive create failed: ' + res.status);
+      const data = await res.json();
+      driveFileId = data.id;
+    }
+    setDriveStatus(`Synced to Drive ✓ (${new Date().toLocaleTimeString()})`, '#5EEAD4');
+  }catch(e){
+    console.error('Drive save failed:', e);
+    setDriveStatus('Drive sync failed this time — local save still succeeded (see console)', '#FF9A5C');
+  }finally{
+    driveSaveInProgress = false;
+  }
+}
+
+initDriveTokenClient();
 
 // ---- AI generation ----
 function getApiKey(){
