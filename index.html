@@ -1377,6 +1377,7 @@ async function findDriveFileId(){
   const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&fields=files(id,name)`, {
     headers: { 'Authorization': 'Bearer ' + driveAccessToken }
   });
+  if(res.status === 403) throw new Error('PERMISSION_DENIED: Drive scope likely missing from OAuth consent screen — see setup steps');
   if(!res.ok) throw new Error('Drive list failed: ' + res.status);
   const data = await res.json();
   return (data.files && data.files[0]) ? data.files[0].id : null;
@@ -1414,7 +1415,11 @@ async function mergeFromDriveOnConnect(){
     setDriveStatus(`Connected — synced ✓ (${added} tip(s) merged in from Drive)`, '#5EEAD4');
   }catch(e){
     console.error('Drive merge-on-connect failed:', e);
-    setDriveStatus('Connected, but could not read existing Drive history (see console)', '#FF9A5C');
+    if(e.message.startsWith('PERMISSION_DENIED')){
+      setDriveStatus('⚠ Signed in, but Drive permission was denied (403) — the Drive scope is likely missing from your OAuth consent screen. Add it, then remove & reconnect the app in your Google Account permissions.', '#FF5C5C');
+    } else {
+      setDriveStatus('Connected, but could not read existing Drive history (see console)', '#FF9A5C');
+    }
   }
 }
 
@@ -1447,6 +1452,7 @@ async function saveToDriveIfConnected(retrying){
         }
         return;
       }
+      if(res.status === 403) throw new Error('PERMISSION_DENIED: Drive scope likely missing from OAuth consent screen — see setup steps');
       if(!res.ok) throw new Error('Drive update failed: ' + res.status);
     } else {
       const metadata = { name: DRIVE_FILENAME, mimeType: 'application/json' };
@@ -1459,6 +1465,7 @@ async function saveToDriveIfConnected(retrying){
         body: form
       });
       statusCode = res.status;
+      if(res.status === 403) throw new Error('PERMISSION_DENIED: Drive scope likely missing from OAuth consent screen — see setup steps');
       if(!res.ok) throw new Error('Drive create failed: ' + res.status);
       const data = await res.json();
       driveFileId = data.id;
@@ -1474,7 +1481,11 @@ async function saveToDriveIfConnected(retrying){
       driveTokenClient.requestAccessToken({ prompt: '' }); // callback will fire, then the next save naturally succeeds
       return;
     }
-    setDriveStatus(`Drive sync failed: ${e.message.slice(0,60)} (local save still succeeded)`, '#FF9A5C');
+    if(e.message.startsWith('PERMISSION_DENIED')){
+      setDriveStatus('⚠ Drive permission denied (403) — the Drive scope is likely missing from your OAuth consent screen. Add it, then remove & reconnect the app in your Google Account permissions.', '#FF5C5C');
+    } else {
+      setDriveStatus(`Drive sync failed: ${e.message.slice(0,60)} (local save still succeeded)`, '#FF9A5C');
+    }
   }finally{
     driveSaveInProgress = false;
   }
