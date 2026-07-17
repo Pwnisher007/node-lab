@@ -1437,6 +1437,16 @@ async function saveToDriveIfConnected(retrying){
         body: blob
       });
       statusCode = res.status;
+      if(res.status === 404){
+        // the file we thought existed is gone (deleted from Drive, etc.) — forget the stale ID and retry fresh
+        driveFileId = null;
+        driveSaveInProgress = false;
+        if(!retrying){
+          console.warn('Cached Drive file ID was stale (404) — retrying with a fresh file');
+          await saveToDriveIfConnected(true);
+        }
+        return;
+      }
       if(!res.ok) throw new Error('Drive update failed: ' + res.status);
     } else {
       const metadata = { name: DRIVE_FILENAME, mimeType: 'application/json' };
@@ -1464,7 +1474,7 @@ async function saveToDriveIfConnected(retrying){
       driveTokenClient.requestAccessToken({ prompt: '' }); // callback will fire, then the next save naturally succeeds
       return;
     }
-    setDriveStatus('Drive sync failed this time — local save still succeeded (see console)', '#FF9A5C');
+    setDriveStatus(`Drive sync failed: ${e.message.slice(0,60)} (local save still succeeded)`, '#FF9A5C');
   }finally{
     driveSaveInProgress = false;
   }
