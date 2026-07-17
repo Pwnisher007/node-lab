@@ -36,7 +36,7 @@ body{
 
 .topbar{
   display:flex; align-items:center; gap:12px;
-  width:100%; max-width:1160px;
+  width:100%; max-width:1500px;
   margin-bottom:28px;
 }
 .topbar-icon{
@@ -63,8 +63,28 @@ body{
   flex-wrap:wrap;
   justify-content:center;
   align-items:flex-start;
-  max-width:1160px;
+  max-width:1500px;
   width:100%;
+}
+
+@media (min-width: 900px){
+  .stage{
+    flex-wrap: nowrap;
+    justify-content: center;
+  }
+  .node-chain{
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    position: sticky;
+    top: 24px;
+    padding-right: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .node-chain::-webkit-scrollbar{ width:8px; }
+  .node-chain::-webkit-scrollbar-track{ background:transparent; }
+  .node-chain::-webkit-scrollbar-thumb{ background:var(--border); border-radius:8px; }
+  .node-chain::-webkit-scrollbar-thumb:hover{ background:var(--wire-cyan); }
 }
 
 .viewport{ position:relative; flex-shrink:0; }
@@ -81,6 +101,7 @@ body{
 canvas{
   display:block;
   max-height:72vh;
+  max-width:min(60vw, 680px);
   width:auto;
   height:auto;
 }
@@ -318,6 +339,7 @@ button.action:focus-visible{outline:2px solid var(--wire-cyan); outline-offset:2
       <div class="node-header"><span class="node-icon">C</span>tip_select<span class="node-number">2</span></div>
       <div class="node-fields">
         <button class="action btn-primary" id="btnNew">New Tip &rarr;</button>
+        <button class="action btn-secondary" id="btnNewQuickFix" style="border-color:#5EEAD4; color:#5EEAD4;">🔧 New Quick-Fix Tutorial &rarr;</button>
         <div class="mode-badge" id="modeBadge">Mode: &mdash;</div>
         <div class="mode-badge" id="sourceBadge" style="border-color:#5EEAD4;">Source: &mdash;</div>
         <div class="status" id="cycleStatus"></div>
@@ -347,6 +369,7 @@ button.action:focus-visible{outline:2px solid var(--wire-cyan); outline-offset:2
 
         <div style="border-top:1px solid var(--border); margin-top:4px; padding-top:14px;">
           <span class="field-label">Google Drive Sync <span style="opacity:.6;">(auto-saves your history, no more manual export)</span></span>
+          <div class="mode-badge" id="driveConnectionBadge" style="border-color:#FF9A5C; margin-bottom:8px;">○ Not connected</div>
           <button class="action btn-secondary" id="btnConnectDrive">Connect Google Drive</button>
           <div class="status" id="driveStatus" style="min-height:16px;"></div>
         </div>
@@ -381,11 +404,11 @@ button.action:focus-visible{outline:2px solid var(--wire-cyan); outline-offset:2
           <div style="margin-top:10px;">
             <span class="field-label">Preferred Model <span style="opacity:.6;">(only this exact model is ever called — no fallback)</span></span>
             <select id="preferredGeminiModel" style="width:100%; padding:10px; background:var(--node-body); color:var(--text-primary); border:1px solid var(--border); border-radius:8px; font-family:'JetBrains Mono',monospace; font-size:12px;">
-              <option value="gemini-3-flash">gemini-3-flash</option>
-              <option value="gemini-2.0-flash">gemini-2.0-flash</option>
-              <option value="gemini-2.5-flash">gemini-2.5-flash</option>
-              <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite</option>
-              <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</option>
+              <option value="gemini-3.1-flash-lite" selected>gemini-3.1-flash-lite</option>
+              <option value="gemini-flash-latest">gemini-flash-latest</option>
+              <option value="gemini-flash-lite-latest">gemini-flash-lite-latest</option>
+              <option value="gemini-3-flash-preview">gemini-3-flash-preview</option>
+              <option value="gemini-3.1-flash-lite-preview">gemini-3.1-flash-lite-preview</option>
               <option value="gemini-2.5-pro">gemini-2.5-pro</option>
             </select>
             <button class="action btn-secondary" id="btnTestAllModels" style="margin-top:8px;">Test All Models (real check, not just the catalog)</button>
@@ -1074,8 +1097,8 @@ document.getElementById('styStudio').onclick = ()=>setNodeStyle('studio');
 document.getElementById('styNetwork').onclick = ()=>setNodeStyle('network');
 
 function resizeCanvas(){
-  if(format==='square'){ cv.width=1080; cv.height=1080; }
-  else { cv.width=1080; cv.height=1920; }
+  if(format==='square'){ cv.width=2160; cv.height=2160; }
+  else { cv.width=2160; cv.height=3840; }
 }
 resizeCanvas();
 
@@ -1098,14 +1121,18 @@ function updateExportModeButtonsUI(){
   else if(modeOverrideForExport==='puzzle') bPuz.classList.add('active');
   else if(modeOverrideForExport==='debate') bDeb.classList.add('active');
 
-  const puzzleEligible = !!(activeEntry && activeEntry.blank);
-  const debateEligible = !!(activeEntry && activeEntry.debate);
+  const isQuickFix = !!(activeEntry && activeEntry.type==='quickfix');
+  const puzzleEligible = !isQuickFix && !!(activeEntry && activeEntry.blank);
+  const debateEligible = !isQuickFix && !!(activeEntry && activeEntry.debate);
   bPuz.disabled = !puzzleEligible;
   bDeb.disabled = !debateEligible;
+  bStd.disabled = isQuickFix;
   bPuz.style.opacity = puzzleEligible ? '1' : '0.35';
   bDeb.style.opacity = debateEligible ? '1' : '0.35';
+  bStd.style.opacity = isQuickFix ? '0.35' : '1';
   bPuz.style.cursor = puzzleEligible ? 'pointer' : 'not-allowed';
   bDeb.style.cursor = debateEligible ? 'pointer' : 'not-allowed';
+  bStd.style.cursor = isQuickFix ? 'not-allowed' : 'pointer';
 }
 
 function refreshCaptionForOverride(){
@@ -1261,11 +1288,45 @@ let driveAccessToken = null;
 let driveFileId = null;
 let driveTokenClient = null;
 let driveSaveInProgress = false;
+let driveRefreshTimer = null;
 
 function setDriveStatus(text, color){
   const el = document.getElementById('driveStatus');
   el.style.color = color || 'var(--text-muted)';
   el.textContent = text;
+}
+
+function setDriveConnectionBadge(state){
+  // state: 'connected' | 'reconnecting' | 'disconnected'
+  const badge = document.getElementById('driveConnectionBadge');
+  if(state === 'connected'){
+    badge.textContent = '● Connected to Google Drive';
+    badge.style.borderColor = '#5EEAD4';
+    badge.style.color = '#5EEAD4';
+  } else if(state === 'reconnecting'){
+    badge.textContent = '● Reconnecting…';
+    badge.style.borderColor = '#FFD166';
+    badge.style.color = '#FFD166';
+  } else {
+    badge.textContent = '○ Not connected';
+    badge.style.borderColor = '#FF9A5C';
+    badge.style.color = '#FF9A5C';
+  }
+}
+
+function rememberDriveConnected(){
+  try{ localStorage.setItem('hdt_drive_was_connected', '1'); }catch(e){}
+}
+function wasDriveConnectedBefore(){
+  try{ return localStorage.getItem('hdt_drive_was_connected') === '1'; }catch(e){ return false; }
+}
+
+function scheduleDriveTokenRefresh(){
+  if(driveRefreshTimer) clearTimeout(driveRefreshTimer);
+  // Google access tokens last ~1hr — proactively refresh at 45min so a long session never silently loses connection
+  driveRefreshTimer = setTimeout(()=>{
+    if(driveTokenClient) driveTokenClient.requestAccessToken({ prompt: '' });
+  }, 45 * 60 * 1000);
 }
 
 let driveExplicitConnectPending = false;
@@ -1275,19 +1336,26 @@ function initDriveTokenClient(){
     setTimeout(initDriveTokenClient, 300); // GIS script may not be loaded yet — retry briefly
     return;
   }
+  if(wasDriveConnectedBefore()){
+    setDriveConnectionBadge('reconnecting');
+  }
   driveTokenClient = google.accounts.oauth2.initTokenClient({
     client_id: DRIVE_CLIENT_ID,
     scope: DRIVE_SCOPE,
     callback: async (resp)=>{
       if(resp.error){
-        if(driveExplicitConnectPending) setDriveStatus('Connection cancelled or failed', '#FF9A5C');
         driveExplicitConnectPending = false;
+        setDriveConnectionBadge('disconnected');
+        if(driveExplicitConnectPending) setDriveStatus('Connection cancelled or failed', '#FF9A5C');
         return; // silent auto-attempt failing quietly is expected for anyone who hasn't connected yet
       }
       driveExplicitConnectPending = false;
       driveAccessToken = resp.access_token;
+      rememberDriveConnected();
+      setDriveConnectionBadge('connected');
       document.getElementById('btnConnectDrive').textContent = 'Reconnect Google Drive';
       setDriveStatus('Connected — syncing…', '#5EEAD4');
+      scheduleDriveTokenRefresh();
       await mergeFromDriveOnConnect();
     }
   });
@@ -1328,10 +1396,10 @@ async function mergeFromDriveOnConnect(){
     const data = await res.json();
     const incoming = Array.isArray(data.tipLog) ? data.tipLog : (Array.isArray(data) ? data : []);
 
-    const existingKeys = new Set(tipLog.map(t=>t.number+'|'+t.text));
+    const existingKeys = new Set(tipLog.map(t=>t.number+'|'+(t.text||t.problem||'')));
     let added = 0;
     for(const entry of incoming){
-      const key = entry.number+'|'+entry.text;
+      const key = entry.number+'|'+(entry.text||entry.problem||'');
       if(!existingKeys.has(key)){
         tipLog.push(entry);
         existingKeys.add(key);
@@ -1350,7 +1418,7 @@ async function mergeFromDriveOnConnect(){
   }
 }
 
-async function saveToDriveIfConnected(){
+async function saveToDriveIfConnected(retrying){
   if(!driveAccessToken || driveSaveInProgress) return;
   driveSaveInProgress = true;
   try{
@@ -1361,12 +1429,14 @@ async function saveToDriveIfConnected(){
       try{ driveFileId = await findDriveFileId(); }catch(e){ /* will create fresh below if this fails */ }
     }
 
+    let statusCode = null;
     if(driveFileId){
       const res = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`, {
         method: 'PATCH',
         headers: { 'Authorization': 'Bearer ' + driveAccessToken, 'Content-Type': 'application/json' },
         body: blob
       });
+      statusCode = res.status;
       if(!res.ok) throw new Error('Drive update failed: ' + res.status);
     } else {
       const metadata = { name: DRIVE_FILENAME, mimeType: 'application/json' };
@@ -1378,6 +1448,7 @@ async function saveToDriveIfConnected(){
         headers: { 'Authorization': 'Bearer ' + driveAccessToken },
         body: form
       });
+      statusCode = res.status;
       if(!res.ok) throw new Error('Drive create failed: ' + res.status);
       const data = await res.json();
       driveFileId = data.id;
@@ -1385,6 +1456,14 @@ async function saveToDriveIfConnected(){
     setDriveStatus(`Synced to Drive ✓ (${new Date().toLocaleTimeString()})`, '#5EEAD4');
   }catch(e){
     console.error('Drive save failed:', e);
+    const expiredToken = e.message.includes('401');
+    if(expiredToken && !retrying && driveTokenClient){
+      driveSaveInProgress = false;
+      setDriveConnectionBadge('reconnecting');
+      setDriveStatus('Token expired — reconnecting automatically…', '#FFD166');
+      driveTokenClient.requestAccessToken({ prompt: '' }); // callback will fire, then the next save naturally succeeds
+      return;
+    }
     setDriveStatus('Drive sync failed this time — local save still succeeded (see console)', '#FF9A5C');
   }finally{
     driveSaveInProgress = false;
@@ -1449,7 +1528,7 @@ async function callOllamaForTip(prompt){
     throw new Error("OLLAMA_ERROR: could not parse the local model's reply as JSON — see console for what it actually said");
   }
   if(!CATEGORY_COLORS[parsed.category]) parsed.category = pick(Object.keys(CATEGORY_COLORS));
-  if(!['BEGINNER','TD LEVEL','PIPELINE'].includes(parsed.diff)) parsed.diff = 'TD LEVEL';
+  parsed.diff = normalizeDifficulty(parsed.diff);
   parsed.modelUsed = model + ' (local)';
   return parsed;
 }
@@ -1481,6 +1560,10 @@ document.getElementById('btnTestOllama').onclick = async ()=>{
 function normalizeWords(s){
   return s.toLowerCase().replace(/[^a-z0-9\s]/g,'').split(/\s+/).filter(w=>w.length>3);
 }
+function getComparableText(entry){
+  // universal text getter — works for regular tips (.text) and quick-fix tutorials (.problem), never crashes on either shape
+  return entry.text || entry.problem || '';
+}
 function textSimilarity(a, b){
   const wa = new Set(normalizeWords(a));
   const wb = new Set(normalizeWords(b));
@@ -1493,7 +1576,7 @@ function textSimilarity(a, b){
 const DUPLICATE_THRESHOLD = 0.5;
 
 async function generateUniqueAiTip(topicHint){
-  const historyTexts = tipLog.map(e=>e.text);
+  const historyTexts = tipLog.filter(e=>e.type!=='quickfix').map(e=>e.text);
   const recent = historyTexts.slice(-120); // what we tell the model to avoid — keeps the prompt focused on actually-shown tips
   const fullCorpus = historyTexts.concat(getEffectiveBank().map(t=>t.text)); // what we actually check the result against — everything that exists anywhere, shown or not
   let rejectedText = null;
@@ -1522,9 +1605,9 @@ const MODEL_FALLBACK_CHAIN = [
 
 function getPreferredGeminiModel(){
   try{
-    return localStorage.getItem('hdt_preferred_gemini_model') || MODEL_FALLBACK_CHAIN[0];
+    return localStorage.getItem('hdt_preferred_gemini_model') || 'gemini-3.1-flash-lite';
   }catch(e){
-    return MODEL_FALLBACK_CHAIN[0];
+    return 'gemini-3.1-flash-lite';
   }
 }
 (function initPreferredModelDropdown(){
@@ -1534,6 +1617,20 @@ function getPreferredGeminiModel(){
     try{ localStorage.setItem('hdt_preferred_gemini_model', select.value); }catch(e){}
   };
 })();
+
+function normalizeDifficulty(raw){
+  const valid = ['BEGINNER', 'TD LEVEL', 'PIPELINE'];
+  if(typeof raw === 'string'){
+    const cleaned = raw.trim().toUpperCase().replace(/\s+/g, ' ');
+    if(valid.includes(cleaned)) return cleaned;
+    // handle near-misses like "TD-LEVEL" or "TDLEVEL" or "INTERMEDIATE"/"ADVANCED" the model might use instead
+    if(cleaned.includes('BEGIN')) return 'BEGINNER';
+    if(cleaned.includes('PIPELINE') || cleaned.includes('ADVANCED')) return 'PIPELINE';
+    if(cleaned.includes('TD') || cleaned.includes('INTERMEDIATE')) return 'TD LEVEL';
+  }
+  // genuinely couldn't parse it — pick randomly rather than silently biasing toward one level every time
+  return pick(valid);
+}
 
 async function callOneGeminiModel(model, key, prompt){
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
@@ -1578,7 +1675,7 @@ async function callOneGeminiModel(model, key, prompt){
     throw new Error('API_ERROR: could not parse Gemini\'s reply as JSON — see console for what it actually said');
   }
   if(!CATEGORY_COLORS[parsed.category]) parsed.category = pick(Object.keys(CATEGORY_COLORS));
-  if(!['BEGINNER','TD LEVEL','PIPELINE'].includes(parsed.diff)) parsed.diff = 'TD LEVEL';
+  parsed.diff = normalizeDifficulty(parsed.diff);
   parsed.modelUsed = model;
   return parsed;
 }
@@ -1589,6 +1686,7 @@ async function callClaudeForTip(recentTexts, rejectedText, topicHint){
   let prompt = 'Generate one original, technically accurate tip about SideFX Houdini (procedural 3D VFX software) for an ongoing social-media tip series.\n'
   + 'Respond with ONLY raw JSON, no markdown fences, no commentary, in exactly this shape:\n'
   + '{"category":"one of: ' + categories + '","diff":"one of: BEGINNER | TD LEVEL | PIPELINE","text":"the tip itself, one to two sentences, under 220 characters, specific and accurate","blank":"OPTIONAL - a short exact phrase copied verbatim from text, suitable to blank out as a guess-the-term puzzle. Omit this field entirely if nothing fits well.","debate":"OPTIONAL - true only if the tip naturally invites a which-do-you-use comparison, otherwise omit"}\n\n'
+  + 'Vary the "diff" field genuinely across BEGINNER, TD LEVEL, and PIPELINE from one tip to the next — do not default to the same difficulty level repeatedly. Pick whichever difficulty honestly matches how advanced the specific technique in this tip actually is.\n\n'
   + 'These tips have already been used in the series — the new tip must cover a genuinely different node, technique, or concept, not just reworded phrasing of any of these:\n' + usedList;
   if(topicHint){
     prompt += '\n\nThe new tip MUST be specifically about this topic: "' + topicHint + '". Stay tightly focused on that exact topic — pick the category from the list above that best fits it, but the tip itself has to genuinely be about "' + topicHint + '", not something generic.';
@@ -1612,6 +1710,150 @@ async function callClaudeForTip(recentTexts, rejectedText, topicHint){
     console.error(`${preferred} failed with status ${e.status}:`, e.message);
     throw e; // no fallback — the selected model is the only one tried, error reported as-is
   }
+}
+
+// ---------- Quick-Fix Tutorials: a parallel content type, same models/infra, different shape ----------
+function buildQuickFixPrompt(recentProblems, rejectedProblem, topicHint){
+  const categories = Object.keys(CATEGORY_COLORS).join(' | ');
+  const usedList = recentProblems.map((t,i)=>(i+1)+'. '+t.slice(0,140)).join('\n');
+  let prompt = 'Generate one short, practical "quick-fix" mini-tutorial for SideFX Houdini (procedural 3D VFX software).\n'
+  + 'This is NOT a full tutorial — it is one very specific, small problem someone would actually run into, with a short numbered fix, small enough to read on a single card in a few seconds.\n'
+  + 'Respond with ONLY raw JSON, no markdown fences, no commentary, in exactly this shape:\n'
+  + '{"category":"one of: ' + categories + '","diff":"one of: BEGINNER | TD LEVEL | PIPELINE","problem":"a short, specific problem statement someone would actually hit, under 100 characters","steps":["step 1, short and immediately actionable","step 2","step 3, optional 4th only if genuinely needed"]}\n'
+  + 'Keep it to 3 steps, or 4 only if truly necessary. Each step under 90 characters, concrete and actionable — not vague advice like "check your settings".\n'
+  + 'Vary the "diff" field genuinely across BEGINNER, TD LEVEL, and PIPELINE — do not default to the same one repeatedly. Pick whichever difficulty honestly matches this problem.\n\n'
+  + 'These problems have already been used — the new one must be a genuinely different, specific problem, not a reworded version of any of these:\n' + usedList;
+  if(topicHint){
+    prompt += '\n\nThe new quick-fix MUST be specifically about this topic: "' + topicHint + '".';
+  }
+  if(rejectedProblem){
+    prompt += '\n\nYour previous suggestion was rejected as too similar to an existing one: "' + rejectedProblem + '"\nPick a genuinely different problem this time.';
+  }
+  return prompt;
+}
+
+function validateQuickFixResult(parsed){
+  if(!CATEGORY_COLORS[parsed.category]) parsed.category = pick(Object.keys(CATEGORY_COLORS));
+  parsed.diff = normalizeDifficulty(parsed.diff);
+  if(!parsed.problem || typeof parsed.problem !== 'string'){
+    throw new Error('response missing a valid "problem" field');
+  }
+  if(!Array.isArray(parsed.steps) || parsed.steps.length < 2){
+    throw new Error('response missing a valid "steps" array');
+  }
+  parsed.steps = parsed.steps.slice(0, 5).map(s=>String(s));
+  return parsed;
+}
+
+async function callOneGeminiModelForQuickFix(model, key, prompt){
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { maxOutputTokens: 1024, temperature: 1.0, thinkingConfig: { thinkingBudget: 0 } }
+    })
+  });
+  if(!response.ok){
+    const errBody = await response.text().catch(()=> '');
+    const err = new Error(model + ': API_ERROR ' + response.status + ' ' + errBody.slice(0,200));
+    err.status = response.status;
+    throw err;
+  }
+  const data = await response.json();
+  console.log(`Gemini raw response (quickfix, ${model}):`, data);
+  if(data.promptFeedback && data.promptFeedback.blockReason){
+    throw new Error('API_ERROR: prompt blocked — ' + data.promptFeedback.blockReason);
+  }
+  const candidate = (data.candidates||[])[0];
+  if(candidate && candidate.finishReason && candidate.finishReason!=='STOP'){
+    const reason = candidate.finishReason==='MAX_TOKENS' ? 'MAX_TOKENS (ran out of output tokens)' : candidate.finishReason;
+    throw new Error('API_ERROR: generation stopped — ' + reason);
+  }
+  const textBlocks = (candidate?.content?.parts||[]).map(p=>p.text||'').join('\n');
+  if(!textBlocks) throw new Error('API_ERROR: empty response from Gemini — see console for the raw payload');
+  const clean = textBlocks.replace(/```json|```/g,'').trim();
+  let parsed;
+  try{
+    parsed = JSON.parse(clean);
+  }catch(parseErr){
+    console.error('Gemini returned non-JSON text (quickfix):', clean);
+    throw new Error("API_ERROR: could not parse Gemini's reply as JSON — see console for what it actually said");
+  }
+  parsed = validateQuickFixResult(parsed);
+  parsed.modelUsed = model;
+  return parsed;
+}
+
+async function callOllamaForQuickFix(prompt){
+  const endpointRaw = document.getElementById('ollamaEndpoint').value.trim() || 'http://localhost:11434';
+  const endpoint = endpointRaw.replace(/\/$/, '');
+  const model = document.getElementById('ollamaModel').value.trim() || 'llama3.1:8b';
+  let response;
+  try{
+    response = await fetch(endpoint + '/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model, prompt, stream:false, format:'json' })
+    });
+  }catch(networkErr){
+    throw new Error("OLLAMA_ERROR: could not reach Ollama at " + endpoint + " — is it running?");
+  }
+  if(!response.ok){
+    const errBody = await response.text().catch(()=>'');
+    const err = new Error('OLLAMA_ERROR: ' + response.status + ' ' + errBody.slice(0,200));
+    err.status = response.status;
+    throw err;
+  }
+  const data = await response.json();
+  const text = (data.response || '').trim();
+  if(!text) throw new Error('OLLAMA_ERROR: empty response from local model — see console for the raw payload');
+  const clean = text.replace(/```json|```/g,'').trim();
+  let parsed;
+  try{
+    parsed = JSON.parse(clean);
+  }catch(parseErr){
+    console.error('Ollama returned non-JSON text (quickfix):', clean);
+    throw new Error("OLLAMA_ERROR: could not parse the local model's reply as JSON — see console for what it actually said");
+  }
+  parsed = validateQuickFixResult(parsed);
+  parsed.modelUsed = model + ' (local)';
+  return parsed;
+}
+
+async function callModelForQuickFix(recentProblems, rejectedProblem, topicHint){
+  const prompt = buildQuickFixPrompt(recentProblems, rejectedProblem, topicHint);
+  if(modelSource === 'local'){
+    return await callOllamaForQuickFix(prompt);
+  }
+  const key = getApiKey();
+  if(!key) throw new Error('NO_KEY');
+  const preferred = getPreferredGeminiModel();
+  try{
+    return await callOneGeminiModelForQuickFix(preferred, key, prompt);
+  }catch(e){
+    console.error(`${preferred} failed (quickfix) with status ${e.status}:`, e.message);
+    throw e;
+  }
+}
+
+async function generateUniqueQuickFix(topicHint){
+  const historyProblems = tipLog.filter(e=>e.type==='quickfix').map(e=>e.problem);
+  const recent = historyProblems.slice(-60);
+  let rejectedProblem = null;
+  for(let attempt=0; attempt<2; attempt++){
+    const result = await callModelForQuickFix(recent, rejectedProblem, topicHint);
+    let worstSim = 0;
+    for(const existing of historyProblems){
+      const sim = textSimilarity(existing, result.problem);
+      if(sim > worstSim) worstSim = sim;
+      if(worstSim >= DUPLICATE_THRESHOLD) break;
+    }
+    if(worstSim < DUPLICATE_THRESHOLD) return result;
+    rejectedProblem = result.problem;
+  }
+  throw new Error('DUPLICATE_RISK');
 }
 
 function usedBankIndices(){
@@ -1655,7 +1897,31 @@ async function buildNextEntry(){
   }
 }
 
+function applyQuickFixEntry(entry){
+  activeEntry = entry;
+  currentNumber = entry.number;
+  currentMode = 'quickfix'; // distinct sentinel — never matches 'puzzle'/'debate'/'normal' checks elsewhere, so those code paths simply don't trigger
+  currentCTA = '';
+  introStart = performance.now();
+
+  modeBadge.textContent = 'Mode: 🔧 Quick-Fix Tutorial  ·  ' + entry.diff + ' · AI-generated';
+  document.getElementById('sourceBadge').textContent = `Source: ${entry.model || 'Gemini'}`;
+  currentCaptions = generateQuickFixCaption(entry, currentNumber);
+  renderActiveCaption();
+  document.getElementById('tipModeInfo').value = 'Quick-Fix Tutorial — a small specific problem with numbered steps, not a single-sentence tip';
+  document.getElementById('puzzleAnswer').value = ''; // no answer-reveal concept for this content type
+  tipNumberInput.value = currentNumber;
+  refreshStatusLines();
+  modeOverrideForExport = null;
+  ctaOverrideForExport = null;
+  updateExportModeButtonsUI();
+}
+
 function applyEntry(entry){
+  if(entry.type === 'quickfix'){
+    applyQuickFixEntry(entry);
+    return;
+  }
   activeEntry = entry;
   currentNumber = entry.number;
   if(!entry.mode){
@@ -1736,6 +2002,56 @@ async function nextTip(){
   }
   btnNew.disabled = false;
   btnNew.textContent = 'New Tip →';
+}
+
+function generateQuickFixCaption(entry, num){
+  const num3 = String(num).padStart(3,'0');
+  const stepsText = entry.steps.map((s,i)=>`${i+1}. ${s}`).join('\n');
+  const hashtags = '#Houdini #SideFX #VFX #TechArt';
+  return {
+    x: `Quick fix #${num3}: ${entry.problem}\n\n${stepsText}\n\n${hashtags}`,
+    instagram: `🔧 Quick Fix #${num3}\n\n${entry.problem}\n\n${stepsText}\n\nSave this for later 📌\n\n#Houdini #SideFX #VFX #3DArt #TechArt #CGI #VFXArtist #ProceduralArt`,
+    reddit: `Title: Quick fix #${num3}: ${entry.problem}\n\nBody: ${stepsText}\n\n(Part of an ongoing quick-fix series — small, specific problems and their fixes.)`
+  };
+}
+
+async function nextQuickFix(){
+  console.log('New Quick-Fix clicked — starting generation…');
+  const btn = document.getElementById('btnNewQuickFix');
+  const topicRaw = document.getElementById('topicInput') ? document.getElementById('topicInput').value.trim() : '';
+  btn.disabled = true;
+  btn.textContent = 'Generating…';
+  statusEl.style.color = '';
+  statusEl.textContent = `Asking ${modelSource==='local' ? 'your local model' : 'Gemini'} for a quick-fix tutorial…`;
+  try{
+    const result = await generateUniqueQuickFix(topicRaw || undefined);
+    const entry = {
+      type: 'quickfix',
+      source: 'ai',
+      model: result.modelUsed,
+      cat: result.category,
+      color: CATEGORY_COLORS[result.category],
+      diff: result.diff,
+      problem: result.problem,
+      steps: result.steps,
+      number: tipLog.length+1
+    };
+    tipLog.push(entry);
+    await saveLog();
+    applyEntry(entry);
+    statusEl.style.color = '';
+    statusEl.textContent = '';
+  }catch(e){
+    console.error('Quick-fix generation failed:', e);
+    statusEl.style.color = '#FF5C5C';
+    statusEl.textContent = (e.message==='NO_KEY')
+      ? '⚠ No API key/model configured — Quick-Fix Tutorials need a model, there is no offline bank for this type yet'
+      : (e.message==='DUPLICATE_RISK')
+        ? '⚠ Could not find a unique quick-fix after 2 tries — click again to retry'
+        : `⚠ ${modelSource==='local' ? 'Local model' : 'Gemini'} error: ${e.message}`;
+  }
+  btn.disabled = false;
+  btn.textContent = 'New Quick-Fix Tutorial →';
 }
 
 function jumpToTip(num){
@@ -2008,7 +2324,7 @@ function drawNetworkCard(ctx, w, h, tip, mode, badge, displayText, alpha, scale,
   // incoming wire trailing off the top, suggesting the network continues above
   ctx.beginPath();
   ctx.moveTo(pillCX, pillY - h*0.055);
-  ctx.quadraticCurveTo(pillCX - w*0.035, pillY - h*0.02, pillCX, pillY);
+  ctx.lineTo(pillCX, pillY);
   ctx.strokeStyle = 'rgba(255,255,255,0.22)';
   ctx.lineWidth = 2;
   ctx.stroke();
@@ -2233,8 +2549,311 @@ function drawProgressBar(ctx, w, h, color, fraction){
   ctx.fillRect(margin, y, barW*fraction, barH);
 }
 
+function drawQuickFixCard(ctx, w, h, entry, t, introProgress, motion, numberOverride){
+  const displayNum = numberOverride!=null ? numberOverride : currentNumber;
+  const badgeColor = entry.color;
+
+  const ease = introProgress<1 ? 1-Math.pow(1-introProgress,3) : 1;
+  const alpha = ease;
+  const hookEnabled = document.getElementById('toggleHookIntro').checked;
+  let scale;
+  if(hookEnabled && motion){
+    const hookProgress = Math.min(introProgress*1.3, 1);
+    scale = 0.85 + 0.15*backOutEase(hookProgress);
+  } else {
+    scale = 0.94 + 0.06*ease;
+  }
+
+  ctx.clearRect(0,0,w,h);
+  ctx.drawImage(getBackground(w,h,badgeColor),0,0);
+  drawCategoryIcon(ctx, w, h, entry, t, motion);
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(w/2, h/2);
+  ctx.scale(scale, scale);
+  ctx.translate(-w/2, -h/2);
+
+  const margin = w*0.08;
+  const format_ = format; // local alias, same global used throughout the file
+
+  // ---- hero pill node (same chrome style as tip cards) ----
+  const pillW = w*0.30;
+  const pillH = pillW*0.30;
+  const formatShift = format_==='story' ? h*0.06 : 0;
+  const pillY = h*0.125 - formatShift;
+  const pr = pillH/2;
+  const labelGap = w*0.04;
+  const pillX = w/2 - pillW/2;
+  const pillCX = w/2;
+  const labelX = pillX + pillW + labelGap;
+
+  ctx.beginPath();
+  ctx.moveTo(pillCX, pillY - h*0.055);
+  ctx.lineTo(pillCX, pillY);
+  ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(pillCX, pillY, pillH*0.09, 0, Math.PI*2);
+  ctx.fillStyle = '#8A8D95';
+  ctx.fill();
+
+  const grad = ctx.createLinearGradient(0, pillY, 0, pillY+pillH);
+  grad.addColorStop(0, '#DADCE0');
+  grad.addColorStop(0.5, '#B7BAC1');
+  grad.addColorStop(1, '#95989F');
+  ctx.shadowColor = 'rgba(0,0,0,0.45)';
+  ctx.shadowBlur = 26;
+  ctx.fillStyle = grad;
+  roundRectPath(ctx, pillX, pillY, pillW, pillH, pr);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+  roundRectPath(ctx, pillX, pillY, pillW, pillH, pr);
+  ctx.stroke();
+
+  ctx.strokeStyle = 'rgba(58,60,64,0.55)';
+  ctx.lineWidth = pillH*0.045;
+  ctx.lineCap = 'round';
+  const drawTicks = (cx)=>{
+    for(let i=-1;i<=1;i++){
+      const tx = cx + i*pillH*0.24;
+      ctx.beginPath();
+      ctx.moveTo(tx - pillH*0.14, pillY + pillH*0.82);
+      ctx.lineTo(tx + pillH*0.14, pillY + pillH*0.18);
+      ctx.stroke();
+    }
+  };
+  drawTicks(pillX + pillW*0.20);
+  drawTicks(pillX + pillW*0.80);
+
+  // center icon — a small wrench glyph, visually distinct from a tip's category icon
+  ctx.save();
+  ctx.translate(pillCX, pillY + pillH/2);
+  ctx.strokeStyle = '#3A3C40';
+  ctx.fillStyle = '#3A3C40';
+  ctx.lineWidth = pillH*0.06;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  const s = pillH*0.16;
+  ctx.beginPath();
+  ctx.arc(-s*0.5, -s*0.5, s*0.35, 0.3*Math.PI, 1.6*Math.PI);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-s*0.25,-s*0.25);
+  ctx.lineTo(s*0.6, s*0.6);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(s*0.7, s*0.7, s*0.22, 0, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.beginPath();
+  ctx.arc(pillCX, pillY+pillH, pillH*0.09, 0, Math.PI*2);
+  ctx.fillStyle = badgeColor;
+  ctx.fill();
+
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.font = (w*0.017) + 'px "JetBrains Mono", monospace';
+  ctx.fillText('QUICK-FIX · ' + entry.cat.toUpperCase(), labelX, pillY + pillH*0.42);
+
+  const nodeNameStr = 'quickfix' + String(displayNum).padStart(3,'0');
+  let nameFontSize = w*0.027;
+  const nameMaxW = (w*0.94) - labelX;
+  ctx.font = '700 ' + nameFontSize + 'px "Space Grotesk", sans-serif';
+  while(ctx.measureText(nodeNameStr).width > nameMaxW && nameFontSize > w*0.012){
+    nameFontSize -= 1;
+    ctx.font = '700 ' + nameFontSize + 'px "Space Grotesk", sans-serif';
+  }
+  ctx.fillStyle = '#F1F1F0';
+  ctx.fillText(nodeNameStr, labelX, pillY + pillH*0.42 + h*0.035);
+
+  // ---- wire into panel ----
+  const panelY = pillY + pillH + h*0.075;
+  const wireLandX = pillCX;
+  const flow = motion ? (t*0.05) % 16 : 0;
+  ctx.beginPath();
+  ctx.moveTo(pillCX, pillY+pillH);
+  ctx.bezierCurveTo(pillCX, pillY+pillH+h*0.05, wireLandX, panelY-h*0.03, wireLandX, panelY);
+  ctx.strokeStyle = badgeColor;
+  ctx.lineWidth = 2.5;
+  ctx.setLineDash([6,6]);
+  ctx.lineDashOffset = -flow;
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // ---- content panel ----
+  const panelX = margin;
+  const panelW = w - margin*2;
+  const panelH = h - panelY - h*0.07 - formatShift;
+  const pr2 = panelW*0.03;
+
+  ctx.shadowColor = 'rgba(0,0,0,0.5)';
+  ctx.shadowBlur = 34;
+  ctx.fillStyle = '#1F2126';
+  roundRectPath(ctx, panelX, panelY, panelW, panelH, pr2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  roundRectPath(ctx, panelX, panelY, panelW, panelH, pr2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(wireLandX, panelY, panelW*0.008, 0, Math.PI*2);
+  ctx.fillStyle = badgeColor;
+  ctx.fill();
+
+  // difficulty pill
+  const diffPillY = panelY + panelH*0.05;
+  const diffPillH = panelH*0.045;
+  ctx.font = (panelH*0.026) + 'px "JetBrains Mono", monospace';
+  const diffW = ctx.measureText(entry.diff).width;
+  const diffPadX = panelW*0.02;
+  const diffPillW = diffW + diffPadX*2;
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  roundRectPath(ctx, panelX+panelW*0.045, diffPillY, diffPillW, diffPillH, diffPillH/2);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+  ctx.lineWidth = 1.2;
+  roundRectPath(ctx, panelX+panelW*0.045, diffPillY, diffPillW, diffPillH, diffPillH/2);
+  ctx.stroke();
+  ctx.fillStyle = '#C7C9CF';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(entry.diff, panelX+panelW*0.045+diffPadX, diffPillY+diffPillH/2+1);
+
+  // "PROBLEM" label + text
+  const textX = panelX + panelW*0.045;
+  const textMaxW = panelW*0.91;
+  const problemLabelY = diffPillY + diffPillH + panelH*0.05;
+  ctx.font = '700 ' + (panelH*0.026) + 'px "JetBrains Mono", monospace';
+  ctx.fillStyle = badgeColor;
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('PROBLEM', textX, problemLabelY);
+
+  let probFontSize = panelH*0.05;
+  ctx.font = '600 ' + probFontSize + 'px "Inter", sans-serif';
+  let probLines = wrapLines(ctx, entry.problem, textMaxW);
+  let probLineHeight = probFontSize*1.28;
+  while(probLines.length > 2 && probFontSize > panelH*0.032){
+    probFontSize -= 1;
+    ctx.font = '600 ' + probFontSize + 'px "Inter", sans-serif';
+    probLines = wrapLines(ctx, entry.problem, textMaxW);
+    probLineHeight = probFontSize*1.28;
+  }
+  ctx.fillStyle = '#F1F1F0';
+  ctx.textBaseline = 'middle';
+  let py = problemLabelY + panelH*0.04 + probLineHeight/2;
+  for(const line of probLines){
+    ctx.fillText(line, textX, py);
+    py += probLineHeight;
+  }
+
+  const footerH = panelH*0.16;
+  const footerY = panelY + panelH - footerH;
+
+  // ---- numbered steps, filling remaining space ----
+  const stepsTop = py + panelH*0.02;
+  const stepsBottom = footerY - panelH*0.03;
+  const stepsAreaH = Math.max(stepsBottom - stepsTop, panelH*0.1);
+
+  function layoutSteps(fs){
+    ctx.font = '500 ' + fs + 'px "Inter", sans-serif';
+    const numColW = fs*1.6;
+    const stepMaxW = textMaxW - numColW;
+    let totalH = 0;
+    const wrapped = entry.steps.map(s=>{
+      const l = wrapLines(ctx, s, stepMaxW);
+      const lh = fs*1.3;
+      totalH += l.length*lh + fs*0.55;
+      return {lines:l, lh};
+    });
+    return {wrapped, totalH, numColW};
+  }
+  let stepFontSize = panelH*0.04;
+  let layout = layoutSteps(stepFontSize);
+  while(layout.totalH > stepsAreaH && stepFontSize > panelH*0.024){
+    stepFontSize -= 1;
+    layout = layoutSteps(stepFontSize);
+  }
+
+  let cursorY = stepsTop + Math.max((stepsAreaH - layout.totalH)/2, 0);
+  ctx.textBaseline = 'middle';
+  entry.steps.forEach((step, i)=>{
+    const {lines, lh} = layout.wrapped[i];
+    const blockH = lines.length * lh;
+    const centerY = cursorY + blockH/2;
+    const circleR = layout.numColW*0.32;
+    const circleCX = textX + circleR;
+    ctx.beginPath();
+    ctx.arc(circleCX, centerY, circleR, 0, Math.PI*2);
+    ctx.fillStyle = badgeColor + '30';
+    ctx.fill();
+    ctx.strokeStyle = badgeColor;
+    ctx.lineWidth = 1.3;
+    ctx.stroke();
+    ctx.fillStyle = badgeColor;
+    ctx.font = '700 ' + (stepFontSize*0.85) + 'px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(String(i+1), circleCX, centerY+1);
+
+    ctx.font = '500 ' + stepFontSize + 'px "Inter", sans-serif';
+    ctx.fillStyle = '#E4E4E3';
+    ctx.textAlign = 'left';
+    let ly = cursorY + lh/2;
+    for(const line of lines){
+      ctx.fillText(line, textX + layout.numColW, ly);
+      ly += lh;
+    }
+    cursorY += blockH + stepFontSize*0.55; // always advance past this block's actual height + a fixed gap — can never overlap the next step, regardless of line-count differences
+  });
+
+  // ---- footer (identical pattern to tip cards) ----
+  ctx.beginPath();
+  ctx.moveTo(panelX+panelW*0.045, footerY);
+  ctx.lineTo(panelX+panelW*0.955, footerY);
+  ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+
+  ctx.fillStyle = '#8A8D95';
+  ctx.font = (footerH*0.26) + 'px "JetBrains Mono", monospace';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(handleInput.value || '@Earlymanfx', panelX+panelW*0.045, footerY+footerH/2+2);
+
+  const lgR = footerH*0.2;
+  const lgX = panelX+panelW*0.955-lgR;
+  const lgY = footerY+footerH/2;
+  ctx.beginPath();
+  ctx.arc(lgX,lgY,lgR,0,Math.PI*2);
+  ctx.strokeStyle = badgeColor;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = badgeColor;
+  ctx.font = '700 '+(lgR*1.15)+'px "Space Grotesk", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('H', lgX, lgY+1);
+
+  ctx.restore();
+
+  // progress bar overlay — same feature, works identically for this content type
+  const progressBarEnabled = document.getElementById('toggleProgressBar').checked;
+  const progressFraction = (progressBarEnabled && motion && recording) ? Math.min((t - recordingStartTime) / activeRecordingDurationMs, 1) : null;
+  drawProgressBar(ctx, w, h, badgeColor, progressFraction);
+}
+
 function draw(ctx, w, h, t, introProgress, motion, numberOverride, modeOverride, ctaOverride){
   if(!activeEntry) return;
+  if(activeEntry.type === 'quickfix'){
+    drawQuickFixCard(ctx, w, h, activeEntry, t, introProgress, motion, numberOverride);
+    return;
+  }
   const tip = activeEntry;
   const mode = modeOverride || currentMode;
   const badge = badgeForMode(tip, mode);
@@ -2724,6 +3343,7 @@ document.fonts.ready.then(()=>requestAnimationFrame(loop));
 
 // ---------- Controls ----------
 document.getElementById('btnNew').onclick = ()=>{ nextTip(); };
+document.getElementById('btnNewQuickFix').onclick = ()=>{ nextQuickFix(); };
 
 document.getElementById('btnLoadNumber').onclick = ()=>{
   const val = parseInt(document.getElementById('tipNumberInput').value, 10);
@@ -2817,9 +3437,11 @@ document.getElementById('btnScanDupes').onclick = ()=>{
   const pairs = [];
   for(let i=0; i<tipLog.length; i++){
     for(let j=i+1; j<tipLog.length; j++){
-      const sim = textSimilarity(tipLog[i].text, tipLog[j].text);
+      const textA = getComparableText(tipLog[i]);
+      const textB = getComparableText(tipLog[j]);
+      const sim = textSimilarity(textA, textB);
       if(sim >= DUPLICATE_THRESHOLD){
-        pairs.push({a:i+1, b:j+1, sim, textA:tipLog[i].text, textB:tipLog[j].text});
+        pairs.push({a:i+1, b:j+1, sim, textA, textB});
       }
     }
   }
@@ -2860,10 +3482,10 @@ document.getElementById('importFileInput').addEventListener('change', (e)=>{
       const incoming = Array.isArray(data.tipLog) ? data.tipLog : (Array.isArray(data) ? data : null);
       if(!incoming) throw new Error('Not a recognized history file');
 
-      const existingKeys = new Set(tipLog.map(t=>t.number+'|'+t.text));
+      const existingKeys = new Set(tipLog.map(t=>t.number+'|'+(t.text||t.problem||'')));
       let added = 0;
       for(const entry of incoming){
-        const key = entry.number+'|'+entry.text;
+        const key = entry.number+'|'+(entry.text||entry.problem||'');
         if(!existingKeys.has(key)){
           tipLog.push(entry);
           existingKeys.add(key);
@@ -3053,7 +3675,7 @@ document.getElementById('btnRec').onclick = ()=>{
   const candidates = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1.42E01E', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
   const mime = candidates.find(m => MediaRecorder.isTypeSupported(m)) || 'video/webm';
   const ext = mime.startsWith('video/mp4') ? 'mp4' : 'webm';
-  recorder = new MediaRecorder(stream, {mimeType:mime, videoBitsPerSecond:8000000});
+  recorder = new MediaRecorder(stream, {mimeType:mime, videoBitsPerSecond:20000000});
   chunks = [];
   recorder.ondataavailable = e=>{ if(e.data.size>0) chunks.push(e.data); };
   recorder.onstop = ()=>{
