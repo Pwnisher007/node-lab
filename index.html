@@ -757,6 +757,23 @@ details.an-setup-help code{background:var(--node-body); padding:1px 5px; border-
   </div>
 </div>
 
+<div class="node-box" id="cloudSyncSection" style="--accent:#5EEAD4; margin:32px auto 0; max-width:640px;">
+  <div class="node-header"><span class="node-icon">C</span>cloud_sync<span class="node-number">isolated</span></div>
+  <div class="node-fields">
+    <p style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-muted); opacity:.8; margin:0 0 12px; line-height:1.5;">
+      Real cross-device sync, backed by your own Firebase project — same tip history and settings on any device or browser, not just this one. See the included <code>firebase-backend</code> folder for setup instructions.
+    </p>
+    <span class="field-label">Backend Base URL <span style="opacity:.6;">(e.g. https://us-central1-your-project.cloudfunctions.net)</span></span>
+    <input type="text" id="cloudBaseUrl" placeholder="https://us-central1-your-project.cloudfunctions.net" style="margin-bottom:8px;">
+    <span class="field-label">API Key</span>
+    <input type="password" id="cloudApiKey" placeholder="the secret you set with firebase functions:config:set">
+    <div style="display:flex; gap:8px; margin-top:8px;">
+      <button class="action btn-secondary" id="btnSaveCloudConfig" style="border-color:#5EEAD4; color:#5EEAD4;">Save & Connect</button>
+    </div>
+    <div id="cloudSyncStatus" style="font-family:'JetBrains Mono',monospace; font-size:11px; margin-top:8px; min-height:16px;"></div>
+  </div>
+</div>
+
 <div class="node-box" id="analyticsDashboardSection" style="--accent:#FF7A1A; margin:32px auto 0; max-width:640px;">
   <div class="node-header"><span class="node-icon">A</span>content_analytics<span class="node-number">isolated</span></div>
   <div class="node-fields">
@@ -1428,17 +1445,18 @@ document.getElementById('btnGenerateTopic').onclick = async ()=>{
 
   try{
     let entry;
+    const eliteModeOn = document.getElementById('toggleEliteMode').checked;
     if(pillar === 'multichoice'){
-      const ai = await generateUniqueMultiChoice(topic);
+      const ai = eliteModeOn ? await generateEliteMultiChoice(topic) : await generateUniqueMultiChoice(topic);
       entry = {type:'multichoice', source:'ai', model:ai.modelUsed, questionType:ai.questionType, cat:ai.category, color:CATEGORY_COLORS[ai.category], diff:ai.diff, question:ai.question, code:ai.code, context:ai.context, choices:ai.choices};
     } else if(pillar === 'dailyTip'){
-      const ai = await generateUniqueDailyTip(topic);
+      const ai = eliteModeOn ? await generateEliteTip('dailyTip', topic) : await generateUniqueDailyTip(topic);
       entry = {source:'ai', model:ai.modelUsed, cat:ai.category, color:CATEGORY_COLORS[ai.category], diff:ai.diff, text:ai.text, hook:ai.hook, blank:null, debate:false, mode:'normal'};
     } else if(pillar === 'fillBlank'){
-      const ai = await generateUniqueFillBlank(topic);
+      const ai = eliteModeOn ? await generateEliteTip('fillBlank', topic) : await generateUniqueFillBlank(topic);
       entry = {source:'ai', model:ai.modelUsed, cat:ai.category, color:CATEGORY_COLORS[ai.category], diff:ai.diff, text:ai.text, hook:ai.hook, blank:ai.blank, debate:false, mode:'puzzle'};
     } else {
-      const ai = await generateUniqueDebate(topic);
+      const ai = eliteModeOn ? await generateEliteTip('debate', topic) : await generateUniqueDebate(topic);
       entry = {source:'ai', model:ai.modelUsed, cat:ai.category, color:CATEGORY_COLORS[ai.category], diff:ai.diff, text:ai.text, blank:null, debate:true, mode:'debate', optionA:ai.optionA, optionB:ai.optionB};
     }
     entry.number = tipLog.length+1;
@@ -1747,7 +1765,7 @@ Requirements:
 - Instagram: caption can be longer and more descriptive, hashtag-friendly (6-10 hashtags at the end), casual and engaging tone.
 - YouTube title: this is the most important field for discovery — it MUST be phrased the way someone would actually type a search into YouTube, not a label or a hook. Use a real search pattern: "How to [do the specific thing]", "Why does [the specific thing] happen", "What is [the specific node/term] in Houdini", "[Node A] vs [Node B] Houdini", etc. — picking whichever pattern actually fits what this tip teaches. It MUST include the specific real node/attribute/concept name from the content above (that's the actual searchable keyword), not a vague paraphrase. Under 100 characters. Bad example (too vague/labely): "Modeling: A useful PolyDoctor trick | Houdini Tip #165". Good example (matches real search intent, keyword-forward): "How to Find Broken Geometry Before It Breaks Your Sim (Houdini PolyDoctor)". The description/caption below the title can be longer and more casual — the title is the one place where matching search phrasing matters most.
 - If this is a Fill in the Blank or Houdini Challenge post, build genuine curiosity WITHOUT revealing the answer in the main caption body.
-- If this is a Pick a Side post, phrase things to invite genuine disagreement and discussion, not just information.
+- If this is a Pick a Side post, phrase things to invite genuine disagreement and discussion, not just information.${HUMAN_VOICE_GUIDANCE}
 - Respond with ONLY raw JSON, no markdown fences, no commentary, in exactly this shape:
 {"x":{"title":"...","caption":"..."},"instagram":{"title":"...","caption":"..."},"youtube":{"title":"...","caption":"..."}}`;
 }
@@ -1809,6 +1827,7 @@ async function saveLog(){
     localStorage.setItem('houdini_tip_log', JSON.stringify(tipLog));
   }catch(e){ console.error('Could not save tip history', e); }
   saveToDriveIfConnected(); // fire-and-forget — never blocks normal saving
+  saveToCloudIfConfigured(); // fire-and-forget — same pattern, independent of Drive
 }
 
 // ---------- Google Drive sync ----------
@@ -2667,6 +2686,8 @@ const QUALITY_SELF_CHECK = '\n\nBefore finalizing your answer, silently verify i
 
 const STRONG_OPENING_GUIDANCE = '\n\nThe opening line matters more than anything else that follows it — it decides whether someone keeps reading at all. Do NOT open with a flat instruction like "Use the L key to select loops." Instead, open with a real hook: a relatable question ("Messy node graph?"), a "prefer this over that" framing, or a "one thing every Houdini artist should know" framing — then deliver the actual content right after.';
 
+const HUMAN_VOICE_GUIDANCE = '\n\nWrite like a real Houdini artist explaining this to a colleague, not like AI-generated text. Never use phrases like "in today\'s fast-paced world," "it\'s important to note," "when it comes to," "unlock the power of," "game-changer," "revolutionize," "seamless," "leverage," "delve into," "navigate the complexities," or "elevate your workflow" — these are dead giveaways of AI writing and instantly break the illusion. Avoid overly balanced, textbook-perfect sentence structure and excessive hedging. Vary sentence length and rhythm the way someone actually talks when they know a subject well — direct, a little uneven, occasionally blunt, never like a press release.';
+
 function buildQuickFixPrompt(recentProblems, rejectedProblem, topicHint, targetDiff, fxOnly){
   const categories = fxOnly ? 'Dynamics & FX' : Object.keys(CATEGORY_COLORS).join(' | ');
   const usedList = recentProblems.map((t,i)=>(i+1)+'. '+t.slice(0,140)).join('\n');
@@ -2686,7 +2707,7 @@ function buildQuickFixPrompt(recentProblems, rejectedProblem, topicHint, targetD
   if(rejectedProblem){
     prompt += '\n\nYour previous suggestion was rejected as too similar to an existing one: "' + rejectedProblem + '"\nPick a genuinely different problem this time.';
   }
-  prompt += QUALITY_SELF_CHECK;
+  prompt += QUALITY_SELF_CHECK + HUMAN_VOICE_GUIDANCE;
   return prompt;
 }
 
@@ -2829,7 +2850,9 @@ Prefer issues involving: ${PRODUCTION_FIX_FOCUS_AREAS}.
 The problem should make an experienced artist reading it think "I've actually seen this" — not "that seems made up." Don't attribute the problem to any specific named studio; write it as a general production-caliber issue, using the studio list above only to calibrate the level of real-world experience behind it.
 
 Respond with ONLY raw JSON, no markdown fences, no commentary, in exactly this shape:
-{"category":"one of: ${Object.keys(CATEGORY_COLORS).join(' | ')}","diff":"${targetDiff}","problem":"the production issue itself, framed the way a TD would actually describe it, under 200 characters","cause":"the clear technical root cause, under 180 characters","solution":"the practical Houdini fix, specific enough to actually do, under 220 characters","whyItWorks":"a short explanation of why this actually resolves it, under 160 characters"}
+{"category":"one of: ${Object.keys(CATEGORY_COLORS).join(' | ')}","diff":"${targetDiff}","problem":"the production issue itself, framed the way a TD would actually describe it — be maximally concise, under 130 characters, no filler words","cause":"the clear technical root cause, in as few words as possible, under 110 characters","solution":"the practical Houdini fix, specific enough to actually do but stated as tersely as possible, under 130 characters","whyItWorks":"a short explanation of why this actually resolves it, under 100 characters — one sharp sentence, not two"}
+
+Every field must be optimized for brevity — write the shortest version that still says something specific and real. Cut every word that isn't doing real work. Prefer a precise short phrase over a complete grammatical sentence if it says the same thing with fewer words.
 
 The difficulty for this specific issue MUST be "${targetDiff}" (BEGINNER = still production-relevant but approachable; TD LEVEL = assumes solid working knowledge; PIPELINE = assumes deep production/studio-scale experience).
 
@@ -2844,7 +2867,7 @@ ${usedList}`;
   if(rejectedProblem){
     prompt += `\n\nYour previous suggestion was rejected as too similar to an existing one: "${rejectedProblem}"\nPick a genuinely different production issue this time.`;
   }
-  prompt += QUALITY_SELF_CHECK;
+  prompt += QUALITY_SELF_CHECK + HUMAN_VOICE_GUIDANCE;
   return prompt;
 }
 
@@ -3011,7 +3034,7 @@ function buildDailyTipPrompt(recentTexts, rejectedText, topicHint, targetDiff, f
   if(rejectedText){
     prompt += '\n\nYour previous suggestion was rejected as too similar to an existing tip: "' + rejectedText + '"\nPick a completely different Houdini feature area this time.';
   }
-  prompt += STRONG_OPENING_GUIDANCE + QUALITY_SELF_CHECK;
+  prompt += STRONG_OPENING_GUIDANCE + QUALITY_SELF_CHECK + HUMAN_VOICE_GUIDANCE;
   return prompt;
 }
 function validateDailyTipResult(parsed){
@@ -3096,7 +3119,7 @@ function buildFillBlankPrompt(recentTexts, rejectedText, topicHint, targetDiff, 
   if(rejectedText){
     prompt += '\n\nYour previous suggestion was rejected as too similar to an existing tip: "' + rejectedText + '"\nPick a completely different Houdini feature area this time.';
   }
-  prompt += STRONG_OPENING_GUIDANCE + QUALITY_SELF_CHECK;
+  prompt += STRONG_OPENING_GUIDANCE + QUALITY_SELF_CHECK + HUMAN_VOICE_GUIDANCE;
   return prompt;
 }
 function validateFillBlankResult(parsed){
@@ -3182,7 +3205,7 @@ function buildDebatePrompt(recentTexts, rejectedText, topicHint, targetDiff, fxO
   if(rejectedText){
     prompt += '\n\nYour previous suggestion was rejected as too similar to an existing one: "' + rejectedText + '"\nPick a genuinely different question this time.';
   }
-  prompt += STRONG_OPENING_GUIDANCE + QUALITY_SELF_CHECK;
+  prompt += STRONG_OPENING_GUIDANCE + QUALITY_SELF_CHECK + HUMAN_VOICE_GUIDANCE;
   return prompt;
 }
 function validateDebateResult(parsed){
@@ -3268,7 +3291,7 @@ function buildMultiChoicePrompt(recentQuestions, rejectedQuestion, topicHint, ta
   if(rejectedQuestion){
     prompt += '\n\nYour previous suggestion was rejected as too similar to an existing one: "' + rejectedQuestion + '"\nPick a genuinely different question this time.';
   }
-  prompt += QUALITY_SELF_CHECK;
+  prompt += QUALITY_SELF_CHECK + HUMAN_VOICE_GUIDANCE;
   return prompt;
 }
 
@@ -3909,7 +3932,7 @@ Score each of these honestly, 0-10:
 9. documentationFilter — does the cause/solution sound like real production insight, or like it was copied from docs?
 
 Respond with ONLY raw JSON, no markdown fences, no commentary:
-{"technicalAccuracy":0-10,"productionRelevance":0-10,"practicalBenefit":0-10,"novelty":0-10,"saveWorthiness":0-10,"hookStrength":0-10,"beginnerClarity":0-10,"oneLessonRule":0-10,"documentationFilter":0-10,"weaknesses":["short phrase per real weakness — empty array if genuinely none"],"rewrittenProblem":"improved problem statement, or the original unchanged if it already scores well","rewrittenCause":"improved cause, or unchanged","rewrittenSolution":"improved solution, or unchanged","rewrittenWhyItWorks":"improved explanation, or unchanged"}`;
+{"technicalAccuracy":0-10,"productionRelevance":0-10,"practicalBenefit":0-10,"novelty":0-10,"saveWorthiness":0-10,"hookStrength":0-10,"beginnerClarity":0-10,"oneLessonRule":0-10,"documentationFilter":0-10,"weaknesses":["short phrase per real weakness — empty array if genuinely none"],"rewrittenProblem":"improved problem statement, under 130 characters, maximally concise — or the original unchanged if it already scores well","rewrittenCause":"improved cause, under 110 characters, maximally concise — or unchanged","rewrittenSolution":"improved solution, under 130 characters, maximally concise — or unchanged","rewrittenWhyItWorks":"improved explanation, under 100 characters, one sharp sentence — or unchanged"}`;
 }
 
 async function reviewProductionFixForElite(problem, cause, solution, whyItWorks, category, diff){
@@ -5821,14 +5844,14 @@ function drawQuickFixCard(ctx, w, h, entry, t, introProgress, motion, numberOver
     const labelH = panelW*0.028; // fixed height reserved for each section's label line
     const perSectionH = (sectionsAreaH - (labelH+labelBodyGap)*sections.length - sectionGap*(sections.length-1)) / sections.length;
 
-    const sectionTextMaxW = panelW*0.70; // meaningfully narrower than the full-width label row — shorter, more scannable lines instead of stretching edge to edge
+    const sectionTextMaxW = panelW*0.84; // uses the available width properly — the earlier narrower column was wasting visible space and forcing avoidable truncation
 
     // First pass: find ONE shared font size that fits every section within its allotted
     // height. Previously each section ran its own independent shrink-to-fit loop, so a
     // section with more text would end up visibly smaller than a shorter one, even though
     // all four should look uniform — this fixes that by sizing them all together.
     let sharedFontSize = panelW*0.0228;
-    const minSharedFontSize = panelW*0.0148;
+    const minSharedFontSize = panelW*0.021; // raised from an earlier, too-small floor — readability on mobile matters more than avoiding truncation
     while(sharedFontSize > minSharedFontSize){
       ctx.font = '500 ' + sharedFontSize + 'px "Inter", sans-serif';
       const lh = sharedFontSize*1.42;
@@ -7136,6 +7159,7 @@ document.getElementById('btnPng').onclick = ()=>{
       }
       const url = URL.createObjectURL(blob);
       triggerDownload(url, filename, true);
+      uploadExportToDriveIfConnected(blob, 'png', format, displayNumForFile, activeEntry); // fire-and-forget — local download already happened either way
       markPosted();
       const parts = [];
       if(overrideNum!=null) parts.push(`#${displayNumForFile}`);
@@ -7233,6 +7257,7 @@ document.getElementById('btnRec').onclick = ()=>{
     const blob = new Blob(chunks, {type:mime.split(';')[0]});
     const url = URL.createObjectURL(blob);
     triggerDownload(url, 'houdini-tip-'+String(displayNumForFile).padStart(3,'0')+'.'+ext, true);
+    uploadExportToDriveIfConnected(blob, ext, format, displayNumForFile, activeEntry); // fire-and-forget — local download already happened either way
     markPosted();
     recording = false;
     introSlideDurationMs = 0;
@@ -7839,6 +7864,279 @@ function anDrawTrendChart(canvas, points, color){
   ctx2.fillText(points[0].label, padding, h-4);
   ctx2.textAlign = 'right';
   ctx2.fillText(points[points.length-1].label, w-padding, h-4);
+}
+
+// ============================================================================
+// ISOLATED FEATURE: Cloud Sync via a self-hosted Firebase backend (Cloud
+// Functions + Firestore). Real cross-device/cross-browser sync, independent
+// of the Google Drive sync above — both can be used, neither depends on the
+// other. Uses the same merge/dedupe safety pattern as the Drive sync so a
+// stale or partial cloud state can never silently wipe out local tips.
+// ============================================================================
+// Baked-in default so every device connects automatically with zero manual
+// setup — accepted tradeoff per explicit request: this file is public on
+// GitHub Pages, so anyone viewing the page source can see these values.
+// A localStorage override (set via the Cloud Sync UI) still takes priority
+// if you ever move to a different backend.
+const BUILT_IN_CLOUD_CONFIG = {
+  baseUrl: 'https://us-central1-houdinitipstool.cloudfunctions.net',
+  apiKey: 'houdini2026sync'
+};
+
+function getCloudConfig(){
+  try{
+    const raw = localStorage.getItem('hdt_cloud_config');
+    if(raw){
+      const cfg = JSON.parse(raw);
+      if(cfg.baseUrl && cfg.apiKey) return cfg;
+    }
+  }catch(e){ /* fall through to built-in default */ }
+  return BUILT_IN_CLOUD_CONFIG;
+}
+
+function setCloudSyncStatus(msg, color){
+  const el = document.getElementById('cloudSyncStatus');
+  el.textContent = msg;
+  el.style.color = color || 'var(--text-muted)';
+}
+
+document.getElementById('btnSaveCloudConfig').onclick = async ()=>{
+  const baseUrl = document.getElementById('cloudBaseUrl').value.trim().replace(/\/$/, '');
+  const apiKey = document.getElementById('cloudApiKey').value.trim();
+  if(!baseUrl || !apiKey){
+    setCloudSyncStatus('⚠ Fill in both the base URL and API key first', '#FF9A5C');
+    return;
+  }
+  localStorage.setItem('hdt_cloud_config', JSON.stringify({ baseUrl, apiKey }));
+  setCloudSyncStatus('Connecting…');
+  try{
+    await loadFromCloudIfConfigured();
+    setCloudSyncStatus('✓ Connected', '#5EEAD4');
+  }catch(e){
+    setCloudSyncStatus('⚠ ' + e.message, '#FF5C5C');
+  }
+};
+
+// Pre-fill the saved config on page load, if any, so returning users don't
+// have to re-type it every time they open the tool
+(function prefillCloudConfig(){
+  const cfg = getCloudConfig();
+  if(cfg){
+    document.getElementById('cloudBaseUrl').value = cfg.baseUrl;
+    document.getElementById('cloudApiKey').value = cfg.apiKey;
+  }
+})();
+
+async function saveToCloudIfConfigured(){
+  const cfg = getCloudConfig();
+  try{
+    const res = await fetch(cfg.baseUrl + '/saveState', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Api-Key': cfg.apiKey },
+      body: JSON.stringify({
+        tipLog,
+        nodeDesignDefault: (function(){ try{ return JSON.parse(localStorage.getItem('hdt_node_design_user_default')); }catch(e){ return null; } })(),
+        layoutControlDefault: (function(){ try{ return JSON.parse(localStorage.getItem('hdt_layout_control_user_default')); }catch(e){ return null; } })()
+      })
+    });
+    if(!res.ok) throw new Error('Cloud save failed: ' + res.status);
+  }catch(e){
+    console.warn('Cloud sync save failed (will retry on next save):', e.message);
+  }
+}
+
+async function loadFromCloudIfConfigured(){
+  const cfg = getCloudConfig();
+  const res = await fetch(cfg.baseUrl + '/getState', { headers: { 'X-Api-Key': cfg.apiKey } });
+  if(!res.ok) throw new Error('Cloud load failed: HTTP ' + res.status);
+  const data = await res.json();
+  const incoming = Array.isArray(data.tipLog) ? data.tipLog : [];
+
+  // Same dedupe-and-merge safety as the Drive sync — never silently overwrite
+  // local tips with a stale or partial cloud copy, only ever add what's missing
+  const existingKeys = new Set(tipLog.map(t=>t.number+'|'+(t.text||t.problem||'')));
+  let added = 0;
+  for(const entry of incoming){
+    const key = entry.number+'|'+(entry.text||entry.problem||'');
+    if(!existingKeys.has(key)){
+      tipLog.push(entry);
+      existingKeys.add(key);
+      added++;
+    }
+  }
+  tipLog.sort((a,b)=>(a.number||0)-(b.number||0));
+  if(added>0){
+    localStorage.setItem('houdini_tip_log', JSON.stringify(tipLog));
+    if(typeof refreshStatusLines === 'function') refreshStatusLines();
+  }
+
+  let settingsApplied = false;
+  if(data.nodeDesignDefault){
+    localStorage.setItem('hdt_node_design_user_default', JSON.stringify(data.nodeDesignDefault));
+    NODE_DESIGN_DEFAULTS = { ...NODE_DESIGN_FACTORY_DEFAULTS, ...data.nodeDesignDefault };
+    nodeDesign = { ...NODE_DESIGN_DEFAULTS };
+    saveNodeDesign();
+    if(typeof populateNodeEditorUI === 'function') populateNodeEditorUI();
+    settingsApplied = true;
+  }
+  if(data.layoutControlDefault){
+    localStorage.setItem('hdt_layout_control_user_default', JSON.stringify(data.layoutControlDefault));
+    LAYOUT_CONTROL_BASE = { square:{...LAYOUT_CONTROL_DEFAULTS.square, ...data.layoutControlDefault.square}, story:{...LAYOUT_CONTROL_DEFAULTS.story, ...data.layoutControlDefault.story} };
+    layoutControl = JSON.parse(JSON.stringify(LAYOUT_CONTROL_BASE));
+    saveLayoutControl();
+    if(typeof populateLayoutEditorUI === 'function') populateLayoutEditorUI();
+    settingsApplied = true;
+  }
+  if(settingsApplied && typeof activeEntry !== 'undefined' && activeEntry) draw(ctx, cv.width, cv.height, 0, 1, false);
+}
+
+// Attempt a silent cloud load on page open, if already configured — this is
+// what makes a second device "just work" without any manual step, as long as
+// the same base URL + API key have already been saved once on that device
+(async function tryCloudLoadOnOpen(){
+  if(getCloudConfig()){
+    try{ await loadFromCloudIfConfigured(); }
+    catch(e){ console.warn('Cloud sync auto-load on open failed:', e.message); }
+  }
+})();
+
+// ============================================================================
+// ISOLATED FEATURE: auto-upload exported images/videos to a dedicated Drive
+// folder, with structured filenames and a running CSV index — so if you ever
+// want to study the exported content later, it's already organized for that,
+// not just a pile of timestamped files. Fire-and-forget, never blocks the
+// actual local download; silently does nothing if Drive isn't connected.
+// ============================================================================
+const EXPORT_FOLDER_NAME = 'Houdini Tip Forge Exports';
+const EXPORT_INDEX_FILENAME = 'export_index.csv';
+let cachedExportFolderId = null;
+
+function sanitizeForFilename(str){
+  return String(str || 'unknown').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'unknown';
+}
+
+function getEntryContentTypeLabel(entry){
+  if(entry.type === 'multichoice') return 'challenge';
+  if(entry.type === 'quickfix') return entry.subtype === 'production' ? 'productionfix' : 'quickfix';
+  if(entry.debate) return 'pickaside';
+  if(entry.mode === 'puzzle') return 'fillblank';
+  return 'dailytip';
+}
+
+function getEntryMainText(entry){
+  return entry.text || entry.problem || entry.question || '';
+}
+
+async function findOrCreateExportFolder(){
+  if(cachedExportFolderId) return cachedExportFolderId;
+  const query = encodeURIComponent(`name='${EXPORT_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+  const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id)`, {
+    headers: { 'Authorization': 'Bearer ' + driveAccessToken }
+  });
+  if(searchRes.ok){
+    const data = await searchRes.json();
+    if(data.files && data.files.length > 0){
+      cachedExportFolderId = data.files[0].id;
+      return cachedExportFolderId;
+    }
+  }
+  const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + driveAccessToken, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: EXPORT_FOLDER_NAME, mimeType: 'application/vnd.google-apps.folder' })
+  });
+  if(!createRes.ok) throw new Error('Could not create export folder: ' + createRes.status);
+  const created = await createRes.json();
+  cachedExportFolderId = created.id;
+  return cachedExportFolderId;
+}
+
+// Structured so every field is identifiable at a glance without opening the
+// file — e.g. 0142_dailytip_dynamics-fx_beginner_square_2026-07-22.png
+function buildExportFilename(entry, formatLabel, ext, displayNum){
+  const numPart = String(displayNum).padStart(4, '0');
+  const typePart = getEntryContentTypeLabel(entry);
+  const catPart = sanitizeForFilename(entry.cat);
+  const diffPart = sanitizeForFilename(entry.diff);
+  const datePart = new Date().toISOString().slice(0,10);
+  return `${numPart}_${typePart}_${catPart}_${diffPart}_${formatLabel}_${datePart}.${ext}`;
+}
+
+async function uploadFileToDriveFolder(blob, filename, mimeType, folderId){
+  const metadata = { name: filename, parents: [folderId] };
+  const form = new FormData();
+  form.append('metadata', new Blob([JSON.stringify(metadata)], {type:'application/json'}));
+  form.append('file', blob, filename);
+  const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + driveAccessToken },
+    body: form
+  });
+  if(!res.ok) throw new Error('Drive file upload failed: ' + res.status);
+}
+
+// One CSV cell, correctly escaped — wraps in quotes and doubles any embedded
+// quotes so commas/newlines/quotes inside actual tip text can't corrupt columns
+function csvCell(value){
+  const s = String(value == null ? '' : value);
+  return '"' + s.replace(/"/g, '""') + '"';
+}
+
+async function findExportIndexFileId(folderId){
+  const query = encodeURIComponent(`name='${EXPORT_INDEX_FILENAME}' and '${folderId}' in parents and trashed=false`);
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id)`, {
+    headers: { 'Authorization': 'Bearer ' + driveAccessToken }
+  });
+  if(!res.ok) throw new Error('Could not search for export index: ' + res.status);
+  const data = await res.json();
+  return (data.files && data.files.length > 0) ? data.files[0].id : null;
+}
+
+async function appendToExportIndexCSV(entry, filename, formatLabel, displayNum, folderId){
+  const header = 'number,timestamp,content_type,category,difficulty,format,filename,main_text\n';
+  const row = [displayNum, new Date().toISOString(), getEntryContentTypeLabel(entry), entry.cat, entry.diff, formatLabel, filename, getEntryMainText(entry)]
+    .map(csvCell).join(',') + '\n';
+
+  const existingId = await findExportIndexFileId(folderId);
+  let existingContent = '';
+  if(existingId){
+    const dl = await fetch(`https://www.googleapis.com/drive/v3/files/${existingId}?alt=media`, {
+      headers: { 'Authorization': 'Bearer ' + driveAccessToken }
+    });
+    if(dl.ok) existingContent = await dl.text();
+  }
+  const newContent = existingContent && existingContent.length > 0 ? existingContent + row : header + row;
+  const blob = new Blob([newContent], {type:'text/csv'});
+
+  if(existingId){
+    const form = new FormData();
+    form.append('file', blob, EXPORT_INDEX_FILENAME);
+    const res = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${existingId}?uploadType=media`, {
+      method: 'PATCH',
+      headers: { 'Authorization': 'Bearer ' + driveAccessToken },
+      body: blob
+    });
+    if(!res.ok) throw new Error('Could not update export index: ' + res.status);
+  } else {
+    await uploadFileToDriveFolder(blob, EXPORT_INDEX_FILENAME, 'text/csv', folderId);
+  }
+}
+
+// The one function the export handlers actually call — fire-and-forget,
+// silently does nothing if Drive isn't connected, never blocks the local
+// download or shows an error if it fails (the local file is already saved
+// either way, this is purely a bonus copy)
+async function uploadExportToDriveIfConnected(blob, ext, formatLabel, displayNum, entry){
+  if(!driveAccessToken || !entry) return;
+  try{
+    const folderId = await findOrCreateExportFolder();
+    const filename = buildExportFilename(entry, formatLabel, ext, displayNum);
+    const mimeType = ext === 'png' ? 'image/png' : (ext === 'mp4' ? 'video/mp4' : 'video/webm');
+    await uploadFileToDriveFolder(blob, filename, mimeType, folderId);
+    await appendToExportIndexCSV(entry, filename, formatLabel, displayNum, folderId);
+  }catch(e){
+    console.warn('Drive export upload failed (local file was still saved normally):', e.message);
+  }
 }
 </script>
 </body>
