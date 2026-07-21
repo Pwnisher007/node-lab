@@ -312,6 +312,32 @@ button.action:focus-visible{outline:2px solid var(--wire-cyan); outline-offset:2
   padding-top:16px;
   border-top:1px solid var(--border);
 }
+.an-tabs{display:flex; gap:4px; margin-bottom:14px;}
+.an-tab-btn{
+  font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:500; color:var(--text-muted);
+  background:transparent; border:1px solid var(--border); border-bottom:none;
+  border-radius:7px 7px 0 0; padding:8px 14px; cursor:pointer; transition:all .15s;
+}
+.an-tab-btn.active{color:var(--text-primary); background:rgba(255,255,255,0.04);}
+.an-tab-panel{display:none;}
+.an-tab-panel.active{display:block;}
+.an-status{font-family:'JetBrains Mono',monospace; font-size:11px; margin-top:6px; min-height:16px;}
+.an-card-title{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13px; margin-bottom:10px;}
+.an-video-row{display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid var(--border);}
+.an-video-row:first-of-type{border-top:none;}
+.an-video-thumb{width:64px; height:36px; border-radius:5px; object-fit:cover; background:var(--node-body); flex-shrink:0;}
+.an-video-info{flex:1; min-width:0;}
+.an-video-title{font-family:'Inter',sans-serif; font-size:12.5px; font-weight:600; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.an-video-stats{font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-muted); margin-top:3px;}
+.an-video-stats b{color:var(--text-primary);}
+.an-empty-state{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-muted); text-align:center; padding:20px 10px; opacity:.7;}
+.an-trend-chart{width:100%; height:150px; display:block;}
+.an-coming-soon{text-align:center; padding:36px 10px;}
+details.an-setup-help{margin-top:8px;}
+details.an-setup-help summary{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-muted); cursor:pointer; opacity:.75;}
+details.an-setup-help .an-setup-body{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-muted); line-height:1.7; margin-top:8px;}
+details.an-setup-help .an-setup-body ol{margin:6px 0; padding-left:18px;}
+details.an-setup-help code{background:var(--node-body); padding:1px 5px; border-radius:4px; color:var(--wire-cyan);}
 </style>
 </head>
 <body>
@@ -320,6 +346,8 @@ button.action:focus-visible{outline:2px solid var(--wire-cyan); outline-offset:2
   <div class="topbar-icon">H</div>
   <div class="topbar-title">Houdini <span>Tip Forge</span></div>
   <div class="topbar-path">/obj/tip_forge/OUT</div>
+  <a href="#industryNewsSection" style="margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:12px; color:#5EEAD4; text-decoration:none; border:1px solid #5EEAD4; border-radius:6px; padding:6px 12px; white-space:nowrap;">🌐 VFX/Houdini News ↓</a>
+  <a href="#analyticsDashboardSection" style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#FF7A1A; text-decoration:none; border:1px solid #FF7A1A; border-radius:6px; padding:6px 12px; white-space:nowrap;">📊 Analytics ↓</a>
 </div>
 
 <div class="stage">
@@ -432,6 +460,10 @@ button.action:focus-visible{outline:2px solid var(--wire-cyan); outline-offset:2
       <div class="node-fields">
         <button class="action btn-primary" id="btnNew">New Tip &rarr;</button>
         <button class="action btn-secondary" id="btnNewQuickFix" style="border-color:#5EEAD4; color:#5EEAD4;">🔧 New Quick-Fix Tutorial &rarr;</button>
+        <label style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#FFB84D; cursor:pointer; margin-top:2px;">
+          <input type="checkbox" id="toggleProductionFix" style="width:16px;height:16px;accent-color:#FFB84D;">
+          🏭 Production Fixes <span style="color:var(--text-muted); font-weight:400;">— when on, "New Quick-Fix Tutorial" generates a real studio-caliber production issue (Problem/Cause/Solution) instead</span>
+        </label>
         <label style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--text-muted); cursor:pointer; margin-top:2px;">
           <input type="checkbox" id="toggleFxOnly" style="width:16px;height:16px;accent-color:#FF5C5C;">
           🔥 FX Artist Mode <span style="opacity:.6;">(only generate Dynamics &amp; FX tips — Pyro, FLIP, RBD, Vellum, etc.)</span>
@@ -449,13 +481,17 @@ button.action:focus-visible{outline:2px solid var(--wire-cyan); outline-offset:2
             </label>
             <label style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--text-muted); cursor:pointer;">
               <input type="checkbox" id="filterDebate" style="width:16px;height:16px;accent-color:#FF5C5C;">
-              ⚔️ Houdini Debate
+              ⚔️ Pick a Side
             </label>
             <label style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--text-muted); cursor:pointer;">
               <input type="checkbox" id="filterMultiChoice" style="width:16px;height:16px;accent-color:#C792EA;">
               🧠 Houdini Challenge
             </label>
           </div>
+          <label style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#FFD166; cursor:pointer; margin-top:10px; padding-top:10px; border-top:1px solid var(--border);">
+            <input type="checkbox" id="toggleEliteMode" style="width:16px;height:16px;accent-color:#FFD166;">
+            ⭐ Elite Mode <span style="color:var(--text-muted); font-weight:400;">— slower: a Senior-TD-style review scores every content type against a strict bar and improves it until it clears 92/100</span>
+          </label>
         </div>
         <div class="mode-badge" id="modeBadge">Mode: &mdash;</div>
         <div class="mode-badge" id="sourceBadge" style="border-color:#5EEAD4;">Source: &mdash;</div>
@@ -668,7 +704,11 @@ button.action:focus-visible{outline:2px solid var(--wire-cyan); outline-offset:2
         <div class="segmented">
           <button id="platX" class="active">X</button>
           <button id="platInstagram">Instagram</button>
-          <button id="platReddit">Reddit</button>
+          <button id="platYoutube">YouTube</button>
+        </div>
+        <div>
+          <span class="field-label">Title <span style="opacity:.6;" id="captionGenBadge"></span></span>
+          <input type="text" id="captionTitle" readonly>
         </div>
         <textarea class="caption-box" id="captionBox" readonly></textarea>
         <button class="action btn-secondary" id="btnCopy">Copy Caption</button>
@@ -696,7 +736,151 @@ button.action:focus-visible{outline:2px solid var(--wire-cyan); outline-offset:2
   History is saved in this browser's local storage, tied to this device. <a href="#" id="btnReset" style="color:var(--wire-cyan);">Reset history</a>
 </div>
 
+<div class="node-box" id="industryNewsSection" style="--accent:#5EEAD4; margin:32px auto 0; max-width:640px;">
+  <div class="node-header"><span class="node-icon">N</span>industry_news<span class="node-number">isolated</span></div>
+  <div class="node-fields">
+    <p style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-muted); opacity:.8; margin:0 0 12px; line-height:1.5;">
+      Live search — genuinely searches the web each time you click, using your Gemini key's search grounding. Fully separate from tip generation; doesn't touch your history or the backup bank.
+    </p>
+    <span class="field-label">Topic <span style="opacity:.6;">(optional — leave blank for general industry news)</span></span>
+    <div style="display:flex; gap:8px; margin-bottom:4px;">
+      <input type="text" id="newsTopicInput" placeholder="e.g. Karma XPU, SideFX news, Vellum updates...">
+      <button class="action btn-secondary" id="btnFetchNews" style="padding:10px 16px; white-space:nowrap; flex-shrink:0;">Search</button>
+    </div>
+    <div id="newsStatus" style="font-family:'JetBrains Mono',monospace; font-size:11px; min-height:16px; margin-top:6px;"></div>
+
+    <div id="newsResultsWrap" style="display:none; margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
+      <div id="newsResults" style="display:flex; flex-direction:column; gap:10px;"></div>
+      <div id="newsSources" style="margin-top:14px;"></div>
+      <div id="newsLastUpdated" style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-muted); opacity:.55; margin-top:12px; text-align:right;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="node-box" id="analyticsDashboardSection" style="--accent:#FF7A1A; margin:32px auto 0; max-width:640px;">
+  <div class="node-header"><span class="node-icon">A</span>content_analytics<span class="node-number">isolated</span></div>
+  <div class="node-fields">
+    <p style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-muted); opacity:.8; margin:0 0 12px; line-height:1.5;">
+      Fully separate from tip generation — connects directly to YouTube/Instagram's own APIs with your own credentials. Doesn't read or affect your tip history at all.
+    </p>
+
+    <div class="an-tabs">
+      <button class="an-tab-btn active" data-antab="youtube">▶ YouTube</button>
+      <button class="an-tab-btn" data-antab="instagram">◆ Instagram</button>
+      <button class="an-tab-btn" data-antab="x">✕ X</button>
+    </div>
+
+    <!-- ===================== YOUTUBE ===================== -->
+    <div class="an-tab-panel active" id="an-panel-youtube">
+      <span class="field-label">Google OAuth Client ID</span>
+      <div class="an-status" style="color:var(--wire-cyan); opacity:.85; margin-bottom:6px;">Pre-filled with your Google Drive Client ID above — reusing it is the easiest path (same project, just needs 2 more scopes below). You can replace it with a different one if you'd rather keep them separate.</div>
+      <div style="display:flex; gap:8px; margin-bottom:4px;">
+        <input type="password" id="anYtClientId" placeholder="xxxxxxxx.apps.googleusercontent.com">
+        <button class="action btn-secondary" id="anBtnConnectYt" style="padding:10px 16px; white-space:nowrap; flex-shrink:0; border-color:#FF5C5C; color:#FF5C5C;">Connect</button>
+      </div>
+      <div id="anYtStatus" class="an-status"></div>
+      <details class="an-setup-help">
+        <summary>▸ First time? Setup steps</summary>
+        <div class="an-setup-body">
+          <ol>
+            <li>In <code>console.cloud.google.com</code>, open your project (same one you may already use for Google Drive above).</li>
+            <li>APIs &amp; Services → Library → enable <code>YouTube Data API v3</code> and <code>YouTube Analytics API</code>.</li>
+            <li>OAuth consent screen → add scopes <code>youtube.readonly</code> and <code>yt-analytics.readonly</code>.</li>
+            <li>Credentials → reuse your existing OAuth Client ID or create one. Add this page's URL to "Authorized JavaScript origins."</li>
+            <li>Paste that Client ID above. Stay in Testing mode with yourself as a test user — no Google review needed for personal use.</li>
+          </ol>
+        </div>
+      </details>
+
+      <div id="anYtVideosCard" style="display:none; margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
+        <div class="an-card-title">📹 Your videos</div>
+        <div id="anYtVideoList"></div>
+      </div>
+      <div id="anYtTrendCard" style="display:none; margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
+        <div class="an-card-title">📈 Views over the last 28 days</div>
+        <canvas class="an-trend-chart" id="anYtTrendChart"></canvas>
+      </div>
+    </div>
+
+    <!-- ===================== INSTAGRAM ===================== -->
+    <div class="an-tab-panel" id="an-panel-instagram">
+      <span class="field-label">Facebook App ID</span>
+      <div style="display:flex; gap:8px; margin-bottom:4px;">
+        <input type="password" id="anIgAppId" placeholder="123456789012345">
+        <button class="action btn-secondary" id="anBtnConnectIg" style="padding:10px 16px; white-space:nowrap; flex-shrink:0; border-color:#E1306C; color:#E1306C;">Connect</button>
+      </div>
+      <div id="anIgStatus" class="an-status"></div>
+      <details class="an-setup-help">
+        <summary>▸ First time? Setup steps</summary>
+        <div class="an-setup-body">
+          <ol>
+            <li>Go to <code>developers.facebook.com</code> → create an app (type: Business).</li>
+            <li>Add the "Instagram Graph API" product to the app.</li>
+            <li>Your Instagram account needs to be a Business or Creator account, linked to a Facebook Page you manage.</li>
+            <li>Under App Settings → Basic, add this page's URL to allowed domains, and copy the App ID above.</li>
+            <li>For personal use, add yourself as an App Role (Admin/Developer) — no App Review needed at this stage.</li>
+          </ol>
+        </div>
+      </details>
+
+      <div id="anIgPostsCard" style="display:none; margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
+        <div class="an-card-title">🖼️ Your recent posts</div>
+        <div id="anIgPostList"></div>
+      </div>
+    </div>
+
+    <!-- ===================== X (COMING SOON) ===================== -->
+    <div class="an-tab-panel" id="an-panel-x">
+      <span class="field-label">X API Bearer Token <span style="opacity:.6;">(optional — separate from your X Premium subscription)</span></span>
+      <div class="an-status" style="color:#FF9A5C; opacity:.9; margin-bottom:6px;">Heads up: X Premium doesn't include this. Pulling this data needs paid X Developer API credits (pay-per-use, no free tier) — entering a token here means each check does cost a small real amount, separate from your Premium subscription.</div>
+      <div style="display:flex; gap:8px; margin-bottom:4px;">
+        <input type="password" id="anXBearerToken" placeholder="Paste your X API Bearer Token">
+        <button class="action btn-secondary" id="anBtnConnectX" style="padding:10px 16px; white-space:nowrap; flex-shrink:0; border-color:#F1F1F0; color:#F1F1F0;">Connect</button>
+      </div>
+      <div id="anXStatus" class="an-status"></div>
+      <details class="an-setup-help">
+        <summary>▸ Where does this come from?</summary>
+        <div class="an-setup-body">
+          <ol>
+            <li>Go to <code>developer.x.com</code> → create a project/app if you haven't already.</li>
+            <li>Under Keys and Tokens, generate a Bearer Token (or OAuth 2.0 App-Only token).</li>
+            <li>You'll need to add a payment method and buy credits — as of Feb 2026, X has no free API tier.</li>
+            <li>Paste the token above. Nothing is stored anywhere except this browser tab's memory for the current session.</li>
+          </ol>
+        </div>
+      </details>
+
+      <div id="anXPostsCard" style="display:none; margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
+        <div class="an-card-title">🐦 Your recent posts</div>
+        <div id="anXPostList"></div>
+      </div>
+
+      <div id="anXComingSoon" class="an-coming-soon">
+        <div style="font-size:34px; margin-bottom:10px;">🕓</div>
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px; margin-bottom:6px;">No token connected yet</div>
+        <p style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-muted); max-width:420px; margin:0 auto; line-height:1.6;">Enter a Bearer Token above to pull real post analytics. Without one, this is as far as this tab goes — X's own Premium subscription doesn't unlock this on its own.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <script>
+
+// Category-specific bonus hashtags for Instagram (where hashtag-based discovery actually
+// matters) — without these, every single post used the exact same generic hashtag block
+// regardless of topic, which both looks repetitive over hundreds of posts and misses real
+// discovery opportunities (e.g. #PyroFX for FX content, #USD for Solaris content).
+const CATEGORY_HASHTAGS = {
+  "VEX & Expressions": "#VEX #HoudiniVEX",
+  "Modeling": "#3DModeling #ProceduralModeling",
+  "Dynamics & FX": "#SimulationFX #PyroFX",
+  "Rendering": "#KarmaRenderer #Lookdev",
+  "Workflow & Shortcuts": "#HoudiniTips #Productivity",
+  "Solaris & USD": "#USD #Solaris",
+  "PDG & TOPs": "#PDG #PipelineTD",
+  "Copying & Instancing": "#Instancing #ProceduralArt"
+};
 
 const QUESTIONS = {
 "VEX & Expressions": ["What's the messiest VEX one-liner that's saved your bacon?", "Wrangle or VOP network — which do you reach for first?"],
@@ -1043,7 +1227,7 @@ let nodeStyle = (function(){ try{ return localStorage.getItem('hdt_node_style') 
 let tipLog = [];          // every tip ever shown, in order — entry 0 is tip #1
 let activeEntry = null;   // the tip currently on screen
 let currentNumber = 1;
-let currentCaptions = {x:'', instagram:'', reddit:''};
+let currentCaptions = {x:{title:'',caption:''}, instagram:{title:'',caption:''}, youtube:{title:'',caption:''}};
 let activePlatform = 'x';
 let currentMode = "normal";
 let currentCTA = "";
@@ -1226,24 +1410,51 @@ document.getElementById('btnGenerateTopic').onclick = async ()=>{
   topicStatus.style.color = 'var(--text-muted)';
   topicStatus.innerHTML = `<span class="dot" style="background:#5EEAD4;"></span> Asking ${modelSource==='local' ? 'your local model' : 'Gemini'} for a tip about "${topic}"…`;
 
+  // Respects the Mode Filter the same way "New Tip" does — if you've checked specific pillar(s),
+  // the topic-generation only produces those; if nothing's checked, it picks randomly among the
+  // three tip-family pillars (Multiple Choice stays opt-in only, same as the main flow).
+  const filters = getModeFilters();
+  let pillar;
+  if(filters){
+    const eligible = [];
+    if(filters.normal) eligible.push('dailyTip');
+    if(filters.puzzle) eligible.push('fillBlank');
+    if(filters.debate) eligible.push('debate');
+    if(filters.multichoice) eligible.push('multichoice');
+    pillar = eligible.length>0 ? pick(eligible) : pick(['dailyTip','fillBlank','debate']);
+  } else {
+    pillar = pick(['dailyTip','fillBlank','debate']);
+  }
+
   try{
-    const ai = await generateUniqueAiTip(topic);
-    const entry = {source:'ai', model:ai.modelUsed, cat:ai.category, color:CATEGORY_COLORS[ai.category], diff:ai.diff, text:ai.text, blank:ai.blank||null, debate:!!ai.debate};
+    let entry;
+    if(pillar === 'multichoice'){
+      const ai = await generateUniqueMultiChoice(topic);
+      entry = {type:'multichoice', source:'ai', model:ai.modelUsed, questionType:ai.questionType, cat:ai.category, color:CATEGORY_COLORS[ai.category], diff:ai.diff, question:ai.question, code:ai.code, context:ai.context, choices:ai.choices};
+    } else if(pillar === 'dailyTip'){
+      const ai = await generateUniqueDailyTip(topic);
+      entry = {source:'ai', model:ai.modelUsed, cat:ai.category, color:CATEGORY_COLORS[ai.category], diff:ai.diff, text:ai.text, hook:ai.hook, blank:null, debate:false, mode:'normal'};
+    } else if(pillar === 'fillBlank'){
+      const ai = await generateUniqueFillBlank(topic);
+      entry = {source:'ai', model:ai.modelUsed, cat:ai.category, color:CATEGORY_COLORS[ai.category], diff:ai.diff, text:ai.text, hook:ai.hook, blank:ai.blank, debate:false, mode:'puzzle'};
+    } else {
+      const ai = await generateUniqueDebate(topic);
+      entry = {source:'ai', model:ai.modelUsed, cat:ai.category, color:CATEGORY_COLORS[ai.category], diff:ai.diff, text:ai.text, blank:null, debate:true, mode:'debate', optionA:ai.optionA, optionB:ai.optionB};
+    }
     entry.number = tipLog.length+1;
-    entry.mode = pickMode(entry);
-    entry.cta = pickCTAFor(entry.mode);
+    if(entry.mode) entry.cta = pickCTAFor(entry.mode); // multichoice has no .mode/.cta — it uses its own caption system
     tipLog.push(entry);
     await saveLog();
     applyEntry(entry);
     topicStatus.style.color = '#5EEAD4';
-    topicStatus.textContent = `✓ Generated as tip #${entry.number} — scroll up to see it`;
+    topicStatus.textContent = `✓ Generated as #${entry.number} — scroll up to see it`;
   }catch(e){
     console.error('Topic tip generation failed:', e);
     topicStatus.style.color = '#FF5C5C';
     topicStatus.textContent = (e.message==='NO_KEY')
       ? '⚠ No API key saved — paste your Google Gemini key above and click Save'
       : (e.message==='DUPLICATE_RISK')
-        ? `⚠ Could not find a unique tip about "${topic}" after 2 tries — try rephrasing it`
+        ? `⚠ Could not find a unique one about "${topic}" after 2 tries — try rephrasing it`
         : `⚠ ${modelSource==='local' ? 'Local model' : 'Gemini'} error: ${e.message} (check browser console for details)`;
   }
   btn.disabled = false;
@@ -1400,6 +1611,19 @@ function trimToLimit(str, max){
   return str.slice(0, max-1).trim() + '…';
 }
 
+// Derives a short, content-specific title as a safe, always-available fallback — never generic,
+// since it's built directly from whatever the tip/question/problem actually says.
+function deriveFallbackTitle(entry, mode, num){
+  const num3 = String(num).padStart(3,'0');
+  if(entry.type === 'quickfix') return `${entry.subtype === 'production' ? 'Production Fix' : 'Quick Fix'} #${num3}: ${trimToLimit(entry.problem, 60)}`;
+  if(entry.type === 'multichoice'){
+    const typeInfo = MC_TYPE_LABELS[entry.questionType] || {label:'Challenge'};
+    return `Houdini Challenge #${num3} (${typeInfo.label}): ${trimToLimit(entry.question, 45)}`;
+  }
+  const prefix = mode==='puzzle' ? 'Fill in the Blank' : mode==='debate' ? 'Pick a Side' : 'Daily Tip';
+  return `${prefix} #${num3}: ${trimToLimit(entry.text, 55)}`;
+}
+
 function formatChoicesText(choices){
   const letters = ['A','B','C','D'];
   return choices.map((c,i)=>`${letters[i]}) ${c.text}`).join('\n');
@@ -1418,7 +1642,8 @@ function buildXCaption(entry, mode, cta, num, q){
     body = `Fill in the Blank (Tip #${String(num).padStart(3,'0')}):\n\n${getDisplayText(entry,mode)}\n\nGuess below 👇`;
     answerNote = `\n\n[Reference only — trim before posting — answer: ${entry.blank}]`;
   } else if(mode==='debate'){
-    body = `${entry.text}\n\n${q}`;
+    const optionsLine = (entry.optionA && entry.optionB) ? `\n\n🔴 ${entry.optionA}\n🔵 ${entry.optionB}` : '';
+    body = `⚔️ Pick a Side (#${String(num).padStart(3,'0')}):\n\n${entry.text}${optionsLine}\n\nReply with which one 👇`;
   } else {
     body = `${entry.text}\n\n${q}`;
   }
@@ -1429,14 +1654,14 @@ function buildXCaption(entry, mode, cta, num, q){
     body = trimToLimit(body, budget);
     full = `${body}${answerNote}\n\n${hashtags}`;
   }
-  return full;
+  return { title: deriveFallbackTitle(entry, mode, num), caption: full };
 }
 
 function buildInstagramCaption(entry, mode, cta, num, q){
   const num3 = String(num).padStart(3,'0');
   let hook;
   if(mode==='puzzle') hook = `🧩 Fill in the Blank — Houdini Tip #${num3}`;
-  else if(mode==='debate') hook = `⚔️ Houdini Debate — Tip #${num3}`;
+  else if(mode==='debate') hook = `⚔️ Pick a Side — Tip #${num3}`;
   else hook = `💡 Daily Tip #${num3}`;
 
   const bodyText = mode==='puzzle' ? getDisplayText(entry,mode) : entry.text;
@@ -1446,30 +1671,34 @@ function buildInstagramCaption(entry, mode, cta, num, q){
     tail = `Guess it in the replies — I'll confirm once a few come in 👇`;
     answerNote = `\n\n[Reference only — trim before posting — answer: ${entry.blank}]`;
   }
-  else if(mode==='debate') tail = `${q}\n\nDrop your side below 👇`;
+  else if(mode==='debate') tail = (entry.optionA && entry.optionB) ? `🔴 ${entry.optionA}\n🔵 ${entry.optionB}\n\nReply with which one you actually reach for 👇` : `${q}\n\nDrop your side below 👇`;
   else tail = `${q}`;
 
-  return `${hook}\n\n${bodyText}\n\n${tail}${answerNote}\n\n#Houdini #SideFX #VFX #3DArt #ProceduralArt #TechArt #CGI #VFXArtist`;
+  const categoryTags = CATEGORY_HASHTAGS[entry.cat] ? ' ' + CATEGORY_HASHTAGS[entry.cat] : '';
+  const caption = `${hook}\n\n${bodyText}\n\n${tail}${answerNote}\n\n#Houdini #SideFX #VFX #3DArt #ProceduralArt #TechArt #CGI #VFXArtist${categoryTags}`;
+  return { title: deriveFallbackTitle(entry, mode, num), caption };
 }
 
-function buildRedditCaption(entry, mode, cta, num, q){
+function buildYoutubeCaption(entry, mode, cta, num, q){
   const num3 = String(num).padStart(3,'0');
   let title;
-  if(mode==='puzzle') title = `Houdini tip #${num3} — can you guess the missing term?`;
-  else if(mode==='debate') title = `Houdini tip #${num3} — which do you actually use?`;
-  else title = `Houdini tip #${num3}: ${entry.cat}`;
+  if(mode==='puzzle') title = `What's This Houdini ${entry.cat} Term? (Fill in the Blank #${num3})`;
+  else if(mode==='debate') title = (entry.optionA && entry.optionB) ? `${entry.optionA} or ${entry.optionB}? (Houdini ${entry.cat} Debate)` : `${entry.cat} in Houdini: ${trimToLimit(entry.text.split('.')[0], 60)}`;
+  else { const prefix = `${entry.cat} in Houdini: `; title = prefix + trimToLimit(entry.text, 100-prefix.length); }
 
   const bodyText = mode==='puzzle' ? getDisplayText(entry,mode) : entry.text;
   let closing;
   let answerNote = '';
   if(mode==='puzzle'){
-    closing = `Curious if others land on the same answer before I confirm it in the comments.`;
+    closing = `Drop your guess in the comments before the answer's revealed in the pinned reply.`;
     answerNote = `\n\n[Reference only — trim before posting — answer: ${entry.blank}]`;
   }
-  else if(mode==='debate') closing = `${q} Genuinely curious what people actually reach for here.`;
+  else if(mode==='debate') closing = (entry.optionA && entry.optionB) ? `🔴 ${entry.optionA}\n🔵 ${entry.optionB}\n\nComment which one you actually reach for — genuinely curious what real workflows look like.` : `${q}\n\nGenuinely curious what the comments land on — no wrong answers here.`;
   else closing = `${q}`;
 
-  return `Title: ${title}\n\n${bodyText}\n\n${closing}${answerNote}\n\n(Part of an ongoing Houdini tip series — no hashtags needed here, just sharing.)`;
+  const categoryTags = CATEGORY_HASHTAGS[entry.cat] ? ' ' + CATEGORY_HASHTAGS[entry.cat] : '';
+  const caption = `${bodyText}\n\n${closing}${answerNote}\n\nPart of an ongoing daily Houdini tip series — new one every day.\n\n#Houdini #SideFX #VFX #TechArt #Shorts${categoryTags}`;
+  return { title: trimToLimit(title, 100), caption }; // YouTube titles cap at 100 chars
 }
 
 function generateCaption(entry, mode, cta, num){
@@ -1477,8 +1706,92 @@ function generateCaption(entry, mode, cta, num){
   return {
     x: buildXCaption(entry, mode, cta, num, q),
     instagram: buildInstagramCaption(entry, mode, cta, num, q),
-    reddit: buildRedditCaption(entry, mode, cta, num, q)
+    youtube: buildYoutubeCaption(entry, mode, cta, num, q)
   };
+}
+
+// ---------- AI-generated captions — dynamic, content-aware titles/captions per platform ----------
+// The template-based captions above are the instant, always-available baseline (shown immediately,
+// zero network dependency). This layer asks the model to write fresh, specifically-relevant
+// captions for the actual tip/quickfix/challenge just generated, and "upgrades" the display once
+// it resolves. Falls back silently to the templates already shown if this fails for any reason.
+function buildCaptionPrompt(entry, mode, num){
+  let contentDescription;
+  if(entry.type === 'quickfix'){
+    contentDescription = entry.subtype === 'production'
+      ? `Content type: Production Fix — a real studio-caliber production issue, not a beginner tip\nProblem: ${entry.problem}\nCause: ${entry.cause}\nSolution: ${entry.solution}\nWhy it works: ${entry.whyItWorks}`
+      : `Content type: Quick-Fix mini-tutorial\nProblem: ${entry.problem}\nSteps:\n${entry.steps.map((s,i)=>(i+1)+'. '+s).join('\n')}`;
+  } else if(entry.type === 'multichoice'){
+    const typeInfo = MC_TYPE_LABELS[entry.questionType] || {label:'Multiple Choice'};
+    const correctChoice = entry.choices.find(c=>c.correct);
+    contentDescription = `Content type: Houdini Challenge quiz question (archetype: ${typeInfo.label})\nQuestion: ${entry.question}` + (entry.code ? `\nCode shown on the card: ${entry.code}` : '') + (entry.context ? `\nContext: ${entry.context}` : '') + `\nOptions: ${entry.choices.map(c=>c.text).join(', ')}\nCorrect answer (do not reveal in the main caption body): ${correctChoice.text}`;
+  } else if(mode === 'puzzle'){
+    contentDescription = `Content type: Fill in the Blank tip\nFull tip text: ${entry.text}\nThe blanked term (do not reveal in the main caption body — build curiosity instead): ${entry.blank}`;
+  } else if(mode === 'debate'){
+    contentDescription = `Content type: Pick a Side — a genuine forced-choice question between two named options, meant to spark real discussion (not just information)\nQuestion: ${entry.text}\nOption A: ${entry.optionA}\nOption B: ${entry.optionB}\nCaptions should reference these two specific options by name, not just describe the question in the abstract.`;
+  } else {
+    contentDescription = `Content type: Daily Tip — a plain, standalone useful tip\nTip text: ${entry.text}`;
+  }
+  const num3 = String(num).padStart(3,'0');
+  return `Generate social media captions and titles for a Houdini (SideFX 3D VFX software) tip post, for three platforms: X (Twitter), Instagram, and YouTube (Shorts).
+
+${contentDescription}
+
+Category: ${entry.cat}
+Difficulty: ${entry.diff}
+Post number: #${num3}
+
+Requirements:
+- Every caption and title MUST be specifically and directly about the content above — never generic, never something that could be reused for a different tip.
+- X: title is an internal reference label only (not posted), caption MUST be under 280 characters total INCLUDING hashtags — concise and punchy, 2-3 relevant hashtags.
+- Instagram: caption can be longer and more descriptive, hashtag-friendly (6-10 hashtags at the end), casual and engaging tone.
+- YouTube title: this is the most important field for discovery — it MUST be phrased the way someone would actually type a search into YouTube, not a label or a hook. Use a real search pattern: "How to [do the specific thing]", "Why does [the specific thing] happen", "What is [the specific node/term] in Houdini", "[Node A] vs [Node B] Houdini", etc. — picking whichever pattern actually fits what this tip teaches. It MUST include the specific real node/attribute/concept name from the content above (that's the actual searchable keyword), not a vague paraphrase. Under 100 characters. Bad example (too vague/labely): "Modeling: A useful PolyDoctor trick | Houdini Tip #165". Good example (matches real search intent, keyword-forward): "How to Find Broken Geometry Before It Breaks Your Sim (Houdini PolyDoctor)". The description/caption below the title can be longer and more casual — the title is the one place where matching search phrasing matters most.
+- If this is a Fill in the Blank or Houdini Challenge post, build genuine curiosity WITHOUT revealing the answer in the main caption body.
+- If this is a Pick a Side post, phrase things to invite genuine disagreement and discussion, not just information.
+- Respond with ONLY raw JSON, no markdown fences, no commentary, in exactly this shape:
+{"x":{"title":"...","caption":"..."},"instagram":{"title":"...","caption":"..."},"youtube":{"title":"...","caption":"..."}}`;
+}
+
+async function generateAiCaptions(entry, mode, num){
+  const prompt = buildCaptionPrompt(entry, mode, num);
+  let raw;
+  if(modelSource === 'local'){
+    raw = await callOllamaJSON(prompt, 'captions');
+  } else {
+    const key = getApiKey();
+    if(!key) throw new Error('NO_KEY');
+    const preferred = getPreferredGeminiModel();
+    raw = await callOneGeminiModelJSON(preferred, key, prompt, 'captions');
+  }
+  const result = {};
+  for(const p of ['x','instagram','youtube']){
+    if(!raw[p] || typeof raw[p].title !== 'string' || typeof raw[p].caption !== 'string'){
+      throw new Error(`response missing valid ${p} title/caption`);
+    }
+    result[p] = { title: raw[p].title, caption: raw[p].caption };
+  }
+  // hard limits enforced regardless of what the model actually returned — same safety-net
+  // principle used everywhere else in this tool, never trust the model to self-police length
+  if(result.x.caption.length > 280) result.x.caption = trimToLimit(result.x.caption, 280);
+  if(result.youtube.title.length > 100) result.youtube.title = trimToLimit(result.youtube.title, 100);
+  return result;
+}
+
+async function upgradeToAiCaptions(entry, mode, num){
+  const badge = document.getElementById('captionGenBadge');
+  badge.textContent = '(writing AI captions…)';
+  try{
+    const aiCaptions = await generateAiCaptions(entry, mode, num);
+    if(activeEntry === entry){ // only apply if the user hasn't moved to a different tip while this was in flight
+      currentCaptions = aiCaptions;
+      renderActiveCaption();
+      badge.textContent = '✓ AI-written';
+      setTimeout(()=>{ if(badge.textContent==='✓ AI-written') badge.textContent=''; }, 3000);
+    }
+  }catch(e){
+    console.log('AI caption upgrade skipped, keeping template captions:', e.message);
+    if(activeEntry === entry) badge.textContent = '';
+  }
 }
 
 // ---- Persistence ----
@@ -1771,7 +2084,11 @@ const HOUDINI_CATEGORY_NODE_TYPE = {
 // Returns { name, iconKey } for an entry — the ONE lookup both internalNodeName() and the
 // icon-drawing code call, guaranteeing the displayed name and the icon always match.
 function getVerifiedNodeType(entry){
-  const searchText = entry.text || entry.problem || '';
+  // optionA/optionB carry the specific technical terms for Pick a Side entries now (the question
+  // text itself is deliberately more generic/framing-only) — without searching them too, icon
+  // matching would fall back to a vague category icon instead of the precise node it used to find
+  // back when those terms were embedded directly in the tip text.
+  const searchText = [entry.text, entry.problem, entry.optionA, entry.optionB].filter(Boolean).join(' ');
   for(const t of HOUDINI_NODE_TYPES){
     if(t.re.test(searchText)) return t;
   }
@@ -1836,6 +2153,8 @@ function scheduleDriveTokenRefresh(){
 }
 
 let driveExplicitConnectPending = false;
+let driveSilentRetryCount = 0;
+const DRIVE_SILENT_RETRY_MAX = 2;
 
 function initDriveTokenClient(){
   if(typeof google === 'undefined' || !google.accounts){
@@ -1849,12 +2168,28 @@ function initDriveTokenClient(){
     client_id: DRIVE_CLIENT_ID,
     scope: DRIVE_SCOPE,
     callback: async (resp)=>{
+      const wasExplicit = driveExplicitConnectPending; // capture before resetting — checking after reset meant this branch could never fire
       if(resp.error){
+        // Silent reconnect can fail transiently (e.g. a slow first attempt right after the GIS
+        // script loads) — retry a couple of times before concluding it genuinely needs a manual
+        // click. Never retries for an EXPLICIT click (wasExplicit), only the automatic attempt.
+        if(!wasExplicit && wasDriveConnectedBefore() && driveSilentRetryCount < DRIVE_SILENT_RETRY_MAX){
+          driveSilentRetryCount++;
+          setTimeout(()=>{ driveTokenClient.requestAccessToken({ prompt: '' }); }, 800);
+          return;
+        }
         driveExplicitConnectPending = false;
         setDriveConnectionBadge('disconnected');
-        if(driveExplicitConnectPending) setDriveStatus('Connection cancelled or failed', '#FF9A5C');
-        return; // silent auto-attempt failing quietly is expected for anyone who hasn't connected yet
+        if(wasExplicit){
+          setDriveStatus('Connection cancelled or failed', '#FF9A5C');
+        } else if(wasDriveConnectedBefore()){
+          // this was a previously-connected user whose automatic reconnect just failed —
+          // tell them why instead of leaving it a silent mystery
+          setDriveStatus('Auto-reconnect failed — your browser may be blocking Google\'s silent sign-in check (common with strict cookie/tracking-protection settings). Click Connect below.', '#FF9A5C');
+        }
+        return;
       }
+      driveSilentRetryCount = 0;
       driveExplicitConnectPending = false;
       driveAccessToken = resp.access_token;
       rememberDriveConnected();
@@ -2134,7 +2469,11 @@ function textSimilarity(a, b){
 const DUPLICATE_THRESHOLD = 0.5;
 
 async function generateUniqueAiTip(topicHint){
-  const historyTexts = tipLog.filter(e=>e.type!=='quickfix').map(e=>e.text);
+  // scoped to entries with a real .text field (regular Daily Tip / Fill in the Blank / Debate) —
+  // Quick-Fix (.problem) and Multiple Choice (.question) entries have no .text at all, and
+  // including them here used to produce `undefined` in this array, which then crashed
+  // `.slice()` inside the prompt builder the moment any multichoice/quickfix history existed
+  const historyTexts = tipLog.filter(e=>!e.type).map(e=>e.text);
   const recent = historyTexts.slice(-120); // what we tell the model to avoid — keeps the prompt focused on actually-shown tips
   const fullCorpus = historyTexts.concat(getEffectiveBank().map(t=>t.text)); // what we actually check the result against — everything that exists anywhere, shown or not
   let rejectedText = null;
@@ -2319,6 +2658,15 @@ async function callClaudeForTip(recentTexts, rejectedText, topicHint){
 }
 
 // ---------- Quick-Fix Tutorials: a parallel content type, same models/infra, different shape ----------
+
+// Shared across all 5 content prompts below — a final self-check the model applies before
+// responding, and guidance on opening with a hook instead of a flat instruction. Kept as
+// constants so every prompt gets the exact same bar, and future tweaks only need one edit.
+const QUALITY_SELF_CHECK = '\n\nBefore finalizing your answer, silently verify it against every one of these — if it fails any, revise it before responding, don\'t just note the failure:\n'
+  + '✔ Technically correct\n✔ Useful in production\n✔ Not obvious\n✔ One clear lesson\n✔ Worth saving\n✔ Worth sharing\n✔ Not copied from documentation\n✔ Specific to Houdini\n✔ No filler\n✔ No marketing language\n✔ Under 45 words';
+
+const STRONG_OPENING_GUIDANCE = '\n\nThe opening line matters more than anything else that follows it — it decides whether someone keeps reading at all. Do NOT open with a flat instruction like "Use the L key to select loops." Instead, open with a real hook: a relatable question ("Messy node graph?"), a "prefer this over that" framing, or a "one thing every Houdini artist should know" framing — then deliver the actual content right after.';
+
 function buildQuickFixPrompt(recentProblems, rejectedProblem, topicHint, targetDiff, fxOnly){
   const categories = fxOnly ? 'Dynamics & FX' : Object.keys(CATEGORY_COLORS).join(' | ');
   const usedList = recentProblems.map((t,i)=>(i+1)+'. '+t.slice(0,140)).join('\n');
@@ -2338,6 +2686,7 @@ function buildQuickFixPrompt(recentProblems, rejectedProblem, topicHint, targetD
   if(rejectedProblem){
     prompt += '\n\nYour previous suggestion was rejected as too similar to an existing one: "' + rejectedProblem + '"\nPick a genuinely different problem this time.';
   }
+  prompt += QUALITY_SELF_CHECK;
   return prompt;
 }
 
@@ -2455,8 +2804,62 @@ async function callModelForQuickFix(recentProblems, rejectedProblem, topicHint){
   return result;
 }
 
+// ============================================================================
+// Production Fixes — a more advanced Quick-Fix variant. Senior FX TD persona,
+// real studio-caliber production issues (not beginner tutorials, not
+// documentation facts), with a 4-part structure: Problem / Cause / Solution /
+// Why it works. Opt-in via a toggle — regular Quick-Fix is entirely unaffected.
+// ============================================================================
+const PRODUCTION_FIX_STUDIOS = 'Industrial Light & Magic (ILM), Wētā FX, Framestore, DNEG, MPC, Digital Domain, Scanline VFX, Sony Pictures Imageworks, Pixomondo, Rodeo FX, The Mill, Ghost VFX, Image Engine, Important Looking Pirates, Crafty Apes, Luma Pictures, Animal Logic, Cinesite, Method Studios, and Outpost VFX';
+const PRODUCTION_FIX_FOCUS_AREAS = 'USD, Solaris, Pyro, FLIP, Vellum, RBD, VEX, PDG, Karma, RenderMan, pipeline, caching, optimization, memory, performance, attributes, packed primitives, rendering, simulation, and volumes';
+
+function buildProductionFixPrompt(recentProblems, rejectedProblem, topicHint, targetDiff, fxOnly){
+  const usedList = recentProblems.map((t,i)=>(i+1)+'. '+t.slice(0,140)).join('\n');
+  let prompt = `You are a Senior FX Technical Director with 12+ years of production experience at the caliber of major VFX studios such as ${PRODUCTION_FIX_STUDIOS}. Think about the real problems artists encounter while building shots under production deadlines — not documentation facts, not beginner tutorials, not hypothetical problems.
+
+Generate ONE production issue in SideFX Houdini that:
+- actually happens in real studios
+- wastes artists' time
+- has a clear technical root cause
+- has a practical Houdini solution
+- teaches something valuable
+
+Prefer issues involving: ${PRODUCTION_FIX_FOCUS_AREAS}.
+
+The problem should make an experienced artist reading it think "I've actually seen this" — not "that seems made up." Don't attribute the problem to any specific named studio; write it as a general production-caliber issue, using the studio list above only to calibrate the level of real-world experience behind it.
+
+Respond with ONLY raw JSON, no markdown fences, no commentary, in exactly this shape:
+{"category":"one of: ${Object.keys(CATEGORY_COLORS).join(' | ')}","diff":"${targetDiff}","problem":"the production issue itself, framed the way a TD would actually describe it, under 200 characters","cause":"the clear technical root cause, under 180 characters","solution":"the practical Houdini fix, specific enough to actually do, under 220 characters","whyItWorks":"a short explanation of why this actually resolves it, under 160 characters"}
+
+The difficulty for this specific issue MUST be "${targetDiff}" (BEGINNER = still production-relevant but approachable; TD LEVEL = assumes solid working knowledge; PIPELINE = assumes deep production/studio-scale experience).
+
+These issues have already been used — the new one must be genuinely different, not reworded:
+${usedList}`;
+  if(fxOnly){
+    prompt += '\n\nThis issue MUST be specifically about Houdini FX/simulation work — Pyro, FLIP, RBD, Vellum, POP, VDB, or similar dynamics topics.';
+  }
+  if(topicHint){
+    prompt += `\n\nThe new issue MUST be specifically about this topic: "${topicHint}".`;
+  }
+  if(rejectedProblem){
+    prompt += `\n\nYour previous suggestion was rejected as too similar to an existing one: "${rejectedProblem}"\nPick a genuinely different production issue this time.`;
+  }
+  prompt += QUALITY_SELF_CHECK;
+  return prompt;
+}
+
+function validateProductionFixResult(parsed){
+  if(!CATEGORY_COLORS[parsed.category]) parsed.category = pick(Object.keys(CATEGORY_COLORS));
+  parsed.diff = normalizeDifficulty(parsed.diff);
+  for(const field of ['problem','cause','solution','whyItWorks']){
+    if(!parsed[field] || typeof parsed[field] !== 'string') throw new Error(`response missing a valid "${field}" field`);
+    parsed[field] = sanitizeGeneratedText(parsed[field]);
+  }
+  return parsed;
+}
+
 async function generateUniqueQuickFix(topicHint){
-  const historyProblems = tipLog.filter(e=>e.type==='quickfix').map(e=>e.problem);
+  const historyProblems = tipLog.filter(e=>e.type==='quickfix' && !e.subtype).map(e=>e.problem); // excludes Production Fix entries — separate duplicate pool
   const recent = historyProblems.slice(-60);
   let rejectedProblem = null;
   for(let attempt=0; attempt<2; attempt++){
@@ -2473,9 +2876,45 @@ async function generateUniqueQuickFix(topicHint){
   throw new Error('DUPLICATE_RISK');
 }
 
+async function generateUniqueProductionFix(topicHint){
+  const fxOnly = isFxOnlyMode();
+  const targetDiff = pick(['BEGINNER', 'TD LEVEL', 'PIPELINE']);
+  const historyProblems = tipLog.filter(e=>e.type==='quickfix' && e.subtype==='production').map(e=>e.problem);
+  const recent = historyProblems.slice(-60);
+  let rejectedProblem = null;
+  for(let attempt=0; attempt<2; attempt++){
+    const prompt = buildProductionFixPrompt(recent, rejectedProblem, topicHint, targetDiff, fxOnly);
+    let raw, modelUsed;
+    if(modelSource === 'local'){
+      raw = await callOllamaJSON(prompt, 'productionfix');
+      modelUsed = raw.__ollamaModel + ' (local)';
+    } else {
+      const key = getApiKey();
+      if(!key) throw new Error('NO_KEY');
+      const preferred = getPreferredGeminiModel();
+      raw = await callOneGeminiModelJSON(preferred, key, prompt, 'productionfix');
+      modelUsed = preferred;
+    }
+    const result = validateProductionFixResult(raw);
+    result.modelUsed = modelUsed;
+    if(fxOnly) result.category = 'Dynamics & FX';
+    result.diff = targetDiff;
+
+    let worstSim = 0;
+    for(const existing of historyProblems){
+      const sim = textSimilarity(existing, result.problem);
+      if(sim > worstSim) worstSim = sim;
+      if(worstSim >= DUPLICATE_THRESHOLD) break;
+    }
+    if(worstSim < DUPLICATE_THRESHOLD) return result;
+    rejectedProblem = result.problem;
+  }
+  throw new Error('DUPLICATE_RISK');
+}
+
 // ============================================================================
 // Shared generic JSON-generation helpers — used by the three dedicated pillar
-// pipelines below (Daily Tip / Fill in the Blank / Houdini Debate) so each pillar
+// pipelines below (Daily Tip / Fill in the Blank / Pick a Side) so each pillar
 // gets its own specialized prompt without duplicating the Gemini/Ollama request
 // plumbing three more times. Returns raw parsed JSON; callers validate/shape it.
 // ============================================================================
@@ -2560,7 +2999,7 @@ function buildDailyTipPrompt(recentTexts, rejectedText, topicHint, targetDiff, f
   let prompt = 'Generate one original, technically accurate "Daily Tip" about SideFX Houdini (procedural 3D VFX software), for an ongoing social-media tip series.\n'
   + 'This is a plain, standalone tip — its entire job is to teach the reader one specific, accurate thing well. It is NOT a puzzle and NOT a debate: don\'t write it as a sentence with an obvious single term to guess, and don\'t frame it as a which-do-you-use comparison — just explain the useful thing clearly and directly.\n'
   + 'Respond with ONLY raw JSON, no markdown fences, no commentary, in exactly this shape:\n'
-  + '{"category":"' + (fxOnly ? 'Dynamics & FX' : 'one of: ' + categories) + '","diff":"' + targetDiff + '","text":"the tip itself, one to two sentences, under 220 characters, specific and accurate"}\n\n'
+  + '{"category":"' + (fxOnly ? 'Dynamics & FX' : 'one of: ' + categories) + '","diff":"' + targetDiff + '","hook":"the exact opening line/question from the start of text — copy it verbatim, do not paraphrase it here","text":"the tip itself, one to two sentences, under 220 characters, specific and accurate — MUST start with the hook text exactly as written above"}\n\n'
   + 'The difficulty for this specific tip MUST be "' + targetDiff + '" — pick a Houdini technique that genuinely fits that level (BEGINNER = something a newcomer hits in their first weeks; TD LEVEL = assumes solid working knowledge; PIPELINE = assumes production/studio-scale experience). Do not write a tip that doesn\'t actually match "' + targetDiff + '".\n\n'
   + 'These tips have already been used in the series — the new tip must cover a genuinely different node, technique, or concept, not just reworded phrasing of any of these:\n' + usedList;
   if(fxOnly){
@@ -2572,6 +3011,7 @@ function buildDailyTipPrompt(recentTexts, rejectedText, topicHint, targetDiff, f
   if(rejectedText){
     prompt += '\n\nYour previous suggestion was rejected as too similar to an existing tip: "' + rejectedText + '"\nPick a completely different Houdini feature area this time.';
   }
+  prompt += STRONG_OPENING_GUIDANCE + QUALITY_SELF_CHECK;
   return prompt;
 }
 function validateDailyTipResult(parsed){
@@ -2579,6 +3019,19 @@ function validateDailyTipResult(parsed){
   parsed.diff = normalizeDifficulty(parsed.diff);
   if(!parsed.text || typeof parsed.text !== 'string') throw new Error('response missing a valid "text" field');
   parsed.text = sanitizeGeneratedText(parsed.text);
+  // hook is a nice-to-have for visual separation on the card, not required — if it's missing or
+  // doesn't genuinely match the start of the text, just drop it rather than fail the whole
+  // generation over a minor formatting slip; the card falls back to rendering as one block.
+  if(typeof parsed.hook === 'string' && parsed.hook.trim()){
+    const cleanHook = sanitizeGeneratedText(parsed.hook.trim());
+    if(cleanHook.length >= 8 && cleanHook.length < parsed.text.length && parsed.text.startsWith(cleanHook)){
+      parsed.hook = cleanHook;
+    } else {
+      delete parsed.hook;
+    }
+  } else {
+    delete parsed.hook;
+  }
   return parsed;
 }
 async function callModelForDailyTip(recentTexts, rejectedText, topicHint){
@@ -2631,7 +3084,7 @@ function buildFillBlankPrompt(recentTexts, rejectedText, topicHint, targetDiff, 
   let prompt = 'Generate one "Fill in the Blank" tip about SideFX Houdini (procedural 3D VFX software), for an ongoing social-media guess-the-term series.\n'
   + 'This is NOT a general tip with a word removed afterward — write the sentence FROM THE START with one specific, well-known node name, attribute, or function as the natural, satisfying answer to guess. The sentence should still make complete sense and teach something true even before the blank is filled in, but the blanked term must be the obvious "aha" answer once you know it — not an arbitrary word.\n'
   + 'Respond with ONLY raw JSON, no markdown fences, no commentary, in exactly this shape:\n'
-  + '{"category":"' + (fxOnly ? 'Dynamics & FX' : 'one of: ' + categories) + '","diff":"' + targetDiff + '","text":"the full tip sentence, one to two sentences, under 220 characters, specific and accurate","blank":"the exact term or short phrase copied verbatim from text — this field is REQUIRED, never omit it"}\n\n'
+  + '{"category":"' + (fxOnly ? 'Dynamics & FX' : 'one of: ' + categories) + '","diff":"' + targetDiff + '","hook":"the exact opening line/question from the start of text — copy it verbatim, do not paraphrase it here","text":"the full tip sentence, one to two sentences, under 220 characters, specific and accurate — MUST start with the hook text exactly as written above","blank":"the exact term or short phrase copied verbatim from text — this field is REQUIRED, never omit it"}\n\n'
   + 'The difficulty for this specific tip MUST be "' + targetDiff + '" — pick a Houdini technique that genuinely fits that level (BEGINNER = something a newcomer hits in their first weeks; TD LEVEL = assumes solid working knowledge; PIPELINE = assumes production/studio-scale experience).\n\n'
   + 'These tips have already been used in the series — the new tip must cover a genuinely different node, technique, or concept, not just reworded phrasing of any of these:\n' + usedList;
   if(fxOnly){
@@ -2643,6 +3096,7 @@ function buildFillBlankPrompt(recentTexts, rejectedText, topicHint, targetDiff, 
   if(rejectedText){
     prompt += '\n\nYour previous suggestion was rejected as too similar to an existing tip: "' + rejectedText + '"\nPick a completely different Houdini feature area this time.';
   }
+  prompt += STRONG_OPENING_GUIDANCE + QUALITY_SELF_CHECK;
   return prompt;
 }
 function validateFillBlankResult(parsed){
@@ -2653,6 +3107,16 @@ function validateFillBlankResult(parsed){
   parsed.text = sanitizeGeneratedText(parsed.text);
   parsed.blank = sanitizeGeneratedText(parsed.blank);
   if(!parsed.text.includes(parsed.blank)) throw new Error('the "blank" term does not appear verbatim in "text"');
+  if(typeof parsed.hook === 'string' && parsed.hook.trim()){
+    const cleanHook = sanitizeGeneratedText(parsed.hook.trim());
+    if(cleanHook.length >= 8 && cleanHook.length < parsed.text.length && parsed.text.startsWith(cleanHook)){
+      parsed.hook = cleanHook;
+    } else {
+      delete parsed.hook;
+    }
+  } else {
+    delete parsed.hook;
+  }
   return parsed;
 }
 async function callModelForFillBlank(recentTexts, rejectedText, topicHint){
@@ -2695,19 +3159,20 @@ async function generateUniqueFillBlank(topicHint){
 }
 
 // ============================================================================
-// Houdini Debate — dedicated prompt that always produces a genuine point of
+// Pick a Side — dedicated prompt that always produces a genuine point of
 // contention between real, valid approaches — not a factual tip that happens
 // to tolerate a "which do you use" framing bolted on afterward.
 // ============================================================================
 function buildDebatePrompt(recentTexts, rejectedText, topicHint, targetDiff, fxOnly){
   const categories = fxOnly ? 'Dynamics & FX' : Object.keys(CATEGORY_COLORS).join(' | ');
   const usedList = recentTexts.map((t,i)=>(i+1)+'. '+t.slice(0,140)).join('\n');
-  let prompt = 'Generate one "Houdini Debate" post about SideFX Houdini (procedural 3D VFX software), for an ongoing social-media series meant to spark genuine discussion.\n'
-  + 'This must present a REAL point of contention — two or more genuinely valid approaches, nodes, or techniques that experienced Houdini artists actually disagree about or have real preferences between (performance vs flexibility, older vs newer workflow, studio convention differences, etc). It is NOT a plain fact — a reader should be able to reasonably argue for either side. Do not manufacture a fake controversy out of a simple factual tip.\n'
+  let prompt = 'Generate one "Pick a Side" post about SideFX Houdini (procedural 3D VFX software), for an ongoing social-media series meant to spark genuine discussion.\n'
+  + 'The single biggest thing that makes these actually get replies instead of just agreement or silence: it must be a REAL FORCED-CHOICE QUESTION between two concrete, named options — not a stated opinion or a vague "point of contention" for people to react to. Frame it exactly like a poll a working artist would actually answer with their real workflow: "For heavy USD assets, what do you reach for first?" (Direct References vs Payloads), or "At what point do you switch from X to Y?" — something with a genuine, specific answer, not just something to agree or disagree with.\n'
+  + 'Both options must be real, valid, commonly-used approaches that experienced Houdini artists genuinely differ on — not a strawman where one option is obviously correct.\n'
   + 'Respond with ONLY raw JSON, no markdown fences, no commentary, in exactly this shape:\n'
-  + '{"category":"' + (fxOnly ? 'Dynamics & FX' : 'one of: ' + categories) + '","diff":"' + targetDiff + '","text":"the debate framing itself, one to two sentences, under 220 characters, presenting the genuine point of contention"}\n\n'
+  + '{"category":"' + (fxOnly ? 'Dynamics & FX' : 'one of: ' + categories) + '","diff":"' + targetDiff + '","text":"the question itself, one sentence, under 160 characters, phrased as a genuine forced-choice question — not a statement","optionA":"short concrete label for the first option, 1-4 words, e.g. \'Direct References\'","optionB":"short concrete label for the second option, 1-4 words, e.g. \'Payloads\'"}\n\n'
   + 'The difficulty for this specific post MUST be "' + targetDiff + '" — pick a comparison that genuinely fits that level (BEGINNER = something a newcomer hits in their first weeks; TD LEVEL = assumes solid working knowledge; PIPELINE = assumes production/studio-scale experience).\n\n'
-  + 'These debates have already been used in the series — the new one must be a genuinely different point of contention, not a reworded version of any of these:\n' + usedList;
+  + 'These debates have already been used in the series — the new one must be a genuinely different question, not a reworded version of any of these:\n' + usedList;
   if(fxOnly){
     prompt += '\n\nThis debate MUST be specifically about Houdini FX/simulation work — Pyro, FLIP, RBD, Vellum, POP, VDB, or similar dynamics topics.';
   }
@@ -2715,15 +3180,20 @@ function buildDebatePrompt(recentTexts, rejectedText, topicHint, targetDiff, fxO
     prompt += '\n\nThe new debate MUST be specifically about this topic: "' + topicHint + '".';
   }
   if(rejectedText){
-    prompt += '\n\nYour previous suggestion was rejected as too similar to an existing one: "' + rejectedText + '"\nPick a genuinely different point of contention this time.';
+    prompt += '\n\nYour previous suggestion was rejected as too similar to an existing one: "' + rejectedText + '"\nPick a genuinely different question this time.';
   }
+  prompt += STRONG_OPENING_GUIDANCE + QUALITY_SELF_CHECK;
   return prompt;
 }
 function validateDebateResult(parsed){
   if(!CATEGORY_COLORS[parsed.category]) parsed.category = pick(Object.keys(CATEGORY_COLORS));
   parsed.diff = normalizeDifficulty(parsed.diff);
   if(!parsed.text || typeof parsed.text !== 'string') throw new Error('response missing a valid "text" field');
+  if(!parsed.optionA || typeof parsed.optionA !== 'string') throw new Error('response missing a required "optionA" field');
+  if(!parsed.optionB || typeof parsed.optionB !== 'string') throw new Error('response missing a required "optionB" field');
   parsed.text = sanitizeGeneratedText(parsed.text);
+  parsed.optionA = sanitizeGeneratedText(parsed.optionA);
+  parsed.optionB = sanitizeGeneratedText(parsed.optionB);
   return parsed;
 }
 async function callModelForDebate(recentTexts, rejectedText, topicHint){
@@ -2777,8 +3247,8 @@ function buildMultiChoicePrompt(recentQuestions, rejectedQuestion, topicHint, ta
   const usedList = recentQuestions.map((t,i)=>(i+1)+'. '+t.slice(0,140)).join('\n');
   let prompt = 'Generate one multiple-choice quiz question for SideFX Houdini (procedural 3D VFX software), for an ongoing social-media quiz series.\n\n'
   + 'This must be a REAL STANDALONE QUESTION with short lettered answers — NEVER a sentence with a word blanked out. Pick ONE of these question archetypes and commit to it fully:\n'
-  + '- "output": show a short (1-2 line) VEX code snippet and ask what it does/produces when run\n'
-  + '- "bug": show a short broken VEX snippet and ask why it doesn\'t work as intended\n'
+  + '- "output": show a short (1-2 line) VEX code snippet and ask what it does/produces when run. Use patterns an artist genuinely writes often — @Cd/@P/@N manipulation, rand()/noise()/curlnoise(), fit()/fit01()/chramp(), point()/prim()/neighbours(), attribute math, simple loops over neighbours or geometry. Do NOT reach for obscure edge cases like nested chi()/chf() parameter interpolation, int/float autocast gotchas between f@ and i@ prefixes, or other "gotcha" trivia nobody actually hits day to day — the goal is "oh yeah, I use this," not "well actually, VEX secretly does X here."\n'
+  + '- "bug": show a short broken VEX snippet and ask why it doesn\'t work as intended. Base it on a mistake artists genuinely make often — wrong Run Over context (Points vs Primitives vs Detail), using = instead of ==, wrong attribute type (vector vs float), forgetting @ptnum vs @primnum, off-by-one loop bounds, referencing an attribute that doesn\'t exist yet. Avoid obscure type-casting trivia as the "bug" — it should feel like a mistake a real person would actually make and recognize.\n'
   + '- "compare": describe a situation and ask which of two+ approaches/nodes/functions is faster or more correct\n'
   + '- "node": describe a scenario and ask which specific node solves it\n'
   + '- "truefalse": state one claim about Houdini and ask if it\'s true or false (exactly 2 choices: True, False)\n'
@@ -2798,6 +3268,7 @@ function buildMultiChoicePrompt(recentQuestions, rejectedQuestion, topicHint, ta
   if(rejectedQuestion){
     prompt += '\n\nYour previous suggestion was rejected as too similar to an existing one: "' + rejectedQuestion + '"\nPick a genuinely different question this time.';
   }
+  prompt += QUALITY_SELF_CHECK;
   return prompt;
 }
 
@@ -3007,6 +3478,7 @@ function applyQuickFixEntry(entry){
   document.getElementById('sourceBadge').textContent = `Source: ${entry.model || 'Gemini'}`;
   currentCaptions = generateQuickFixCaption(entry, currentNumber);
   renderActiveCaption();
+  upgradeToAiCaptions(entry, null, currentNumber);
   document.getElementById('tipModeInfo').value = 'Quick-Fix Tutorial — a small specific problem with numbered steps, not a single-sentence tip';
   document.getElementById('puzzleAnswer').value = ''; // no answer-reveal concept for this content type
   tipNumberInput.value = currentNumber;
@@ -3031,6 +3503,7 @@ function applyMultiChoiceEntry(entry){
     : `Source: ${entry.model || 'Gemini'}`;
   currentCaptions = generateMultiChoiceCaption(entry, currentNumber);
   renderActiveCaption();
+  upgradeToAiCaptions(entry, null, currentNumber);
   document.getElementById('tipModeInfo').value = '🧠 Houdini Challenge — ' + typeInfo.emoji + ' ' + typeInfo.label + ' — a standalone question with lettered answers, not a blanked sentence';
   document.getElementById('puzzleAnswer').value = correctChoiceLetter(entry.choices) + ') ' + entry.choices.find(c=>c.correct).text;
   tipNumberInput.value = currentNumber;
@@ -3061,7 +3534,7 @@ function applyEntry(entry){
   currentCTA = entry.cta;
   introStart = performance.now();
 
-  const modeLabel = currentMode==='puzzle' ? '🧩 Fill in the Blank' : currentMode==='debate' ? '⚔️ Houdini Debate' : '💡 Daily Tip';
+  const modeLabel = currentMode==='puzzle' ? '🧩 Fill in the Blank' : currentMode==='debate' ? '⚔️ Pick a Side' : '💡 Daily Tip';
   const sourceTag = entry.source==='ai' ? ' · AI-generated' : '';
   modeBadge.textContent = 'Mode: ' + modeLabel + '  ·  ' + entry.diff + sourceTag;
   document.getElementById('sourceBadge').textContent = entry.source==='bank'
@@ -3069,6 +3542,7 @@ function applyEntry(entry){
     : `Source: ${entry.model || 'Gemini'}`;
   currentCaptions = generateCaption(entry, currentMode, currentCTA, currentNumber);
   renderActiveCaption();
+  upgradeToAiCaptions(entry, currentMode, currentNumber); // fire-and-forget — upgrades captions once the AI responds, template captions already shown in the meantime
   document.getElementById('tipModeInfo').value = modeLabel + ' — ' + (currentMode==='puzzle' ? 'card shows a blanked term for guessing' : currentMode==='debate' ? 'card frames this as a which-do-you-use pick' : 'plain tip, no gimmick');
   document.getElementById('puzzleAnswer').value = (currentMode==='puzzle' && entry.blank) ? entry.blank : '';
   tipNumberInput.value = currentNumber;
@@ -3116,7 +3590,8 @@ async function buildNextMultiChoiceEntry(){
   statusEl.style.color = '';
   statusEl.textContent = `Asking ${modelSource==='local' ? 'your local model' : 'Gemini'} for a multiple-choice question…`;
   try{
-    const ai = await generateUniqueMultiChoice();
+    const eliteModeOn = document.getElementById('toggleEliteMode').checked;
+    const ai = eliteModeOn ? await generateEliteMultiChoice() : await generateUniqueMultiChoice();
     statusEl.style.color = '';
     statusEl.textContent = '';
     return {type:'multichoice', source:'ai', model:ai.modelUsed, questionType:ai.questionType, cat:ai.category, color:CATEGORY_COLORS[ai.category], diff:ai.diff, question:ai.question, code:ai.code, context:ai.context, choices:ai.choices};
@@ -3160,7 +3635,7 @@ async function buildNextDailyTipEntry(){
     const ai = await generateUniqueDailyTip();
     statusEl.style.color = '';
     statusEl.textContent = '';
-    return {source:'ai', model:ai.modelUsed, cat:ai.category, color:CATEGORY_COLORS[ai.category], diff:ai.diff, text:ai.text, blank:null, debate:false, mode:'normal'};
+    return {source:'ai', model:ai.modelUsed, cat:ai.category, color:CATEGORY_COLORS[ai.category], diff:ai.diff, text:ai.text, hook:ai.hook, blank:null, debate:false, mode:'normal'};
   }catch(e){
     console.error('Daily Tip API generation failed, falling back to backup bank:', e);
     const fxOnly = isFxOnlyMode();
@@ -3192,7 +3667,7 @@ async function buildNextFillBlankEntry(){
     const ai = await generateUniqueFillBlank();
     statusEl.style.color = '';
     statusEl.textContent = '';
-    return {source:'ai', model:ai.modelUsed, cat:ai.category, color:CATEGORY_COLORS[ai.category], diff:ai.diff, text:ai.text, blank:ai.blank, debate:false, mode:'puzzle'};
+    return {source:'ai', model:ai.modelUsed, cat:ai.category, color:CATEGORY_COLORS[ai.category], diff:ai.diff, text:ai.text, hook:ai.hook, blank:ai.blank, debate:false, mode:'puzzle'};
   }catch(e){
     console.error('Fill in the Blank API generation failed, falling back to backup bank:', e);
     const fxOnly = isFxOnlyMode();
@@ -3219,14 +3694,14 @@ async function buildNextFillBlankEntry(){
 
 async function buildNextDebateEntry(){
   statusEl.style.color = '';
-  statusEl.textContent = `Asking ${modelSource==='local' ? 'your local model' : 'Gemini'} for a Houdini Debate…`;
+  statusEl.textContent = `Asking ${modelSource==='local' ? 'your local model' : 'Gemini'} for a Pick a Side post…`;
   try{
     const ai = await generateUniqueDebate();
     statusEl.style.color = '';
     statusEl.textContent = '';
-    return {source:'ai', model:ai.modelUsed, cat:ai.category, color:CATEGORY_COLORS[ai.category], diff:ai.diff, text:ai.text, blank:null, debate:true, mode:'debate'};
+    return {source:'ai', model:ai.modelUsed, cat:ai.category, color:CATEGORY_COLORS[ai.category], diff:ai.diff, text:ai.text, blank:null, debate:true, mode:'debate', optionA:ai.optionA, optionB:ai.optionB};
   }catch(e){
-    console.error('Houdini Debate API generation failed, falling back to backup bank:', e);
+    console.error('Pick a Side API generation failed, falling back to backup bank:', e);
     const fxOnly = isFxOnlyMode();
     const effectiveBank = getEffectiveBank();
     const used = usedBankIndices();
@@ -3241,12 +3716,370 @@ async function buildNextDebateEntry(){
           ? 'Could not find a unique tip after 2 tries — using a backup bank tip instead'
           : `${modelSource==='local' ? 'Local model' : 'Gemini'} error: ${e.message} — using a backup bank tip instead`;
       setTimeout(()=>{ statusEl.textContent=''; statusEl.style.color=''; }, 5000);
-      return {source:'bank', bankIndex:idx, cat:t.cat, color:CATEGORY_COLORS[t.cat], diff:t.diff, text:t.text, blank:null, debate:true, mode:'debate'};
+      return {source:'bank', bankIndex:idx, cat:t.cat, color:CATEGORY_COLORS[t.cat], diff:t.diff, text:t.text, blank:null, debate:true, mode:'debate', optionA:t.optionA||null, optionB:t.optionB||null};
     }
     statusEl.style.color = '#FF5C5C';
     statusEl.textContent = (e.message==='NO_KEY') ? '⚠ No API key/model configured, and all debate-eligible backup tips are already used' : `⚠ ${e.message} — and all debate-eligible backup tips are already used`;
     throw e;
   }
+}
+
+// ---------- Elite Mode: quality over variety, via a genuine review pipeline ----------
+// Generate → self-critique as a Senior Houdini TD against 9 weighted criteria (plus 3 hard
+// minimums that override the weighted score entirely) → rewrite to address weaknesses if it
+// doesn't clear the bar → re-review once more → accept best effort. This is what makes "takes
+// longer, optimizes for reputation" literally true rather than just a label on the button.
+const ELITE_WEIGHTS = {
+  technicalAccuracy: 25, productionRelevance: 20, practicalBenefit: 15, novelty: 10,
+  saveWorthiness: 10, hookStrength: 5, beginnerClarity: 5, oneLessonRule: 5, documentationFilter: 5
+};
+const ELITE_SCORE_THRESHOLD = 92;
+const ELITE_MAX_REVIEW_ROUNDS = 2; // initial review + one rewrite-and-recheck pass — bounded so this stays a few extra calls, not an unbounded loop
+
+function computeEliteWeightedScore(scores){
+  let total = 0;
+  for(const key in ELITE_WEIGHTS) total += (scores[key]/10) * ELITE_WEIGHTS[key];
+  return total;
+}
+function passesEliteGates(scores, finalScore){
+  // These three are hard minimums from the spec, not just weighted contributors — a tip can't
+  // pass on a good weighted average alone if any of these individually falls short.
+  return scores.technicalAccuracy === 10
+    && scores.productionRelevance >= 9
+    && scores.novelty >= 8.5
+    && finalScore >= ELITE_SCORE_THRESHOLD;
+}
+
+function buildEliteReviewPrompt(candidateText, category, diff, debateOptions){
+  const debateContext = debateOptions
+    ? `\n\nThis is a "Pick a Side" forced-choice question specifically comparing these two named options: "${debateOptions.optionA}" vs "${debateOptions.optionB}". If you rewrite the question, it MUST remain a genuine comparison between these exact same two options — do not drift to a different comparison or make it about something else.`
+    : '';
+  return `You are a Senior Houdini Technical Director reviewing a tip before it's allowed to publish on a professional Houdini social-media series. Be genuinely strict — most first drafts should NOT pass.
+
+Tip under review:
+"${candidateText}"
+(Category: ${category}, Difficulty: ${diff})${debateContext}
+
+Score each of these honestly, 0-10:
+1. technicalAccuracy — is every statement, node name, parameter, and behavior genuinely correct in modern Houdini? Any real uncertainty means this must be low.
+2. productionRelevance — would someone actually use this in real production work, not just in theory?
+3. practicalBenefit — does it clearly answer "why should I care"?
+4. novelty — would 80% of Houdini users already know this? If yes, score low.
+5. saveWorthiness — is this the kind of tip someone would actually bookmark, versus a throwaway fact like "the Null SOP creates a null"?
+6. hookStrength — does the opening line create real curiosity, or is it a flat instruction like "Use the L key..."?
+7. beginnerClarity — can someone at the stated difficulty level actually understand it?
+8. oneLessonRule — does it teach exactly ONE thing, not several bundled together?
+9. documentationFilter — does it sound copied from docs ("The Blast SOP removes geometry"), or like a real artist's insight ("Instead of deleting geometry permanently, Blast lets you isolate parts of your network while keeping upstream nodes intact")?
+
+Also check for filler ("it is important to," "you should know," "always remember," "this can help") — the tip should start with the actual information immediately.
+
+Respond with ONLY raw JSON, no markdown fences, no commentary:
+{"technicalAccuracy":0-10,"productionRelevance":0-10,"practicalBenefit":0-10,"novelty":0-10,"saveWorthiness":0-10,"hookStrength":0-10,"beginnerClarity":0-10,"oneLessonRule":0-10,"documentationFilter":0-10,"weaknesses":["short phrase per real weakness — empty array if genuinely none"],"rewrittenText":"an improved version fixing the weaknesses while preserving the core idea, under 220 characters — if it already scores well, return it unchanged here"}`;
+}
+
+async function reviewCandidateForElite(candidateText, category, diff, debateOptions){
+  const prompt = buildEliteReviewPrompt(candidateText, category, diff, debateOptions);
+  let raw;
+  if(modelSource === 'local'){
+    raw = await callOllamaJSON(prompt, 'elite-review');
+  } else {
+    const key = getApiKey();
+    if(!key) throw new Error('NO_KEY');
+    raw = await callOneGeminiModelJSON(getPreferredGeminiModel(), key, prompt, 'elite-review');
+  }
+  // Missing/malformed sub-scores default to 0 (fails the gates) rather than crashing the
+  // pipeline — an incomplete review response should never silently pass a tip through.
+  const scores = {};
+  for(const key of Object.keys(ELITE_WEIGHTS)){
+    const v = Number(raw[key]);
+    scores[key] = isNaN(v) ? 0 : Math.max(0, Math.min(10, v));
+  }
+  const finalScore = computeEliteWeightedScore(scores);
+  return {
+    scores, finalScore,
+    passes: passesEliteGates(scores, finalScore),
+    weaknesses: Array.isArray(raw.weaknesses) ? raw.weaknesses : [],
+    rewrittenText: typeof raw.rewrittenText === 'string' && raw.rewrittenText.trim() ? sanitizeGeneratedText(raw.rewrittenText) : candidateText
+  };
+}
+
+// ---------- Elite Mode for Quick-Fix — same bar, adapted to the problem+steps shape ----------
+function buildEliteReviewPromptForQuickFix(problem, steps, category, diff){
+  const stepsText = steps.map((s,i)=>`${i+1}. ${s}`).join('\n');
+  return `You are a Senior Houdini Technical Director reviewing a Quick-Fix mini-tutorial before it's allowed to publish. Be genuinely strict — most first drafts should NOT pass.
+
+Quick-Fix under review:
+Problem: "${problem}"
+Steps:
+${stepsText}
+(Category: ${category}, Difficulty: ${diff})
+
+Score each of these honestly, 0-10:
+1. technicalAccuracy — is every step, node name, and parameter genuinely correct in modern Houdini? Any real uncertainty means this must be low.
+2. productionRelevance — is this a real problem someone actually hits in production, not a contrived one?
+3. practicalBenefit — does fixing this clearly matter — would it actually cost someone real time if left unfixed?
+4. novelty — would 80% of Houdini users already know this fix? If yes, score low.
+5. saveWorthiness — is this the kind of fix someone would bookmark for next time they hit it?
+6. hookStrength — does the problem statement itself create genuine recognition/curiosity, or is it a flat description?
+7. beginnerClarity — could someone at the stated difficulty actually follow these steps?
+8. oneLessonRule — does this fix exactly ONE problem, not several bundled together?
+9. documentationFilter — do the steps sound like real practical guidance, or copied from a manual?
+
+Respond with ONLY raw JSON, no markdown fences, no commentary:
+{"technicalAccuracy":0-10,"productionRelevance":0-10,"practicalBenefit":0-10,"novelty":0-10,"saveWorthiness":0-10,"hookStrength":0-10,"beginnerClarity":0-10,"oneLessonRule":0-10,"documentationFilter":0-10,"weaknesses":["short phrase per real weakness — empty array if genuinely none"],"rewrittenProblem":"an improved problem statement fixing the weaknesses, or the original unchanged if it already scores well","rewrittenSteps":["improved numbered steps as an array of strings, same count or fewer, or the original steps unchanged if it already scores well"]}`;
+}
+
+async function reviewQuickFixForElite(problem, steps, category, diff){
+  const prompt = buildEliteReviewPromptForQuickFix(problem, steps, category, diff);
+  let raw;
+  if(modelSource === 'local'){
+    raw = await callOllamaJSON(prompt, 'elite-review-quickfix');
+  } else {
+    const key = getApiKey();
+    if(!key) throw new Error('NO_KEY');
+    raw = await callOneGeminiModelJSON(getPreferredGeminiModel(), key, prompt, 'elite-review-quickfix');
+  }
+  const scores = {};
+  for(const key of Object.keys(ELITE_WEIGHTS)){
+    const v = Number(raw[key]);
+    scores[key] = isNaN(v) ? 0 : Math.max(0, Math.min(10, v));
+  }
+  const finalScore = computeEliteWeightedScore(scores);
+  const rewrittenSteps = Array.isArray(raw.rewrittenSteps) && raw.rewrittenSteps.length > 0
+    ? raw.rewrittenSteps.map(s=>sanitizeGeneratedText(String(s)))
+    : steps;
+  return {
+    scores, finalScore,
+    passes: passesEliteGates(scores, finalScore),
+    weaknesses: Array.isArray(raw.weaknesses) ? raw.weaknesses : [],
+    rewrittenProblem: typeof raw.rewrittenProblem === 'string' && raw.rewrittenProblem.trim() ? sanitizeGeneratedText(raw.rewrittenProblem) : problem,
+    rewrittenSteps
+  };
+}
+
+async function generateEliteQuickFix(topicHint){
+  const result = await generateUniqueQuickFix(topicHint);
+  let currentProblem = result.problem;
+  let currentSteps = result.steps;
+  let lastReview = null;
+
+  for(let round = 0; round < ELITE_MAX_REVIEW_ROUNDS; round++){
+    try{
+      const review = await reviewQuickFixForElite(currentProblem, currentSteps, result.category, result.diff);
+      lastReview = review;
+      console.log(`Elite Mode (Quick-Fix) review round ${round+1}: score ${review.finalScore.toFixed(1)}/100, passes: ${review.passes}`, review.scores, review.weaknesses);
+      if(review.passes){
+        result.problem = currentProblem;
+        result.steps = currentSteps;
+        return result;
+      }
+      currentProblem = review.rewrittenProblem;
+      currentSteps = review.rewrittenSteps;
+    }catch(e){
+      console.warn(`Elite Mode (Quick-Fix) review round ${round+1} failed, stopping here:`, e.message);
+      break;
+    }
+  }
+  result.problem = currentProblem;
+  result.steps = currentSteps;
+  if(lastReview) console.log(`Elite Mode (Quick-Fix): accepting best effort after ${ELITE_MAX_REVIEW_ROUNDS} round(s) — final score ${lastReview.finalScore.toFixed(1)}/100`);
+  return result;
+}
+
+// ---------- Elite Mode for Production Fix — same bar, adapted to the 4-field shape ----------
+function buildEliteReviewPromptForProductionFix(problem, cause, solution, whyItWorks, category, diff){
+  return `You are a Senior Houdini Technical Director reviewing a Production Fix before it's allowed to publish. Be genuinely strict — most first drafts should NOT pass.
+
+Production Fix under review:
+Problem: "${problem}"
+Cause: "${cause}"
+Solution: "${solution}"
+Why it works: "${whyItWorks}"
+(Category: ${category}, Difficulty: ${diff})
+
+Score each of these honestly, 0-10:
+1. technicalAccuracy — is every claim about the cause and solution genuinely correct in modern Houdini? Any real uncertainty means this must be low.
+2. productionRelevance — is this a real issue that actually happens in production, not a contrived or hypothetical one?
+3. practicalBenefit — would fixing this genuinely save real production time?
+4. novelty — would 80% of experienced Houdini artists already know this? If yes, score low.
+5. saveWorthiness — is this the kind of production knowledge a TD would actually bookmark?
+6. hookStrength — does the problem statement itself read like something an experienced artist would immediately recognize ("I've actually seen this")?
+7. beginnerClarity — is it still understandable at the stated difficulty level, even if it's advanced?
+8. oneLessonRule — does it stay focused on ONE root cause and ONE fix, not several bundled together?
+9. documentationFilter — does the cause/solution sound like real production insight, or like it was copied from docs?
+
+Respond with ONLY raw JSON, no markdown fences, no commentary:
+{"technicalAccuracy":0-10,"productionRelevance":0-10,"practicalBenefit":0-10,"novelty":0-10,"saveWorthiness":0-10,"hookStrength":0-10,"beginnerClarity":0-10,"oneLessonRule":0-10,"documentationFilter":0-10,"weaknesses":["short phrase per real weakness — empty array if genuinely none"],"rewrittenProblem":"improved problem statement, or the original unchanged if it already scores well","rewrittenCause":"improved cause, or unchanged","rewrittenSolution":"improved solution, or unchanged","rewrittenWhyItWorks":"improved explanation, or unchanged"}`;
+}
+
+async function reviewProductionFixForElite(problem, cause, solution, whyItWorks, category, diff){
+  const prompt = buildEliteReviewPromptForProductionFix(problem, cause, solution, whyItWorks, category, diff);
+  let raw;
+  if(modelSource === 'local'){
+    raw = await callOllamaJSON(prompt, 'elite-review-productionfix');
+  } else {
+    const key = getApiKey();
+    if(!key) throw new Error('NO_KEY');
+    raw = await callOneGeminiModelJSON(getPreferredGeminiModel(), key, prompt, 'elite-review-productionfix');
+  }
+  const scores = {};
+  for(const key of Object.keys(ELITE_WEIGHTS)){
+    const v = Number(raw[key]);
+    scores[key] = isNaN(v) ? 0 : Math.max(0, Math.min(10, v));
+  }
+  const finalScore = computeEliteWeightedScore(scores);
+  return {
+    scores, finalScore,
+    passes: passesEliteGates(scores, finalScore),
+    weaknesses: Array.isArray(raw.weaknesses) ? raw.weaknesses : [],
+    rewrittenProblem: typeof raw.rewrittenProblem === 'string' && raw.rewrittenProblem.trim() ? sanitizeGeneratedText(raw.rewrittenProblem) : problem,
+    rewrittenCause: typeof raw.rewrittenCause === 'string' && raw.rewrittenCause.trim() ? sanitizeGeneratedText(raw.rewrittenCause) : cause,
+    rewrittenSolution: typeof raw.rewrittenSolution === 'string' && raw.rewrittenSolution.trim() ? sanitizeGeneratedText(raw.rewrittenSolution) : solution,
+    rewrittenWhyItWorks: typeof raw.rewrittenWhyItWorks === 'string' && raw.rewrittenWhyItWorks.trim() ? sanitizeGeneratedText(raw.rewrittenWhyItWorks) : whyItWorks
+  };
+}
+
+async function generateEliteProductionFix(topicHint){
+  const result = await generateUniqueProductionFix(topicHint);
+  let currentProblem = result.problem, currentCause = result.cause, currentSolution = result.solution, currentWhyItWorks = result.whyItWorks;
+  let lastReview = null;
+
+  for(let round = 0; round < ELITE_MAX_REVIEW_ROUNDS; round++){
+    try{
+      const review = await reviewProductionFixForElite(currentProblem, currentCause, currentSolution, currentWhyItWorks, result.category, result.diff);
+      lastReview = review;
+      console.log(`Elite Mode (Production Fix) review round ${round+1}: score ${review.finalScore.toFixed(1)}/100, passes: ${review.passes}`, review.scores, review.weaknesses);
+      if(review.passes){
+        result.problem = currentProblem; result.cause = currentCause; result.solution = currentSolution; result.whyItWorks = currentWhyItWorks;
+        return result;
+      }
+      currentProblem = review.rewrittenProblem;
+      currentCause = review.rewrittenCause;
+      currentSolution = review.rewrittenSolution;
+      currentWhyItWorks = review.rewrittenWhyItWorks;
+    }catch(e){
+      console.warn(`Elite Mode (Production Fix) review round ${round+1} failed, stopping here:`, e.message);
+      break;
+    }
+  }
+  result.problem = currentProblem; result.cause = currentCause; result.solution = currentSolution; result.whyItWorks = currentWhyItWorks;
+  if(lastReview) console.log(`Elite Mode (Production Fix): accepting best effort after ${ELITE_MAX_REVIEW_ROUNDS} round(s) — final score ${lastReview.finalScore.toFixed(1)}/100`);
+  return result;
+}
+
+// ---------- Elite Mode for Houdini Challenge — same bar, but improves via a fresh regeneration
+// rather than a partial rewrite, since surgically editing just the question while leaving stale
+// choices/correct-answer risks breaking their consistency with each other ----------
+function buildEliteReviewPromptForMultiChoice(question, choicesText, category, diff, questionType){
+  return `You are a Senior Houdini Technical Director reviewing a multiple-choice quiz question before it's allowed to publish. Be genuinely strict — most first drafts should NOT pass.
+
+Question under review (archetype: ${questionType}):
+"${question}"
+Choices:
+${choicesText}
+(Category: ${category}, Difficulty: ${diff})
+
+Score each of these honestly, 0-10:
+1. technicalAccuracy — is the correct answer genuinely correct, and are the wrong answers genuinely wrong (not accidentally also defensible)? Any real uncertainty means this must be low.
+2. productionRelevance — does this test something that actually matters in real Houdini work?
+3. practicalBenefit — does getting this right (or wrong) actually teach something useful?
+4. novelty — would 80% of Houdini users already know this instantly? If yes, score low.
+5. saveWorthiness — is this a genuinely engaging question, or a throwaway fact dressed as a quiz?
+6. hookStrength — does the question itself create real curiosity to answer it?
+7. beginnerClarity — is the question clearly worded for the stated difficulty level?
+8. oneLessonRule — does it test exactly ONE concept, not several bundled together?
+9. documentationFilter — does it feel like a real practical question, or a copied textbook question?
+
+Respond with ONLY raw JSON, no markdown fences, no commentary:
+{"technicalAccuracy":0-10,"productionRelevance":0-10,"practicalBenefit":0-10,"novelty":0-10,"saveWorthiness":0-10,"hookStrength":0-10,"beginnerClarity":0-10,"oneLessonRule":0-10,"documentationFilter":0-10,"weaknesses":["short phrase per real weakness — empty array if genuinely none"]}`;
+}
+
+async function reviewMultiChoiceForElite(ai){
+  const choicesText = ai.choices.map((c,i)=>`${['A','B','C','D'][i]}) ${c.text}${c.correct ? ' (correct)' : ''}`).join('\n');
+  const prompt = buildEliteReviewPromptForMultiChoice(ai.question, choicesText, ai.category, ai.diff, ai.questionType);
+  let raw;
+  if(modelSource === 'local'){
+    raw = await callOllamaJSON(prompt, 'elite-review-mc');
+  } else {
+    const key = getApiKey();
+    if(!key) throw new Error('NO_KEY');
+    raw = await callOneGeminiModelJSON(getPreferredGeminiModel(), key, prompt, 'elite-review-mc');
+  }
+  const scores = {};
+  for(const key of Object.keys(ELITE_WEIGHTS)){
+    const v = Number(raw[key]);
+    scores[key] = isNaN(v) ? 0 : Math.max(0, Math.min(10, v));
+  }
+  const finalScore = computeEliteWeightedScore(scores);
+  return { scores, finalScore, passes: passesEliteGates(scores, finalScore), weaknesses: Array.isArray(raw.weaknesses) ? raw.weaknesses : [] };
+}
+
+async function generateEliteMultiChoice(topicHint){
+  let best = await generateUniqueMultiChoice(topicHint);
+  let bestReview = null;
+  try{
+    bestReview = await reviewMultiChoiceForElite(best);
+    console.log(`Elite Mode (Houdini Challenge) attempt 1: score ${bestReview.finalScore.toFixed(1)}/100, passes: ${bestReview.passes}`, bestReview.scores, bestReview.weaknesses);
+    if(bestReview.passes) return best;
+  }catch(e){
+    console.warn('Elite Mode (Houdini Challenge) review failed on attempt 1, keeping it as-is:', e.message);
+    return best;
+  }
+
+  // Didn't clear the bar — regenerate a fresh attempt (safer than surgically rewriting just the
+  // question while leaving choices/correct-answer potentially inconsistent with it) and keep
+  // whichever of the two attempts actually scored higher, since regeneration isn't guaranteed
+  // to improve on the first try the way a targeted rewrite is.
+  try{
+    const attempt2 = await generateUniqueMultiChoice(topicHint);
+    const review2 = await reviewMultiChoiceForElite(attempt2);
+    console.log(`Elite Mode (Houdini Challenge) attempt 2: score ${review2.finalScore.toFixed(1)}/100, passes: ${review2.passes}`, review2.scores, review2.weaknesses);
+    if(review2.finalScore > bestReview.finalScore) return attempt2;
+  }catch(e){
+    console.warn('Elite Mode (Houdini Challenge) second attempt failed, keeping the first:', e.message);
+  }
+  return best;
+}
+
+async function generateEliteTip(pillar, topicHint){
+  let candidate;
+  if(pillar === 'dailyTip') candidate = await generateUniqueDailyTip(topicHint);
+  else if(pillar === 'fillBlank') candidate = await generateUniqueFillBlank(topicHint);
+  else candidate = await generateUniqueDebate(topicHint);
+
+  const originalText = candidate.text;
+  let currentText = candidate.text;
+  let lastReview = null;
+
+  for(let round = 0; round < ELITE_MAX_REVIEW_ROUNDS; round++){
+    try{
+      const debateOptions = pillar === 'debate' ? { optionA: candidate.optionA, optionB: candidate.optionB } : null;
+      const review = await reviewCandidateForElite(currentText, candidate.category, candidate.diff, debateOptions);
+      lastReview = review;
+      console.log(`Elite Mode review round ${round+1}: score ${review.finalScore.toFixed(1)}/100, passes: ${review.passes}`, review.scores, review.weaknesses);
+      if(review.passes){
+        candidate.text = currentText;
+        if(currentText !== originalText) delete candidate.hook; // rewritten text won't match the original hook anymore — let heuristic detection take over instead
+        return candidate;
+      }
+      // For Fill in the Blank specifically: only accept the rewrite if the blank term survived
+      // it verbatim — otherwise the rewrite would silently break the card (the blank must
+      // appear in the text for the reveal/masking logic to work), so keep the current text instead.
+      if(pillar === 'fillBlank' && !review.rewrittenText.includes(candidate.blank)){
+        console.warn('Elite Mode rewrite dropped the blank term — keeping the pre-rewrite text for this round instead.');
+      } else {
+        currentText = review.rewrittenText;
+      }
+    }catch(e){
+      console.warn(`Elite Mode review round ${round+1} failed, stopping here:`, e.message);
+      break; // a transient review failure shouldn't trigger more paid calls chasing it
+    }
+  }
+
+  candidate.text = currentText;
+  if(currentText !== originalText) delete candidate.hook;
+  if(lastReview) console.log(`Elite Mode: accepting best effort after ${ELITE_MAX_REVIEW_ROUNDS} round(s) — final score ${lastReview.finalScore.toFixed(1)}/100`);
+  return candidate;
 }
 
 async function nextTip(){
@@ -3272,10 +4105,36 @@ async function nextTip(){
     }
 
     let entry;
-    if(pillar==='multichoice') entry = await buildNextMultiChoiceEntry();
-    else if(pillar==='dailyTip') entry = await buildNextDailyTipEntry();
-    else if(pillar==='fillBlank') entry = await buildNextFillBlankEntry();
-    else entry = await buildNextDebateEntry();
+    const eliteModeOn = document.getElementById('toggleEliteMode').checked;
+
+    if(pillar==='multichoice'){
+      entry = await buildNextMultiChoiceEntry();
+    } else if(eliteModeOn){
+      try{
+        statusEl.style.color = '';
+        statusEl.textContent = `⭐ Elite Mode: generating ${ELITE_CANDIDATE_COUNT} candidates and picking the best one…`;
+        const ai = await generateEliteTip(pillar, null);
+        statusEl.style.color = '';
+        statusEl.textContent = '';
+        const mode = pillar==='dailyTip' ? 'normal' : pillar==='fillBlank' ? 'puzzle' : 'debate';
+        entry = {
+          source:'ai', model:ai.modelUsed, cat:ai.category, color:CATEGORY_COLORS[ai.category], diff:ai.diff,
+          text:ai.text, hook:ai.hook, blank: pillar==='fillBlank' ? ai.blank : null, debate: pillar==='debate', mode
+        };
+        if(pillar==='debate'){ entry.optionA = ai.optionA; entry.optionB = ai.optionB; }
+      }catch(e){
+        console.warn('Elite Mode failed entirely, falling back to regular single-candidate generation:', e.message);
+        if(pillar==='dailyTip') entry = await buildNextDailyTipEntry();
+        else if(pillar==='fillBlank') entry = await buildNextFillBlankEntry();
+        else entry = await buildNextDebateEntry();
+      }
+    } else if(pillar==='dailyTip'){
+      entry = await buildNextDailyTipEntry();
+    } else if(pillar==='fillBlank'){
+      entry = await buildNextFillBlankEntry();
+    } else {
+      entry = await buildNextDebateEntry();
+    }
 
     entry.number = tipLog.length+1;
     if(entry.mode) entry.cta = pickCTAFor(entry.mode); // multichoice entries have no .mode/.cta — they use their own caption system instead
@@ -3291,12 +4150,29 @@ async function nextTip(){
 
 function generateQuickFixCaption(entry, num){
   const num3 = String(num).padStart(3,'0');
-  const stepsText = entry.steps.map((s,i)=>`${i+1}. ${s}`).join('\n');
+  const isProduction = entry.subtype === 'production';
+  const contentText = isProduction
+    ? `Cause: ${entry.cause}\nFix: ${entry.solution}\nWhy it works: ${entry.whyItWorks}`
+    : entry.steps.map((s,i)=>`${i+1}. ${s}`).join('\n');
+  const labelWord = isProduction ? 'Production Fix' : 'Quick fix';
+  const emoji = isProduction ? '🏭' : '🔧';
+
   const hashtags = '#Houdini #SideFX #VFX #TechArt';
+  let xBody = `${labelWord} #${num3}: ${entry.problem}\n\n${contentText}`;
+  let xFull = `${xBody}\n\n${hashtags}`;
+  if(xFull.length > 280){
+    const budget = 280 - hashtags.length - 2;
+    xBody = trimToLimit(xBody, budget);
+    xFull = `${xBody}\n\n${hashtags}`;
+  }
+  const categoryTags = CATEGORY_HASHTAGS[entry.cat] ? ' ' + CATEGORY_HASHTAGS[entry.cat] : '';
+  const fallbackTitle = `${labelWord} #${num3}: ${trimToLimit(entry.problem, 60)}`;
+  const ytTitlePrefix = isProduction ? 'Real Production Issue: ' : 'How to Fix: ';
   return {
-    x: `Quick fix #${num3}: ${entry.problem}\n\n${stepsText}\n\n${hashtags}`,
-    instagram: `🔧 Quick Fix #${num3}\n\n${entry.problem}\n\n${stepsText}\n\nSave this for later 📌\n\n#Houdini #SideFX #VFX #3DArt #TechArt #CGI #VFXArtist #ProceduralArt`,
-    reddit: `Title: Quick fix #${num3}: ${entry.problem}\n\nBody: ${stepsText}\n\n(Part of an ongoing quick-fix series — small, specific problems and their fixes.)`
+    x: { title: fallbackTitle, caption: xFull },
+    instagram: { title: fallbackTitle, caption: `${emoji} ${labelWord} #${num3}\n\n${entry.problem}\n\n${contentText}\n\nSave this for later 📌\n\n#Houdini #SideFX #VFX #3DArt #TechArt #CGI #VFXArtist #ProceduralArt${categoryTags}` },
+    youtube: { title: (() => { const suffix = ' (Houdini)'; return trimToLimit(ytTitlePrefix + entry.problem, 100-suffix.length) + suffix; })(),
+      caption: `${entry.problem}\n\n${isProduction ? '' : "Here's the fix:\n"}${contentText}\n\nPart of an ongoing daily Houdini ${isProduction ? 'production fix' : 'quick-fix'} series — new one every day.\n\n#Houdini #SideFX #VFX #TechArt #Shorts${categoryTags}` }
   };
 }
 
@@ -3307,10 +4183,23 @@ function generateMultiChoiceCaption(entry, num){
   const optionsText = formatChoicesText(entry.choices);
   const answerLine = `[Reference only — trim before posting — answer: ${correctChoiceLetter(entry.choices)}) ${entry.choices.find(c=>c.correct).text}]`;
   const hashtags = '#Houdini #SideFX #VFX #TechArt';
+
+  let xBody = `🧠 Houdini Challenge (#${num3}) — ${typeInfo.emoji} ${typeInfo.label}\n\n${entry.question}${codeBlock}\n${optionsText}`;
+  let xFull = `${xBody}\n\n${answerLine}\n\n${hashtags}`;
+  if(xFull.length > 280){
+    const reserved = hashtags.length + answerLine.length + 4;
+    const budget = 280 - reserved;
+    xBody = trimToLimit(xBody, budget);
+    xFull = `${xBody}\n\n${answerLine}\n\n${hashtags}`;
+  }
+
+  const categoryTags = CATEGORY_HASHTAGS[entry.cat] ? ' ' + CATEGORY_HASHTAGS[entry.cat] : '';
+  const fallbackTitle = `Houdini Challenge #${num3} (${typeInfo.label}): ${trimToLimit(entry.question, 45)}`;
   return {
-    x: `🧠 Houdini Challenge (#${num3}) — ${typeInfo.emoji} ${typeInfo.label}\n\n${entry.question}${codeBlock}\n${optionsText}\n\n${answerLine}\n\n${hashtags}`,
-    instagram: `🧠 Houdini Challenge — Houdini #${num3}\n${typeInfo.emoji} ${typeInfo.label}\n\n${entry.question}${codeBlock}\n${optionsText}\n\nDrop your answer below 👇\n\n${answerLine}\n\n#Houdini #SideFX #VFX #3DArt #TechArt #CGI #VFXArtist #ProceduralArt`,
-    reddit: `Title: Houdini Challenge #${num3} (${typeInfo.label}) — can you get this one?\n\nBody: ${entry.question}${codeBlock}\n${optionsText}\n\n${answerLine}\n\n(Part of an ongoing Houdini Challenge series.)`
+    x: { title: fallbackTitle, caption: xFull },
+    instagram: { title: fallbackTitle, caption: `🧠 Houdini Challenge — Houdini #${num3}\n${typeInfo.emoji} ${typeInfo.label}\n\n${entry.question}${codeBlock}\n${optionsText}\n\nDrop your answer below 👇\n\n${answerLine}\n\n#Houdini #SideFX #VFX #3DArt #TechArt #CGI #VFXArtist #ProceduralArt${categoryTags}` },
+    youtube: { title: (() => { const suffix = ` (Houdini ${typeInfo.label})`; return trimToLimit(entry.question, 100-suffix.length) + suffix; })(),
+      caption: `${entry.question}${codeBlock}\n${optionsText}\n\nDrop your answer in the comments before the reveal.\n\n${answerLine}\n\nPart of an ongoing Houdini Challenge series — new one every day.\n\n#Houdini #SideFX #VFX #TechArt #Shorts${categoryTags}` }
   };
 }
 
@@ -3321,20 +4210,41 @@ async function nextQuickFix(){
   btn.disabled = true;
   btn.textContent = 'Generating…';
   statusEl.style.color = '';
-  statusEl.textContent = `Asking ${modelSource==='local' ? 'your local model' : 'Gemini'} for a quick-fix tutorial…`;
+  const productionFixOn = document.getElementById('toggleProductionFix').checked;
+  statusEl.textContent = `Asking ${modelSource==='local' ? 'your local model' : 'Gemini'} for a ${productionFixOn ? 'production fix' : 'quick-fix tutorial'}…`;
   try{
-    const result = await generateUniqueQuickFix(topicRaw || undefined);
-    const entry = {
-      type: 'quickfix',
-      source: 'ai',
-      model: result.modelUsed,
-      cat: result.category,
-      color: CATEGORY_COLORS[result.category],
-      diff: result.diff,
-      problem: result.problem,
-      steps: result.steps,
-      number: tipLog.length+1
-    };
+    const eliteModeOn = document.getElementById('toggleEliteMode').checked;
+    let entry;
+    if(productionFixOn){
+      const result = eliteModeOn ? await generateEliteProductionFix(topicRaw || undefined) : await generateUniqueProductionFix(topicRaw || undefined);
+      entry = {
+        type: 'quickfix',
+        subtype: 'production',
+        source: 'ai',
+        model: result.modelUsed,
+        cat: result.category,
+        color: CATEGORY_COLORS[result.category],
+        diff: result.diff,
+        problem: result.problem,
+        cause: result.cause,
+        solution: result.solution,
+        whyItWorks: result.whyItWorks,
+        number: tipLog.length+1
+      };
+    } else {
+      const result = eliteModeOn ? await generateEliteQuickFix(topicRaw || undefined) : await generateUniqueQuickFix(topicRaw || undefined);
+      entry = {
+        type: 'quickfix',
+        source: 'ai',
+        model: result.modelUsed,
+        cat: result.category,
+        color: CATEGORY_COLORS[result.category],
+        diff: result.diff,
+        problem: result.problem,
+        steps: result.steps,
+        number: tipLog.length+1
+      };
+    }
     tipLog.push(entry);
     await saveLog();
     applyEntry(entry);
@@ -3381,14 +4291,23 @@ async function maybeRefreshSupplementalBank(){
   let added = 0;
   for(let i = 0; i < BATCH_SIZE; i++){
     try{
-      const ai = await generateUniqueAiTip();
+      // rotate across the same three dedicated pillars the main "New Tip" flow uses, so the
+      // auto-refreshed backup bank gets the same prompt quality (genuinely blankable terms,
+      // genuine points of contention) rather than the old generic one-prompt-fits-all approach
+      const pillar = pick(['dailyTip','fillBlank','debate']);
+      let ai, blank = null, debate = false, optionA = null, optionB = null;
+      if(pillar === 'fillBlank'){ ai = await generateUniqueFillBlank(); blank = ai.blank; }
+      else if(pillar === 'debate'){ ai = await generateUniqueDebate(); debate = true; optionA = ai.optionA; optionB = ai.optionB; }
+      else { ai = await generateUniqueDailyTip(); }
       supplementalBank.push({
         cat: ai.category,
         color: CATEGORY_COLORS[ai.category],
         diff: ai.diff,
         text: ai.text,
-        blank: ai.blank || null,
-        debate: !!ai.debate
+        blank,
+        debate,
+        optionA,
+        optionB
       });
       added++;
     }catch(e){
@@ -3427,6 +4346,26 @@ function roundRectPath(c,x,y,w,h,r){
   c.arcTo(x,y+h,x,y,r);
   c.arcTo(x,y,x+w,y,r);
   c.closePath();
+}
+
+// Best-effort hook/body boundary detection for content that has no explicit AI-provided "hook"
+// field (bank tips, older history). Deliberately conservative — only splits at a genuine "?" or
+// ":" within a reasonable length range; returns null (meaning: don't split, render as one block,
+// exactly like before) for anything remotely ambiguous. Never guesses aggressively.
+function detectHookBoundary(text){
+  const minHookLen = 10;
+  const maxHookRatio = 0.62;
+  for(let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if(ch === '?' || ch === ':'){
+      const hookLen = i+1;
+      if(hookLen >= minHookLen && hookLen < text.length*maxHookRatio && hookLen < text.length-8){
+        return text.slice(0, hookLen).trim();
+      }
+      break; // first candidate punctuation didn't qualify — don't keep scanning for a later, weaker one
+    }
+  }
+  return null;
 }
 
 function wrapLines(c,text,maxWidth){
@@ -3714,7 +4653,7 @@ const SUB_ICON_KEYWORDS = [
 ];
 
 function pickIconForEntry(entry){
-  const searchText = entry.text || entry.problem || '';
+  const searchText = [entry.text, entry.problem, entry.optionA, entry.optionB].filter(Boolean).join(' ');
   for(const {re, icon} of SUB_ICON_KEYWORDS){
     if(re.test(searchText)) return SUB_ICONS[icon];
   }
@@ -4279,42 +5218,114 @@ function drawNetworkCard(ctx, w, h, tip, mode, badge, displayText, alpha, scale,
   const textMaxW = panelW*0.91;
 
   const sizingText = fullTextForSizing || displayText;
+
+  // Determine a hook/body split, if any. An explicit AI-provided hook (already validated to
+  // genuinely prefix the text) takes priority; otherwise a conservative heuristic looks for a
+  // natural "?" or ":" boundary in older/bank content that predates this field. Falls back to no
+  // split — today's exact single-block rendering — if neither applies or if sizing/display text
+  // are ever inconsistent about it. This is purely additive visual polish, never required.
+  let hookText = null;
+  if(tip.hook && sizingText.startsWith(tip.hook) && displayText.startsWith(tip.hook)){
+    hookText = tip.hook;
+  } else {
+    const detected = detectHookBoundary(sizingText);
+    if(detected && displayText.startsWith(detected)) hookText = detected;
+  }
+
+  const GAP_RATIO = 0.45; // breathing room between hook and body, as a fraction of one line height
   let fontSize = sizingText.length > 150 ? panelW*0.0596 : panelW*0.0715;
   ctx.font = '500 ' + fontSize + 'px "Inter", sans-serif';
-  let sizingLines = wrapLines(ctx, sizingText, textMaxW);
-  let lineHeight = fontSize*1.12;
-  while(sizingLines.length*lineHeight > textAreaH && fontSize > panelW*0.0318){
-    fontSize -= 2;
+  let lineHeight = fontSize*1.4;
+
+  let sizingLines, hookSizingLines, bodySizingLines;
+  if(hookText){
+    const sizingBodyText = sizingText.slice(hookText.length).trim();
+    ctx.font = '600 ' + fontSize + 'px "Inter", sans-serif';
+    hookSizingLines = wrapLines(ctx, hookText, textMaxW);
     ctx.font = '500 ' + fontSize + 'px "Inter", sans-serif';
+    bodySizingLines = wrapLines(ctx, sizingBodyText, textMaxW);
+    let totalH = (hookSizingLines.length + bodySizingLines.length)*lineHeight + GAP_RATIO*lineHeight;
+    while(totalH > textAreaH && fontSize > panelW*0.0318){
+      fontSize -= 2;
+      lineHeight = fontSize*1.4;
+      ctx.font = '600 ' + fontSize + 'px "Inter", sans-serif';
+      hookSizingLines = wrapLines(ctx, hookText, textMaxW);
+      ctx.font = '500 ' + fontSize + 'px "Inter", sans-serif';
+      bodySizingLines = wrapLines(ctx, sizingBodyText, textMaxW);
+      totalH = (hookSizingLines.length + bodySizingLines.length)*lineHeight + GAP_RATIO*lineHeight;
+    }
+  } else {
     sizingLines = wrapLines(ctx, sizingText, textMaxW);
-    lineHeight = fontSize*1.12;
+    while(sizingLines.length*lineHeight > textAreaH && fontSize > panelW*0.0318){
+      fontSize -= 2;
+      ctx.font = '500 ' + fontSize + 'px "Inter", sans-serif';
+      sizingLines = wrapLines(ctx, sizingText, textMaxW);
+      lineHeight = fontSize*1.4;
+    }
   }
+
   // hard safety net: even at minimum font size, if it still doesn't fit (e.g. an unusually large node
   // eating into available space, or a longer-than-usual tip), truncate to however many lines actually
-  // fit and mark the cut with an ellipsis — this guarantees text can never visually spill out of the box
-  const maxLinesThatFit = Math.max(1, Math.floor(textAreaH / lineHeight));
-  if(sizingLines.length > maxLinesThatFit){
-    sizingLines = sizingLines.slice(0, maxLinesThatFit);
-    let lastLine = sizingLines[maxLinesThatFit-1];
-    while(ctx.measureText(lastLine + '…').width > textMaxW && lastLine.length > 1){
-      lastLine = lastLine.slice(0, -1);
+  // fit and mark the cut with an ellipsis — this guarantees text can never visually spill out of the box.
+  // For split content, only the BODY gets truncated — the hook stays fully intact, since keeping the
+  // hook complete is the entire point of separating it out in the first place.
+  let maxLinesThatFit, maxBodyLinesThatFit;
+  if(hookText){
+    const remainingH = textAreaH - hookSizingLines.length*lineHeight - GAP_RATIO*lineHeight;
+    maxBodyLinesThatFit = Math.max(1, Math.floor(remainingH / lineHeight));
+    if(bodySizingLines.length > maxBodyLinesThatFit){
+      bodySizingLines = bodySizingLines.slice(0, maxBodyLinesThatFit);
+      let lastLine = bodySizingLines[maxBodyLinesThatFit-1];
+      while(ctx.measureText(lastLine + '…').width > textMaxW && lastLine.length > 1){
+        lastLine = lastLine.slice(0, -1);
+      }
+      bodySizingLines[maxBodyLinesThatFit-1] = lastLine + '…';
     }
-    sizingLines[maxLinesThatFit-1] = lastLine + '…';
+  } else {
+    maxLinesThatFit = Math.max(1, Math.floor(textAreaH / lineHeight));
+    if(sizingLines.length > maxLinesThatFit){
+      sizingLines = sizingLines.slice(0, maxLinesThatFit);
+      let lastLine = sizingLines[maxLinesThatFit-1];
+      while(ctx.measureText(lastLine + '…').width > textMaxW && lastLine.length > 1){
+        lastLine = lastLine.slice(0, -1);
+      }
+      sizingLines[maxLinesThatFit-1] = lastLine + '…';
+    }
   }
+
   // font size is now locked — wrap the actually-revealed text at this same stable size
-  let lines = wrapLines(ctx, displayText, textMaxW);
-  if(lines.length > maxLinesThatFit){
-    lines = lines.slice(0, maxLinesThatFit);
-    let lastVisLine = lines[maxLinesThatFit-1];
-    while(ctx.measureText(lastVisLine + '…').width > textMaxW && lastVisLine.length > 1){
-      lastVisLine = lastVisLine.slice(0, -1);
+  let lines, hookDisplayLines, bodyDisplayLines;
+  if(hookText){
+    const displayBodyText = displayText.slice(hookText.length).trim();
+    ctx.font = '600 ' + fontSize + 'px "Inter", sans-serif';
+    hookDisplayLines = wrapLines(ctx, hookText, textMaxW);
+    ctx.font = '500 ' + fontSize + 'px "Inter", sans-serif';
+    bodyDisplayLines = wrapLines(ctx, displayBodyText, textMaxW);
+    if(bodyDisplayLines.length > maxBodyLinesThatFit){
+      bodyDisplayLines = bodyDisplayLines.slice(0, maxBodyLinesThatFit);
+      let lastVisLine = bodyDisplayLines[maxBodyLinesThatFit-1];
+      while(ctx.measureText(lastVisLine + '…').width > textMaxW && lastVisLine.length > 1){
+        lastVisLine = lastVisLine.slice(0, -1);
+      }
+      bodyDisplayLines[maxBodyLinesThatFit-1] = lastVisLine + '…';
     }
-    lines[maxLinesThatFit-1] = lastVisLine + '…';
+  } else {
+    lines = wrapLines(ctx, displayText, textMaxW);
+    if(lines.length > maxLinesThatFit){
+      lines = lines.slice(0, maxLinesThatFit);
+      let lastVisLine = lines[maxLinesThatFit-1];
+      while(ctx.measureText(lastVisLine + '…').width > textMaxW && lastVisLine.length > 1){
+        lastVisLine = lastVisLine.slice(0, -1);
+      }
+      lines[maxLinesThatFit-1] = lastVisLine + '…';
+    }
   }
-  const blockH = sizingLines.length*lineHeight; // reserve space for the FULL text's line count, so the block doesn't recenter as lines appear
+
+  const blockH = hookText
+    ? (hookSizingLines.length + bodySizingLines.length)*lineHeight + GAP_RATIO*lineHeight
+    : sizingLines.length*lineHeight; // reserve space for the FULL text's line count, so the block doesn't recenter as lines appear
   let ly = textTop + (textAreaH-blockH)/2 + lineHeight/2;
   const priorAlphaNet = ctx.globalAlpha;
-  ctx.fillStyle = isRevealed ? badge.color : (mode==='puzzle' ? '#5EEAD4' : '#F1F1F0');
   if(isRevealed){
     ctx.globalAlpha = priorAlphaNet * revealFadeProgress;
     ctx.shadowColor = badge.color;
@@ -4322,23 +5333,98 @@ function drawNetworkCard(ctx, w, h, tip, mode, badge, displayText, alpha, scale,
   }
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-  for(const line of lines){
-    ctx.fillText(line, textX, ly);
-    ly += lineHeight;
+
+  if(hookText){
+    // hook renders bolder, in the category accent color — real visual hierarchy instead of one flat block
+    ctx.font = '600 ' + fontSize + 'px "Inter", sans-serif';
+    ctx.fillStyle = badge.color;
+    for(const line of hookDisplayLines){
+      ctx.fillText(line, textX, ly);
+      ly += lineHeight;
+    }
+    ly += GAP_RATIO*lineHeight;
+    ctx.font = '500 ' + fontSize + 'px "Inter", sans-serif';
+    ctx.fillStyle = isRevealed ? badge.color : (mode==='puzzle' ? '#5EEAD4' : '#F1F1F0');
+    for(const line of bodyDisplayLines){
+      ctx.fillText(line, textX, ly);
+      ly += lineHeight;
+    }
+  } else {
+    ctx.fillStyle = isRevealed ? badge.color : (mode==='puzzle' ? '#5EEAD4' : '#F1F1F0');
+    for(const line of lines){
+      ctx.fillText(line, textX, ly);
+      ly += lineHeight;
+    }
   }
   if(isRevealed){
     ctx.shadowBlur = 0;
     ctx.globalAlpha = priorAlphaNet;
   }
 
-  // CTA row
+  // CTA row — or, for debate posts with structured options, a visual two-option "poll" display
+  // instead of a plain CTA line. A real, visible A-vs-B choice is what actually invites replies;
+  // a stated opinion mostly just gets agreement or silence.
   const ctaY = textBottom + panelH*0.025;
-  ctx.font = 'italic 600 ' + (panelW*0.02862) + 'px "Inter", sans-serif';
-  ctx.fillStyle = badge.color;
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'middle';
-  const ctaSymbol = mode==='puzzle' ? '\u{1F9E9} ' : mode==='debate' ? '\u2694\uFE0F ' : '\u{1F4AC} ';
-  ctx.fillText(ctaSymbol + ctaText, panelX+panelW*0.045, ctaY + ctaH/2);
+  if(mode==='debate' && tip.optionA && tip.optionB){
+    const pillGap = panelW*0.03;
+    const pillH_ = ctaH*0.82;
+    const pillY_ = ctaY + (ctaH-pillH_)/2;
+    const availW = panelW*0.91;
+    const pillW_ = (availW - pillGap)/2;
+    const pillX1 = panelX + panelW*0.045;
+    const pillX2 = pillX1 + pillW_ + pillGap;
+
+    function drawOptionPill(x, label, dotColor){
+      roundRectPath(ctx, x, pillY_, pillW_, pillH_, pillH_/2);
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      ctx.fill();
+
+      // subtle glow + brighter border — reads as tappable/interactive rather than flat,
+      // same soft-glow language as the node's own selection ring elsewhere in the tool
+      ctx.shadowColor = dotColor;
+      ctx.shadowBlur = 5;
+      ctx.strokeStyle = dotColor + '90';
+      ctx.lineWidth = 1.4;
+      roundRectPath(ctx, x, pillY_, pillW_, pillH_, pillH_/2);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      const dotR = pillH_*0.18;
+      const dotCX = x + pillH_*0.35;
+      ctx.beginPath();
+      ctx.arc(dotCX, pillY_+pillH_/2, dotR, 0, Math.PI*2);
+      ctx.fillStyle = dotColor;
+      ctx.fill();
+
+      let fontSize = panelW*0.024;
+      ctx.font = '600 ' + fontSize + 'px "Inter", sans-serif';
+      ctx.fillStyle = '#F1F1F0';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      const textX_ = dotCX + dotR + pillH_*0.16;
+      const maxTextW = x + pillW_ - textX_ - pillH_*0.15;
+      let lbl = label;
+      while(ctx.measureText(lbl).width > maxTextW && fontSize > panelW*0.014){
+        fontSize -= 1;
+        ctx.font = '600 ' + fontSize + 'px "Inter", sans-serif';
+      }
+      while(ctx.measureText(lbl).width > maxTextW && lbl.length > 1){
+        lbl = lbl.slice(0,-1);
+      }
+      if(lbl !== label) lbl = lbl.slice(0,-1) + '…';
+      ctx.fillText(lbl, textX_, pillY_+pillH_/2+1);
+    }
+
+    drawOptionPill(pillX1, tip.optionA, '#FF5C5C');
+    drawOptionPill(pillX2, tip.optionB, '#5EEAD4');
+  } else {
+    ctx.font = 'italic 600 ' + (panelW*0.02862) + 'px "Inter", sans-serif';
+    ctx.fillStyle = badge.color;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    const ctaSymbol = mode==='puzzle' ? '\u{1F9E9} ' : mode==='debate' ? '\u2694\uFE0F ' : '\u{1F4AC} ';
+    ctx.fillText(ctaSymbol + ctaText, panelX+panelW*0.045, ctaY + ctaH/2);
+  }
 
   // footer
   const footerY = panelY + panelH - footerH;
@@ -4369,7 +5455,7 @@ function drawIntroSlide(ctx, w, h, entry, elapsedMs, totalMs, modeOverride){
   const effectiveMode = modeOverride || entry.mode;
   let titleLine2, accentColor;
   if(entry.type === 'quickfix'){
-    titleLine2 = 'QUICK-FIX';
+    titleLine2 = entry.subtype === 'production' ? 'PRODUCTION FIX' : 'QUICK-FIX';
     accentColor = entry.color;
   } else if(entry.type === 'multichoice'){
     titleLine2 = 'CHALLENGE';
@@ -4378,7 +5464,7 @@ function drawIntroSlide(ctx, w, h, entry, elapsedMs, totalMs, modeOverride){
     titleLine2 = 'FILL IN THE BLANK';
     accentColor = '#5EEAD4';
   } else if(effectiveMode === 'debate'){
-    titleLine2 = 'DEBATE';
+    titleLine2 = 'PICK A SIDE';
     accentColor = '#FF5C5C';
   } else {
     titleLine2 = 'TIP OF THE DAY';
@@ -4502,23 +5588,27 @@ function drawOutroSlide(ctx, w, h, entry, elapsedMs, totalMs){
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
+  const logoCenterY = h*0.5; // logo is the true centerpiece of the outro, everything else arranges around it
+
+  let logoH;
   if(brandLogoLoaded){
-    const maxLogoW = w*0.42;
+    const maxLogoW = w*0.62;
     const aspect = brandLogoImg.naturalHeight / brandLogoImg.naturalWidth;
     const logoW = maxLogoW;
-    const logoH = logoW * aspect;
-    ctx.drawImage(brandLogoImg, w/2 - logoW/2, h*0.40 - logoH/2, logoW, logoH);
+    logoH = logoW * aspect;
+    ctx.drawImage(brandLogoImg, w/2 - logoW/2, logoCenterY - logoH/2, logoW, logoH);
   } else {
-    drawEarlyManFXLogo(ctx, w/2, h*0.40, w*0.06); // fallback for the rare case the image hasn't finished loading yet
+    logoH = w*0.18; // reasonable estimate for the rare vector-fallback case, keeps spacing below consistent
+    drawEarlyManFXLogo(ctx, w/2, logoCenterY, w*0.09);
   }
 
-  ctx.font = '700 ' + (w*0.05) + 'px "Space Grotesk", sans-serif';
+  ctx.font = '700 ' + (w*0.062) + 'px "Space Grotesk", sans-serif';
   ctx.fillStyle = '#F1F1F0';
-  ctx.fillText('Never stop learning.', w/2, h*0.56);
+  ctx.fillText('Never stop learning.', w/2, logoCenterY - logoH/2 - h*0.075);
 
-  ctx.font = (w*0.026) + 'px "JetBrains Mono", monospace';
+  ctx.font = (w*0.032) + 'px "JetBrains Mono", monospace';
   ctx.fillStyle = badgeColor;
-  ctx.fillText(handleInput.value || '@Earlymanfx', w/2, h*0.64);
+  ctx.fillText(handleInput.value || '@Earlymanfx', w/2, logoCenterY + logoH/2 + h*0.065);
 
   ctx.restore();
 }
@@ -4559,9 +5649,9 @@ function drawQuickFixCard(ctx, w, h, entry, t, introProgress, motion, numberOver
   const revealFractionTarget = (!isNaN(revealPercentRaw) && revealPercentRaw > 0) ? Math.min(Math.max(revealPercentRaw, 10), 95) / 100 : 0.65;
 
   let displayProblem = entry.problem;
-  let visibleStepCount = entry.steps.length;
+  let visibleStepCount = entry.subtype === 'production' ? 0 : entry.steps.length;
 
-  if(textRevealEnabled && motion && recording){
+  if(textRevealEnabled && motion && recording && entry.subtype !== 'production'){
     const elapsed = t - recordingStartTime;
     const totalRevealWindow = activeRecordingDurationMs * revealFractionTarget;
     const problemWords = entry.problem.split(' ');
@@ -4676,13 +5766,10 @@ function drawQuickFixCard(ctx, w, h, entry, t, introProgress, motion, numberOver
   ctx.fill();
   ctx.shadowBlur = 0;
 
-  ctx.shadowColor = badgeColor;
-  ctx.shadowBlur = 22;
   ctx.lineWidth = 1.5;
-  ctx.strokeStyle = badgeColor + '90';
+  ctx.strokeStyle = badgeColor + '50';
   roundRectPath(ctx, panelX, panelY, panelW, panelH, pr2);
   ctx.stroke();
-  ctx.shadowBlur = 0;
 
   ctx.beginPath();
   ctx.arc(wireLandX, panelY, panelW*0.008, 0, Math.PI*2);
@@ -4709,10 +5796,92 @@ function drawQuickFixCard(ctx, w, h, entry, t, introProgress, motion, numberOver
   ctx.textBaseline = 'middle';
   ctx.fillText(diffLabelQF, panelX+panelW*0.045+diffPadX, diffPillY+diffPillH/2+1);
 
-  // "PROBLEM" label + text
+  // "PROBLEM" label + text (regular Quick-Fix) — or the 4-section Production Fix layout
   const textX = panelX + panelW*0.045;
   const textMaxW = panelW*0.91;
   const problemLabelY = diffPillY + diffPillH + panelH*0.05;
+  const footerH = panelH*0.16;
+  const footerY = panelY + panelH - footerH;
+
+  if(entry.subtype === 'production'){
+    // ---- Production Fix: 4 labeled sections (Problem / Cause / Solution / Why it works),
+    // each independently shrink-to-fit and truncated so no section can ever overlap the next
+    // or spill past the panel, regardless of how much the model actually writes for each part.
+    const sectionsTop = problemLabelY - panelH*0.02;
+    const sectionsBottom = footerY - panelH*0.03;
+    const sectionsAreaH = sectionsBottom - sectionsTop;
+    const sectionGap = panelH*0.026;
+    const labelBodyGap = panelH*0.014;
+    const sections = [
+      { label: 'PROBLEM', text: entry.problem, color: badgeColor },
+      { label: 'CAUSE', text: entry.cause, color: '#FF9A5C' },
+      { label: 'SOLUTION', text: entry.solution, color: '#5EEAD4' },
+      { label: 'WHY IT WORKS', text: entry.whyItWorks, color: '#C792EA' }
+    ];
+    const labelH = panelW*0.028; // fixed height reserved for each section's label line
+    const perSectionH = (sectionsAreaH - (labelH+labelBodyGap)*sections.length - sectionGap*(sections.length-1)) / sections.length;
+
+    const sectionTextMaxW = panelW*0.70; // meaningfully narrower than the full-width label row — shorter, more scannable lines instead of stretching edge to edge
+
+    // First pass: find ONE shared font size that fits every section within its allotted
+    // height. Previously each section ran its own independent shrink-to-fit loop, so a
+    // section with more text would end up visibly smaller than a shorter one, even though
+    // all four should look uniform — this fixes that by sizing them all together.
+    let sharedFontSize = panelW*0.0228;
+    const minSharedFontSize = panelW*0.0148;
+    while(sharedFontSize > minSharedFontSize){
+      ctx.font = '500 ' + sharedFontSize + 'px "Inter", sans-serif';
+      const lh = sharedFontSize*1.42;
+      const allFit = sections.every(section => wrapLines(ctx, section.text, sectionTextMaxW).length*lh <= perSectionH);
+      if(allFit) break;
+      sharedFontSize -= 1;
+    }
+    const sharedLineHeight = sharedFontSize*1.42;
+    ctx.font = '500 ' + sharedFontSize + 'px "Inter", sans-serif';
+    const maxSecLinesShared = Math.max(1, Math.floor(perSectionH / sharedLineHeight));
+
+    let sy = sectionsTop;
+    for(let si = 0; si < sections.length; si++){
+      const section = sections[si];
+      ctx.font = '700 ' + (panelW*0.0182) + 'px "JetBrains Mono", monospace';
+      ctx.fillStyle = section.color;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+      if('letterSpacing' in ctx) ctx.letterSpacing = (panelW*0.0018) + 'px'; // subtle tracking on the label reads more editorial, less cramped
+      ctx.fillText(section.label, textX, sy + labelH*0.75);
+      if('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+
+      ctx.font = '500 ' + sharedFontSize + 'px "Inter", sans-serif';
+      let secLines = wrapLines(ctx, section.text, sectionTextMaxW);
+      if(secLines.length > maxSecLinesShared){
+        secLines = secLines.slice(0, maxSecLinesShared);
+        let lastLine = secLines[maxSecLinesShared-1];
+        while(ctx.measureText(lastLine + '…').width > sectionTextMaxW && lastLine.length > 1){
+          lastLine = lastLine.slice(0, -1);
+        }
+        secLines[maxSecLinesShared-1] = lastLine + '…';
+      }
+      ctx.fillStyle = '#E4E4E3';
+      ctx.textBaseline = 'middle';
+      let secY = sy + labelH + labelBodyGap + sharedLineHeight/2;
+      for(const line of secLines){
+        ctx.fillText(line, textX, secY);
+        secY += sharedLineHeight;
+      }
+      sy += labelH + labelBodyGap + perSectionH + sectionGap;
+
+      // subtle divider between sections — reinforces real separation instead of relying on
+      // whitespace alone, skipped after the last section since the footer's own divider follows
+      if(si < sections.length - 1){
+        ctx.beginPath();
+        ctx.moveTo(textX, sy - sectionGap/2);
+        ctx.lineTo(textX + textMaxW, sy - sectionGap/2);
+        ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+  } else {
   ctx.font = '700 ' + (panelW*0.02067) + 'px "JetBrains Mono", monospace';
   ctx.fillStyle = badgeColor;
   ctx.textBaseline = 'alphabetic';
@@ -4721,12 +5890,12 @@ function drawQuickFixCard(ctx, w, h, entry, t, introProgress, motion, numberOver
   let probFontSize = panelW*0.0397;
   ctx.font = '600 ' + probFontSize + 'px "Inter", sans-serif';
   let probLinesFull = wrapLines(ctx, entry.problem, textMaxW); // sized against the FULL text so font size stays stable while revealing
-  let probLineHeight = probFontSize*1.12;
+  let probLineHeight = probFontSize*1.4;
   while(probLinesFull.length > 2 && probFontSize > panelW*0.0254){
     probFontSize -= 1;
     ctx.font = '600 ' + probFontSize + 'px "Inter", sans-serif';
     probLinesFull = wrapLines(ctx, entry.problem, textMaxW);
-    probLineHeight = probFontSize*1.12;
+    probLineHeight = probFontSize*1.4;
   }
   if(probLinesFull.length > 2){
     probLinesFull = probLinesFull.slice(0, 2);
@@ -4755,9 +5924,6 @@ function drawQuickFixCard(ctx, w, h, entry, t, introProgress, motion, numberOver
   }
   py = probStartY + probLinesFull.length*probLineHeight; // layout stays stable regardless of reveal progress — always based on the full text
 
-  const footerH = panelH*0.16;
-  const footerY = panelY + panelH - footerH;
-
   // ---- numbered steps, filling remaining space ----
   const stepsTop = py + panelH*0.02;
   const stepsBottom = footerY - panelH*0.03;
@@ -4770,7 +5936,7 @@ function drawQuickFixCard(ctx, w, h, entry, t, introProgress, motion, numberOver
     let totalH = 0;
     const wrapped = entry.steps.map(s=>{
       const l = wrapLines(ctx, s, stepMaxW);
-      const lh = fs*1.15;
+      const lh = fs*1.3;
       totalH += l.length*lh + fs*0.55;
       return {lines:l, lh};
     });
@@ -4813,6 +5979,7 @@ function drawQuickFixCard(ctx, w, h, entry, t, introProgress, motion, numberOver
     }
     cursorY += blockH + stepFontSize*0.55; // always advance past this block's actual height + a fixed gap — can never overlap the next step, regardless of line-count differences
   });
+  }
 
   // ---- footer (identical pattern to tip cards) ----
   ctx.beginPath();
@@ -4829,25 +5996,6 @@ function drawQuickFixCard(ctx, w, h, entry, t, introProgress, motion, numberOver
   ctx.fillText(handleInput.value || '@Earlymanfx', panelX+panelW*0.045, footerY+footerH/2+2);
 
   drawFooterLogo(ctx, panelX+panelW*0.955, footerY+footerH/2, panelW*0.0305);
-
-  // ---- corner ribbon: instant visual signal this is a Quick-Fix, not a regular tip ----
-  ctx.save();
-  roundRectPath(ctx, panelX, panelY, panelW, panelH, pr2);
-  ctx.clip();
-  ctx.save();
-  ctx.translate(panelX + panelW, panelY);
-  ctx.rotate(Math.PI/4);
-  const ribbonW = panelW*0.46;
-  const ribbonH = panelH*0.042;
-  ctx.fillStyle = badgeColor;
-  ctx.fillRect(-ribbonW/2, -ribbonH/2, ribbonW, ribbonH);
-  ctx.fillStyle = '#14151A';
-  ctx.font = '700 ' + (ribbonH*0.52) + 'px "JetBrains Mono", monospace';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('QUICK FIX', 0, 1);
-  ctx.restore();
-  ctx.restore();
 
   ctx.restore();
 
@@ -4966,13 +6114,10 @@ function drawMultiChoiceCard(ctx, w, h, entry, t, introProgress, motion, numberO
   ctx.fill();
   ctx.shadowBlur = 0;
 
-  ctx.shadowColor = badgeColor;
-  ctx.shadowBlur = 22;
   ctx.lineWidth = 1.5;
-  ctx.strokeStyle = badgeColor + '90';
+  ctx.strokeStyle = badgeColor + '50';
   roundRectPath(ctx, panelX, panelY, panelW, panelH, pr2);
   ctx.stroke();
-  ctx.shadowBlur = 0;
 
   ctx.beginPath();
   ctx.arc(wireLandX, panelY, panelW*0.008, 0, Math.PI*2);
@@ -5029,15 +6174,15 @@ function drawMultiChoiceCard(ctx, w, h, entry, t, introProgress, motion, numberO
   const questionBottom = footerY - optionsH - codeBlockH - panelH*0.045;
   const questionAreaH = Math.max(questionBottom - questionTop, panelH*0.08);
 
-  let qFontSize = panelW*0.034;
+  let qFontSize = panelW*0.05;
   ctx.font = '600 ' + qFontSize + 'px "Inter", sans-serif';
   let qLines = wrapLines(ctx, entry.question, textMaxW);
-  let qLineHeight = qFontSize*1.16;
+  let qLineHeight = qFontSize*1.4;
   while(qLines.length*qLineHeight > questionAreaH && qFontSize > panelW*0.02){
     qFontSize -= 1;
     ctx.font = '600 ' + qFontSize + 'px "Inter", sans-serif';
     qLines = wrapLines(ctx, entry.question, textMaxW);
-    qLineHeight = qFontSize*1.16;
+    qLineHeight = qFontSize*1.4;
   }
   const qMaxLines = Math.max(1, Math.floor(questionAreaH / qLineHeight));
   if(qLines.length > qMaxLines){
@@ -5048,16 +6193,30 @@ function drawMultiChoiceCard(ctx, w, h, entry, t, introProgress, motion, numberO
     }
     qLines[qMaxLines-1] = lastQLine + '…';
   }
+  const qBlockH = qLines.length*qLineHeight;
+
+  // Center the whole content block (question + optional code + options) vertically within the
+  // space between the difficulty pill row and the footer — otherwise, whenever the actual
+  // content is shorter than the maximum it was budgeted for (which is common, especially in
+  // Story format's taller panel), all the leftover room ends up as one big empty gap between
+  // the options and the footer instead of being distributed evenly.
+  const actualContentH = qBlockH + (hasCode ? panelH*0.0185 + codeBlockH : 0) + panelH*0.0185 + optionsH;
+  const totalAvailableH = footerY - questionTop - panelH*0.03;
+  const centerOffset = Math.max(0, (totalAvailableH - actualContentH) / 2);
+  const adjustedQuestionTop = questionTop + centerOffset;
+
   ctx.fillStyle = '#F1F1F0';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-  const qBlockH = qLines.length*qLineHeight;
-  let qy = questionTop + Math.max((questionAreaH-qBlockH)/2, 0) + qLineHeight/2;
+  let qy = adjustedQuestionTop + qLineHeight/2; // top-aligned within its own block, not centered — so options can dynamically follow the real text end below; the block AS A WHOLE is centered via adjustedQuestionTop above
   qLines.forEach(line=>{ ctx.fillText(line, textX, qy); qy += qLineHeight; });
+  const questionActualBottom = adjustedQuestionTop + qBlockH;
 
-  // ---- optional code block — fixed height, monospace, dark inset panel ----
+  // ---- optional code block — fixed height, monospace, dark inset panel — follows the actual
+  // question text end (not a fixed budget position), same as the options below ----
+  let contentBottom = questionActualBottom;
   if(hasCode){
-    const codeTop = questionBottom + panelH*0.02;
+    const codeTop = questionActualBottom + panelH*0.0185;
     roundRectPath(ctx, textX, codeTop, textMaxW, codeBlockH, panelH*0.012);
     ctx.fillStyle = 'rgba(0,0,0,0.35)';
     ctx.fill();
@@ -5096,10 +6255,17 @@ function drawMultiChoiceCard(ctx, w, h, entry, t, introProgress, motion, numberO
       if(ctxLine !== entry.context) ctxLine = ctxLine.slice(0, -1) + '…';
       ctx.fillText(ctxLine, textX+codePadX, codeTop + codeBlockH*0.74);
     }
+    contentBottom = codeTop + codeBlockH;
   }
 
   // ---- lettered options — 2x2 grid for 4 choices, single row for true/false (2 choices) ----
-  const optTop = footerY - optionsH + panelH*0.02;
+  // positioned right after the actual question (and code block, if any) ends, with a fixed
+  // gap — not anchored to a fixed budget position — so short questions don't leave a large
+  // empty gap above the options. Bounded below by questionBottom (the same ceiling the
+  // question's own shrink-to-fit already respects), so this can never push options lower
+  // than they'd have sat before, and therefore can never overlap the footer.
+  const ceiling = questionBottom + codeBlockH + panelH*0.02; // must include codeBlockH here too — questionBottom alone doesn't, which was the actual bug: contentBottom (which DOES include the code block) could exceed this ceiling, pushing options above the code block's real end
+  const optTop = Math.min(contentBottom + panelH*0.0185, ceiling);
   const optCols = numChoices <= 2 ? numChoices : 2;
   const optRows = Math.ceil(numChoices / optCols);
   const optGapX = panelW*0.025;
@@ -5133,7 +6299,7 @@ function drawMultiChoiceCard(ctx, w, h, entry, t, introProgress, motion, numberO
     ctx.textBaseline = 'middle';
     ctx.fillText(letters[i], letterCX, oy+optH/2+1);
 
-    let optFontSize = panelW*0.022;
+    let optFontSize = panelW*0.030;
     ctx.font = optFontSize + 'px "Inter", sans-serif';
     ctx.fillStyle = '#E4E4E3';
     ctx.textAlign = 'left';
@@ -5983,21 +7149,27 @@ document.getElementById('btnPng').onclick = ()=>{
 };
 
 function renderActiveCaption(){
-  captionBox.value = currentCaptions[activePlatform] || '';
+  const active = currentCaptions[activePlatform] || {title:'', caption:''};
+  document.getElementById('captionTitle').value = active.title || '';
+  captionBox.value = active.caption || '';
 }
 function setPlatform(p){
   activePlatform = p;
   document.getElementById('platX').classList.toggle('active', p==='x');
   document.getElementById('platInstagram').classList.toggle('active', p==='instagram');
-  document.getElementById('platReddit').classList.toggle('active', p==='reddit');
+  document.getElementById('platYoutube').classList.toggle('active', p==='youtube');
   renderActiveCaption();
 }
 document.getElementById('platX').onclick = ()=>setPlatform('x');
 document.getElementById('platInstagram').onclick = ()=>setPlatform('instagram');
-document.getElementById('platReddit').onclick = ()=>setPlatform('reddit');
+document.getElementById('platYoutube').onclick = ()=>setPlatform('youtube');
 
 document.getElementById('btnCopy').onclick = ()=>{
-  navigator.clipboard.writeText(captionBox.value).then(()=>{
+  const active = currentCaptions[activePlatform] || {title:'', caption:''};
+  // YouTube's title is something you'd actually paste into a separate field when uploading,
+  // so include it; X/Instagram don't have a native title field, so just the caption there
+  const toCopy = activePlatform==='youtube' ? `${active.title}\n\n${active.caption}` : active.caption;
+  navigator.clipboard.writeText(toCopy).then(()=>{
     statusEl.textContent = 'Caption copied ✓';
     setTimeout(()=>{ statusEl.textContent=''; }, 2500);
   });
@@ -6080,6 +7252,594 @@ document.getElementById('btnRec').onclick = ()=>{
   recorder.start();
   setTimeout(()=>{ if(recorder.state!=='inactive') recorder.stop(); }, totalDurationMs);
 };
+
+// ============================================================================
+// ISOLATED FEATURE: Live Houdini/VFX industry news via Gemini's Google Search
+// grounding tool. Completely separate from tip generation — no shared state,
+// doesn't touch tipLog/history/bank, uses its own API request shape (the
+// google_search tool isn't compatible with the strict-JSON helpers used
+// elsewhere, so this makes its own direct fetch call).
+// ============================================================================
+let newsItemsCache = []; // {headline, summary, date, detail: null|html-string}
+
+// Converts the model's free-text DATE field into a sortable timestamp. Handles "Today" (highest
+// priority), full dates like "July 20, 2026", "Month Year" approximations, and falls back to a
+// very old timestamp (sorts last, never crashes) for anything unparseable like "Recent".
+function parseNewsDateForSort(dateStr){
+  if(!dateStr) return -Infinity;
+  const s = dateStr.trim();
+  if(s.toLowerCase() === 'today') return Date.now() + 1; // always sorts ahead of everything, including a real "today" full-date match
+  const parsed = Date.parse(s);
+  if(!isNaN(parsed)) return parsed; // handles both "July 20, 2026" and "June 2026" (parses as the 1st of that month)
+  return -Infinity; // "Recent" or anything unparseable — sorts last rather than breaking the sort
+}
+
+function sortNewsItemsByDate(items){
+  return [...items].sort((a, b) => parseNewsDateForSort(b.date) - parseNewsDateForSort(a.date));
+}
+
+function renderNewsCards(){
+  const resultsEl = document.getElementById('newsResults');
+  resultsEl.innerHTML = newsItemsCache.map((item, idx) => {
+    const isToday = item.date && item.date.trim().toLowerCase() === 'today';
+    const dateBadge = isToday
+      ? `<span style="font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; color:#1A1200; background:#FF5C5C; border-radius:4px; padding:2px 6px; white-space:nowrap;">🔴 LIVE · TODAY</span>`
+      : (item.date ? `<span style="font-family:'JetBrains Mono',monospace; font-size:9.5px; color:#5EEAD4; white-space:nowrap; opacity:.85;">${item.date.replace(/</g,'&lt;')}</span>` : '');
+    return `
+    <div class="news-card" data-idx="${idx}" style="background:rgba(255,255,255,0.03); border:1px solid ${isToday ? 'rgba(255,92,92,0.4)' : 'rgba(255,255,255,0.08)'}; border-radius:8px; padding:12px 14px; cursor:pointer;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:4px;">
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13.5px; color:#F1F1F0;">${item.headline.replace(/</g,'&lt;')}</div>
+        <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+          ${dateBadge}
+          <span class="news-chevron" style="font-size:10px; color:var(--text-muted); transition:transform 0.15s;">▾</span>
+        </div>
+      </div>
+      ${item.summary ? `<div style="font-family:'Inter',sans-serif; font-size:12.5px; color:var(--text-muted); line-height:1.5;">${item.summary.replace(/</g,'&lt;')}</div>` : ''}
+      <div class="news-detail" style="display:none; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08);"></div>
+    </div>
+  `;
+  }).join('');
+
+  resultsEl.querySelectorAll('.news-card').forEach(card => {
+    card.onclick = () => toggleNewsCard(parseInt(card.dataset.idx, 10));
+  });
+}
+
+async function toggleNewsCard(idx){
+  const card = document.querySelector(`.news-card[data-idx="${idx}"]`);
+  const detailEl = card.querySelector('.news-detail');
+  const chevron = card.querySelector('.news-chevron');
+  const item = newsItemsCache[idx];
+  const isOpen = detailEl.style.display === 'block';
+
+  if(isOpen){
+    detailEl.style.display = 'none';
+    chevron.style.transform = 'rotate(0deg)';
+    return;
+  }
+  detailEl.style.display = 'block';
+  chevron.style.transform = 'rotate(180deg)';
+
+  if(item.detail){
+    detailEl.innerHTML = item.detail; // already fetched earlier — no need to search again
+    return;
+  }
+
+  detailEl.innerHTML = `<div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-muted);">Searching for more detail…</div>`;
+  try{
+    const detailHtml = await fetchNewsItemDetail(item);
+    item.detail = detailHtml;
+    // guard against the user having collapsed it again while the fetch was in flight
+    if(detailEl.style.display === 'block') detailEl.innerHTML = detailHtml;
+  }catch(e){
+    console.error('News item detail fetch failed:', e);
+    detailEl.innerHTML = `<div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#FF5C5C;">⚠ Could not load more detail: ${e.message}</div>`;
+  }
+}
+
+async function fetchNewsItemDetail(item){
+  const key = getApiKey();
+  if(!key) throw new Error('No API key configured');
+  const prompt = `Search the web for more detailed information about this specific piece of Houdini/VFX industry news:\n"${item.headline}" — ${item.summary}\n\nGive a fuller picture in 3-5 plain sentences: more background, specifics, and why it actually matters to a Houdini artist or VFX professional. No headers, no markdown, no bullet points — just plain flowing text.`;
+  const preferred = getPreferredGeminiModel();
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${preferred}:generateContent?key=${encodeURIComponent(key)}`;
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      tools: [{ google_search: {} }]
+    })
+  });
+  if(!response.ok){
+    const errBody = await response.text().catch(()=>'');
+    throw new Error(`API_ERROR ${response.status} — ${errBody.slice(0,150)}`);
+  }
+  const data = await response.json();
+  const candidate = (data.candidates||[])[0];
+  const detailText = (candidate?.content?.parts||[]).map(p=>p.text||'').join('\n').trim();
+  if(!detailText) throw new Error('No additional detail available for this item');
+
+  let html = `<div style="font-family:'Inter',sans-serif; font-size:12.5px; color:#E4E4E3; line-height:1.6;">${detailText.replace(/</g,'&lt;')}</div>`;
+  const webChunks = (candidate.groundingMetadata?.groundingChunks || []).filter(c => c.web && c.web.uri);
+  if(webChunks.length > 0){
+    const chips = webChunks.map(c => `<a href="${c.web.uri}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#5EEAD4; text-decoration:none; border:1px solid rgba(94,234,212,0.35); border-radius:5px; padding:4px 8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:220px;">🔗 ${(c.web.title || c.web.uri).replace(/</g,'&lt;')}</a>`).join('');
+    html += `<div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;">${chips}</div>`;
+  }
+  return html;
+}
+
+async function fetchVfxNews(topicHint){
+  const statusEl_ = document.getElementById('newsStatus');
+  const resultsEl = document.getElementById('newsResults');
+  const resultsWrap = document.getElementById('newsResultsWrap');
+  const sourcesEl = document.getElementById('newsSources');
+  const updatedEl = document.getElementById('newsLastUpdated');
+  const btn = document.getElementById('btnFetchNews');
+
+  const key = getApiKey();
+  if(!key){
+    statusEl_.style.color = '#FF9A5C';
+    statusEl_.textContent = '⚠ No Gemini API key saved — add one in the AI Generator section above to use this (it\'s the same key, just needed here too since this makes its own live search).';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Searching…';
+  statusEl_.style.color = '';
+  statusEl_.textContent = 'Searching the web for current Houdini/VFX news…';
+  resultsWrap.style.display = 'none';
+  resultsEl.innerHTML = '';
+  sourcesEl.innerHTML = '';
+
+  const todayStr = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const topicLine = topicHint ? `specifically about "${topicHint}" in the context of` : `in`;
+  const prompt = `Today's date is ${todayStr}. Search the web for the latest real news and developments ${topicLine} SideFX Houdini and the broader VFX/CG production industry — new software versions, studio news, pipeline/tool announcements, industry events, conference talks, notable artist/studio work, layoffs or hiring trends, etc.
+
+The FIRST 2 items you return MUST be the most current/live news you can find — ideally from today (${todayStr}) itself, or the most recent day you can actually find real news for if nothing from today exists.
+
+For items 3 onward, widen the window — anything genuinely real from roughly the past month is fine, it does not need to be from today or even this week. The goal is a well-rounded set, not just whatever happened in the last 24 hours. Only skip an item entirely if you cannot find anything real to say — never invent or pad with vague filler, but do make a genuine effort to surface real items across that wider window rather than stopping early.
+
+Aim for 5 items total — go as low as 3 only if you genuinely cannot find more real material even across that wider month-long window.
+
+Respond using EXACTLY this format for each item — no numbering, no markdown, no extra commentary:
+HEADLINE: <short headline, under 12 words>
+SUMMARY: <one or two plain sentences of context>
+DATE: <the specific date if you can determine one, like "July 20, 2026" — a full date, not just a month. Use "Today" if it's genuinely from today. Only use "Recent" as a last resort if no date at all can be determined.>
+===
+HEADLINE: <next item...>
+SUMMARY: ...
+DATE: ...
+===`;
+
+  try{
+    const preferred = getPreferredGeminiModel();
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${preferred}:generateContent?key=${encodeURIComponent(key)}`;
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        tools: [{ google_search: {} }]
+      })
+    });
+    if(!response.ok){
+      const errBody = await response.text().catch(()=>'');
+      throw new Error(`API_ERROR ${response.status} — ${errBody.slice(0,200)}`);
+    }
+    const data = await response.json();
+    const candidate = (data.candidates||[])[0];
+    if(!candidate) throw new Error('Empty response — see browser console for the raw payload');
+    console.log('VFX news raw response:', data);
+
+    const text = (candidate.content?.parts||[]).map(p=>p.text||'').join('\n').trim();
+    if(!text) throw new Error('Model returned no text — it may not support search grounding; try a different model in Preferred Model above');
+
+    // Parse the delimited format into distinct items. Falls back gracefully to a single plain
+    // card with the raw text if the model didn't follow the format (never crashes either way).
+    const chunks = text.split('===').map(c=>c.trim()).filter(Boolean);
+    const items = [];
+    for(const chunk of chunks){
+      const headlineMatch = chunk.match(/HEADLINE:\s*(.+)/i);
+      const summaryMatch = chunk.match(/SUMMARY:\s*(.+)/i);
+      const dateMatch = chunk.match(/DATE:\s*(.+)/i);
+      if(headlineMatch){
+        items.push({
+          headline: headlineMatch[1].trim(),
+          summary: summaryMatch ? summaryMatch[1].trim() : '',
+          date: dateMatch ? dateMatch[1].trim() : ''
+        });
+      }
+    }
+
+    if(items.length === 0){
+      resultsEl.innerHTML = `<div style="font-family:'Inter',sans-serif; font-size:13px; color:#E4E4E3; line-height:1.6;">${text.replace(/</g,'&lt;')}</div>`;
+    } else {
+      newsItemsCache = sortNewsItemsByDate(items.map(item => ({ ...item, detail: null })));
+      renderNewsCards();
+    }
+
+    // pull real source links from grounding metadata, if the API included any, so links are
+    // genuine search results rather than anything the model might otherwise invent
+    const groundingChunks = candidate.groundingMetadata?.groundingChunks || [];
+    const webChunks = groundingChunks.filter(c => c.web && c.web.uri);
+    if(webChunks.length > 0){
+      const chips = webChunks.map(c => `<a href="${c.web.uri}" target="_blank" rel="noopener" style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#5EEAD4; text-decoration:none; border:1px solid rgba(94,234,212,0.35); border-radius:5px; padding:4px 8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:220px;">🔗 ${(c.web.title || c.web.uri).replace(/</g,'&lt;')}</a>`).join('');
+      sourcesEl.innerHTML = `<div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-muted); opacity:.7; margin-bottom:6px;">Sources</div><div style="display:flex; flex-wrap:wrap; gap:6px;">${chips}</div>`;
+    }
+
+    resultsWrap.style.display = 'block';
+    statusEl_.style.color = '#5EEAD4';
+    statusEl_.textContent = '✓ Done';
+    updatedEl.textContent = 'Last checked: ' + new Date().toLocaleString();
+    setTimeout(()=>{ if(statusEl_.textContent==='✓ Done') statusEl_.textContent=''; }, 2500);
+  }catch(e){
+    console.error('VFX news fetch failed:', e);
+    statusEl_.style.color = '#FF5C5C';
+    statusEl_.textContent = '⚠ ' + e.message;
+  }
+  btn.disabled = false;
+  btn.textContent = 'Search';
+}
+
+document.getElementById('btnFetchNews').onclick = ()=>{
+  const topic = document.getElementById('newsTopicInput').value.trim();
+  fetchVfxNews(topic || null);
+};
+
+// ============================================================================
+// ISOLATED FEATURE: Content Analytics Dashboard — YouTube (Data API + Analytics
+// API) and Instagram (Graph API). Completely separate from tip generation: no
+// shared state, doesn't touch tipLog/history/bank. All identifiers here are
+// "an"-prefixed to stay clearly separated from the rest of the tool.
+// ============================================================================
+// Pre-fill with the existing Drive Client ID — reusing the same OAuth client across features
+// (with additional scopes) is a standard, supported Google pattern, and saves re-typing it.
+// Still fully editable if the user wants a separate client for YouTube specifically.
+document.getElementById('anYtClientId').value = DRIVE_CLIENT_ID;
+
+document.querySelectorAll('.an-tab-btn').forEach(btn=>{
+  btn.onclick = ()=>{
+    document.querySelectorAll('.an-tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.an-tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('an-panel-'+btn.dataset.antab).classList.add('active');
+  };
+});
+
+// ---------- YouTube ----------
+let anYtAccessToken = null;
+let anYtChannelId = null;
+
+function anSetYtStatus(msg, color){
+  const el = document.getElementById('anYtStatus');
+  el.textContent = msg;
+  el.style.color = color || 'var(--text-muted)';
+}
+
+document.getElementById('anBtnConnectYt').onclick = ()=>{
+  const clientId = document.getElementById('anYtClientId').value.trim();
+  if(!clientId){
+    anSetYtStatus('⚠ Paste your Google OAuth Client ID first', '#FF9A5C');
+    return;
+  }
+  if(typeof google === 'undefined' || !google.accounts){
+    anSetYtStatus('⚠ Google Sign-In script still loading — try again in a second', '#FF9A5C');
+    return;
+  }
+  anSetYtStatus('Requesting access…');
+  const tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: clientId,
+    scope: 'https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics.readonly',
+    callback: async (resp)=>{
+      if(resp.error){
+        anSetYtStatus('⚠ Connection cancelled or failed: ' + resp.error, '#FF5C5C');
+        return;
+      }
+      anYtAccessToken = resp.access_token;
+      anSetYtStatus('Connected — loading your channel…', '#5EEAD4');
+      try{
+        await anLoadYoutubeChannel();
+      }catch(e){
+        console.error('YouTube analytics load failed:', e);
+        anSetYtStatus('⚠ ' + e.message, '#FF5C5C');
+      }
+    }
+  });
+  tokenClient.requestAccessToken();
+};
+
+async function anYtApiFetch(url){
+  const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + anYtAccessToken } });
+  if(!res.ok){
+    const body = await res.text().catch(()=>'');
+    throw new Error(`YouTube API error ${res.status} — ${body.slice(0,150)}`);
+  }
+  return res.json();
+}
+
+async function anLoadYoutubeChannel(){
+  const channelData = await anYtApiFetch('https://www.googleapis.com/youtube/v3/channels?part=snippet,contentDetails&mine=true');
+  const channel = (channelData.items||[])[0];
+  if(!channel) throw new Error('No YouTube channel found on this account');
+  anYtChannelId = channel.id;
+  const uploadsPlaylistId = channel.contentDetails.relatedPlaylists.uploads;
+
+  const playlistData = await anYtApiFetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=15&playlistId=${uploadsPlaylistId}`);
+  const videoIds = (playlistData.items||[]).map(item => item.snippet.resourceId.videoId).filter(Boolean);
+
+  if(videoIds.length === 0){
+    document.getElementById('anYtVideoList').innerHTML = '<div class="an-empty-state">No videos found on this channel yet.</div>';
+    document.getElementById('anYtVideosCard').style.display = 'block';
+    anSetYtStatus('✓ Connected — no videos yet', '#5EEAD4');
+    return;
+  }
+
+  const statsData = await anYtApiFetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoIds.join(',')}`);
+  anRenderYoutubeVideos(statsData.items || []);
+  document.getElementById('anYtVideosCard').style.display = 'block';
+
+  try{
+    await anLoadYoutubeTrend();
+  }catch(e){
+    console.warn('YouTube Analytics trend unavailable:', e.message);
+  }
+
+  anSetYtStatus('✓ Connected', '#5EEAD4');
+}
+
+function anRenderYoutubeVideos(videos){
+  const listEl = document.getElementById('anYtVideoList');
+  if(videos.length === 0){
+    listEl.innerHTML = '<div class="an-empty-state">No videos found.</div>';
+    return;
+  }
+  listEl.innerHTML = videos.map(v => `
+    <div class="an-video-row">
+      <img class="an-video-thumb" src="${v.snippet.thumbnails?.default?.url || ''}" alt="">
+      <div class="an-video-info">
+        <div class="an-video-title">${(v.snippet.title||'Untitled').replace(/</g,'&lt;')}</div>
+        <div class="an-video-stats">
+          <b>${Number(v.statistics?.viewCount||0).toLocaleString()}</b> views ·
+          <b>${Number(v.statistics?.likeCount||0).toLocaleString()}</b> likes ·
+          <b>${Number(v.statistics?.commentCount||0).toLocaleString()}</b> comments
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function anLoadYoutubeTrend(){
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - 28);
+  const fmt = d => d.toISOString().slice(0,10);
+
+  const url = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3D${anYtChannelId}&startDate=${fmt(startDate)}&endDate=${fmt(endDate)}&metrics=views&dimensions=day&sort=day`;
+  const data = await anYtApiFetch(url);
+  const rows = data.rows || [];
+  if(rows.length === 0){
+    document.getElementById('anYtTrendCard').style.display = 'none';
+    return;
+  }
+  document.getElementById('anYtTrendCard').style.display = 'block';
+  anDrawTrendChart(document.getElementById('anYtTrendChart'), rows.map(r => ({ label: r[0], value: r[1] })), '#FF5C5C');
+}
+
+// ---------- Instagram ----------
+let anIgAccessToken = null;
+let anIgAccountId = null;
+
+function anSetIgStatus(msg, color){
+  const el = document.getElementById('anIgStatus');
+  el.textContent = msg;
+  el.style.color = color || 'var(--text-muted)';
+}
+
+document.getElementById('anBtnConnectIg').onclick = ()=>{
+  const appId = document.getElementById('anIgAppId').value.trim();
+  if(!appId){
+    anSetIgStatus('⚠ Paste your Facebook App ID first', '#FF9A5C');
+    return;
+  }
+  anSetIgStatus('Loading Facebook Login…');
+  if(typeof FB === 'undefined'){
+    window.fbAsyncInit = function(){
+      FB.init({ appId, cookie:true, xfbml:false, version:'v19.0' });
+      anDoFacebookLogin();
+    };
+    const script = document.createElement('script');
+    script.src = 'https://connect.facebook.net/en_US/sdk.js';
+    script.onerror = ()=> anSetIgStatus('⚠ Could not load the Facebook SDK — check your connection', '#FF5C5C');
+    document.body.appendChild(script);
+  } else {
+    anDoFacebookLogin();
+  }
+};
+
+function anDoFacebookLogin(){
+  FB.login(function(response){
+    if(!response.authResponse){
+      anSetIgStatus('⚠ Connection cancelled or failed', '#FF5C5C');
+      return;
+    }
+    anIgAccessToken = response.authResponse.accessToken;
+    anSetIgStatus('Connected — finding your Instagram account…', '#5EEAD4');
+    anLoadInstagramAccount().catch(e=>{
+      console.error('Instagram analytics load failed:', e);
+      anSetIgStatus('⚠ ' + e.message, '#FF5C5C');
+    });
+  }, { scope: 'instagram_basic,instagram_manage_insights,pages_show_list' });
+}
+
+async function anIgApiFetch(path){
+  const res = await fetch(`https://graph.facebook.com/v19.0/${path}${path.includes('?')?'&':'?'}access_token=${anIgAccessToken}`);
+  const data = await res.json();
+  if(data.error) throw new Error(`Instagram API error — ${data.error.message}`);
+  return data;
+}
+
+async function anLoadInstagramAccount(){
+  const pages = await anIgApiFetch('me/accounts');
+  const page = (pages.data||[])[0];
+  if(!page) throw new Error('No Facebook Page found — Instagram Business accounts must be linked to a Page you manage');
+
+  const igLookup = await anIgApiFetch(`${page.id}?fields=instagram_business_account`);
+  const igAccount = igLookup.instagram_business_account;
+  if(!igAccount) throw new Error('No Instagram Business/Creator account linked to that Page');
+  anIgAccountId = igAccount.id;
+
+  const media = await anIgApiFetch(`${anIgAccountId}/media?fields=id,caption,media_type,thumbnail_url,media_url,timestamp&limit=10`);
+  await anRenderInstagramPosts(media.data || []);
+  document.getElementById('anIgPostsCard').style.display = 'block';
+  anSetIgStatus('✓ Connected', '#5EEAD4');
+}
+
+async function anRenderInstagramPosts(posts){
+  const listEl = document.getElementById('anIgPostList');
+  if(posts.length === 0){
+    listEl.innerHTML = '<div class="an-empty-state">No posts found.</div>';
+    return;
+  }
+  const rows = await Promise.all(posts.map(async post => {
+    let insightsText = '';
+    try{
+      const insights = await anIgApiFetch(`${post.id}/insights?metric=reach,impressions,engagement`);
+      const byName = {};
+      (insights.data||[]).forEach(m => { byName[m.name] = m.values?.[0]?.value ?? 0; });
+      insightsText = `<b>${Number(byName.reach||0).toLocaleString()}</b> reach · <b>${Number(byName.impressions||0).toLocaleString()}</b> impressions · <b>${Number(byName.engagement||0).toLocaleString()}</b> engagement`;
+    }catch(e){
+      insightsText = '<span style="opacity:.6;">Insights unavailable for this post</span>';
+    }
+    const caption = (post.caption||'(no caption)').replace(/</g,'&lt;').slice(0,60);
+    const thumb = post.thumbnail_url || post.media_url || '';
+    return `
+      <div class="an-video-row">
+        <img class="an-video-thumb" src="${thumb}" alt="">
+        <div class="an-video-info">
+          <div class="an-video-title">${caption}</div>
+          <div class="an-video-stats">${insightsText}</div>
+        </div>
+      </div>`;
+  }));
+  listEl.innerHTML = rows.join('');
+}
+
+// ---------- X (only active if a real Bearer Token is provided — no free tier exists) ----------
+function anSetXStatus(msg, color){
+  const el = document.getElementById('anXStatus');
+  el.textContent = msg;
+  el.style.color = color || 'var(--text-muted)';
+}
+
+document.getElementById('anBtnConnectX').onclick = async ()=>{
+  const token = document.getElementById('anXBearerToken').value.trim();
+  if(!token){
+    anSetXStatus('⚠ Paste a Bearer Token first — without one this tab stays on the placeholder', '#FF9A5C');
+    return;
+  }
+  const btn = document.getElementById('anBtnConnectX');
+  btn.disabled = true;
+  btn.textContent = 'Connecting…';
+  anSetXStatus('Checking token and fetching your recent posts…');
+  try{
+    await anLoadXPosts(token);
+  }catch(e){
+    console.error('X analytics load failed:', e);
+    anSetXStatus('⚠ ' + e.message, '#FF5C5C');
+    document.getElementById('anXComingSoon').style.display = 'block';
+    document.getElementById('anXPostsCard').style.display = 'none';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Connect';
+};
+
+async function anXApiFetch(url, token){
+  const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+  if(!res.ok){
+    const body = await res.text().catch(()=>'');
+    throw new Error(`X API error ${res.status} — ${body.slice(0,150)} (this needs a funded X Developer API project, separate from X Premium)`);
+  }
+  return res.json();
+}
+
+async function anLoadXPosts(token){
+  const me = await anXApiFetch('https://api.x.com/2/users/me', token);
+  const userId = me.data?.id;
+  if(!userId) throw new Error('Could not resolve your X user ID from that token');
+
+  const tweetsData = await anXApiFetch(
+    `https://api.x.com/2/users/${userId}/tweets?max_results=10&tweet.fields=public_metrics,created_at`,
+    token
+  );
+  const tweets = tweetsData.data || [];
+
+  document.getElementById('anXComingSoon').style.display = 'none';
+  document.getElementById('anXPostsCard').style.display = 'block';
+  const listEl = document.getElementById('anXPostList');
+  if(tweets.length === 0){
+    listEl.innerHTML = '<div class="an-empty-state">No posts found on this account yet.</div>';
+  } else {
+    listEl.innerHTML = tweets.map(t => {
+      const m = t.public_metrics || {};
+      const text = (t.text||'').replace(/</g,'&lt;').slice(0,60);
+      return `
+        <div class="an-video-row">
+          <div class="an-video-info">
+            <div class="an-video-title">${text}</div>
+            <div class="an-video-stats">
+              <b>${Number(m.impression_count||0).toLocaleString()}</b> impressions ·
+              <b>${Number(m.like_count||0).toLocaleString()}</b> likes ·
+              <b>${Number(m.retweet_count||0).toLocaleString()}</b> reposts ·
+              <b>${Number(m.reply_count||0).toLocaleString()}</b> replies
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+  anSetXStatus('✓ Connected', '#5EEAD4');
+}
+
+// ---------- Shared trend chart (simple canvas line chart, no external library) ----------
+function anDrawTrendChart(canvas, points, color){
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth, h = canvas.clientHeight || 150;
+  canvas.width = w*dpr; canvas.height = h*dpr;
+  const ctx2 = canvas.getContext('2d');
+  ctx2.scale(dpr, dpr);
+  ctx2.clearRect(0,0,w,h);
+  if(points.length === 0) return;
+
+  const values = points.map(p=>Number(p.value)||0);
+  const maxV = Math.max(...values, 1);
+  const padding = 22;
+  const plotW = w - padding*2;
+  const plotH = h - padding*2;
+
+  ctx2.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx2.lineWidth = 1;
+  for(let i=0;i<=3;i++){
+    const y = padding + (plotH/3)*i;
+    ctx2.beginPath(); ctx2.moveTo(padding, y); ctx2.lineTo(w-padding, y); ctx2.stroke();
+  }
+
+  ctx2.beginPath();
+  points.forEach((p,i)=>{
+    const x = padding + (plotW * i/(points.length-1 || 1));
+    const y = padding + plotH - (Number(p.value)/maxV)*plotH;
+    if(i===0) ctx2.moveTo(x,y); else ctx2.lineTo(x,y);
+  });
+  ctx2.strokeStyle = color;
+  ctx2.lineWidth = 2;
+  ctx2.stroke();
+
+  ctx2.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx2.font = '9px monospace';
+  ctx2.textAlign = 'left';
+  ctx2.fillText(points[0].label, padding, h-4);
+  ctx2.textAlign = 'right';
+  ctx2.fillText(points[points.length-1].label, w-padding, h-4);
+}
 </script>
 </body>
 </html>
